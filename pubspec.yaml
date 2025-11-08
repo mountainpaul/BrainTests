@@ -1,0 +1,86 @@
+name: brain_plan
+description: "A production-ready, offline-first Flutter app for cognitive health tracking"
+publish_to: 'none'
+
+version: 1.0.0+2
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
+  
+  # Database
+  drift: ^2.20.3
+  sqlite3: ^2.9.3
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  flutter_secure_storage: ^9.2.2
+  
+  # Navigation
+  go_router: ^16.2.5
+  
+  # Charts
+  fl_chart: ^1.1.1
+  
+  # PDF & Printing
+  pdf: ^3.11.1
+  printing: ^5.13.2
+  
+  # Notifications & Background Tasks
+  flutter_local_notifications: ^19.5.0
+  android_alarm_manager_plus: ^5.0.0
+  timezone: ^0.10.1
+  
+  # Speech Recognition
+  speech_to_text: ^7.0.0
+  google_speech: ^5.3.0  # Google Cloud Speech-to-Text for continuous recognition
+  record: ^6.1.2  # Audio recording for streaming to Google Cloud
+  
+  # UI
+  cupertino_icons: ^1.0.8
+  
+  # Utils
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  shared_preferences: ^2.3.3
+  wakelock_plus: ^1.2.8
+  vector_math: ^2.1.4
+  connectivity_plus: ^6.0.5
+  package_info_plus: ^8.1.2
+
+  # Firebase Analytics & Crashlytics
+  firebase_core: ^4.2.0
+  firebase_analytics: ^12.0.3
+  firebase_crashlytics: ^5.0.3
+  firebase_performance: ^0.11.1+1
+
+  # Google Sign-In & Drive API for cloud backup
+  google_sign_in: ^7.2.0
+  googleapis: ^15.0.0
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.13
+  drift_dev: ^2.20.1
+  riverpod_generator: ^3.0.3
+  
+  # Testing
+  mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/google_cloud_credentials.json

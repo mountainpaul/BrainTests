@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        enabled: true
+        generate_for:
+          - lib/data/datasources/database.dart
+      riverpod_generator:
+        enabled: true
+      build_runner:
+        enabled: true

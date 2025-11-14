@@ -345,6 +345,12 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   Future<void> _saveResults(Duration duration, double accuracy, int stagesCompleted) async {
+    // Check if still mounted before accessing ref
+    if (!mounted) {
+      debugPrint('CANTAB_PAL: Not mounted, skipping save');
+      return;
+    }
+
     try {
       final notifier = ref.read(cambridgeAssessmentProvider.notifier);
 
@@ -374,6 +380,17 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
 
       await notifier.addAssessment(result);
       debugPrint('CANTAB_PAL: Results saved successfully');
+
+      // Show success message
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PAL test results saved successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e, stackTrace) {
       debugPrint('CANTAB_PAL Error: Failed to save results: $e');
       debugPrint('Stack trace: $stackTrace');

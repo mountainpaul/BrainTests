@@ -5,6 +5,7 @@ import 'dart:math' as dart_math;
 import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:brain_plan/presentation/screens/cambridge/cantab_pal_config.dart';
+import 'package:brain_plan/presentation/screens/cambridge/pal_box_layout.dart';
 import 'package:brain_plan/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,7 +115,11 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
 
     // Generate random pattern-position mappings
     final patternCount = _currentPatternCount;
-    const boxCount = 10; // Use 10 boxes to support up to 10 patterns
+
+    // For horizontal and grid layouts, use exactly the pattern count
+    // For circle, we can use more boxes if needed
+    final layout = CANTABPALConfig.getLayoutForStage(_currentStageIndex);
+    final boxCount = (layout == BoxLayout.circle && patternCount < 10) ? 10 : patternCount;
 
     // Randomly select which boxes will have patterns
     final availablePositions = List.generate(boxCount, (i) => i)..shuffle();
@@ -262,7 +267,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _isFirstAttemptThisStage = false;
 
       // Check if exceeded max attempts
-      if (_currentAttemptInStage >= CANTABPALConfig.maxAttemptsPerStage) {
+      if (_currentAttemptInStage >= CANTABPALConfig.maxFailedAttempts) {
         // Failed stage - test ends
         _stageResults.add(false);
         _errorsPerStage[_currentStageIndex] = _currentStageErrors;
@@ -492,7 +497,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'You have up to ${CANTABPALConfig.maxAttemptsPerStage} attempts per stage. Test ends if a stage isn\'t completed.',
+                                'You have up to ${CANTABPALConfig.maxFailedAttempts} attempts per stage. Test ends if a stage isn\'t completed.',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
@@ -610,7 +615,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                 Row(
                   children: [
                     Text(
-                      'Attempt $_currentAttemptInStage of ${CANTABPALConfig.maxAttemptsPerStage}',
+                      'Attempt $_currentAttemptInStage of ${CANTABPALConfig.maxFailedAttempts}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const Spacer(),
@@ -762,35 +767,72 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     );
   }
 
+  List<Offset> _generateBoxPositions(BoxLayout layout, int patternCount, Size screenSize) {
+    const boxSize = 60.0;
+
+    switch (layout) {
+      case BoxLayout.horizontal:
+        // Stage 1 (2 patterns): Horizontal layout
+        final centerY = screenSize.height * 0.5;
+        final spacing = screenSize.width * 0.5;
+        final centerX = screenSize.width * 0.5;
+        return [
+          Offset(centerX - spacing/2, centerY),
+          Offset(centerX + spacing/2, centerY),
+        ];
+
+      case BoxLayout.grid:
+        // Stage 2 (4 patterns): 2x2 grid
+        final centerX = screenSize.width * 0.5;
+        final centerY = screenSize.height * 0.5;
+        final spacing = 90.0;
+        return [
+          Offset(centerX - spacing, centerY - spacing), // Top-left
+          Offset(centerX + spacing, centerY - spacing), // Top-right
+          Offset(centerX - spacing, centerY + spacing), // Bottom-left
+          Offset(centerX + spacing, centerY + spacing), // Bottom-right
+        ];
+
+      case BoxLayout.circle:
+        // Stages 3-7 (5-8 patterns): Circular arrangement
+        final availableWidth = screenSize.width * 0.85;
+        final availableHeight = screenSize.height * 0.4;
+        final radius = (availableWidth < availableHeight ? availableWidth : availableHeight) * 0.35;
+        final centerX = screenSize.width * 0.5;
+        final centerY = screenSize.height * 0.5;
+
+        return List.generate(patternCount, (i) {
+          final angle = (i * 2 * 3.14159) / patternCount - (3.14159 / 2);
+          final x = radius * dart_math.cos(angle);
+          final y = radius * dart_math.sin(angle);
+          return Offset(centerX + x, centerY + y);
+        });
+    }
+  }
+
   Widget _buildBoxGrid({required bool showPatterns}) {
-    // Use 10 boxes in circular arrangement to support 10 patterns
-    const boxCount = 10;
-    const boxSize = 60.0; // Size of each box
+    final layout = CANTABPALConfig.getLayoutForStage(_currentStageIndex);
+    final patternCount = _currentPatternCount;
+    const boxSize = 60.0;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Calculate radius to fit in available space (more conservative)
-    final availableWidth = screenWidth * 0.85;
-    final availableHeight = screenHeight * 0.4; // Max 40% of screen height
-    final radius = (availableWidth < availableHeight ? availableWidth : availableHeight) * 0.35;
+    // Generate positions based on layout
+    final positions = _generateBoxPositions(layout, patternCount, Size(screenWidth, screenHeight));
 
-    // Account for box size in the container dimensions
-    final containerSize = radius * 2.3 + boxSize;
+    // For circular layout, we need a container; for others, we can use the positions directly
+    final containerSize = layout == BoxLayout.circle
+      ? (screenWidth * 0.85) * 0.7 + boxSize
+      : screenHeight * 0.6;
 
     return SizedBox(
-      width: containerSize,
+      width: screenWidth,
       height: containerSize,
       child: Stack(
-        children: List.generate(boxCount, (boxIndex) {
-          // Arrange boxes in a proper circle
-          final angle = (boxIndex * 2 * 3.14159) / boxCount - (3.14159 / 2);
-          final x = radius * dart_math.cos(angle);
-          final y = radius * dart_math.sin(angle);
-
-          // Center the circle in the container, accounting for box size
-          final centerOffset = containerSize / 2;
-          final left = centerOffset + x - (boxSize / 2);
-          final top = centerOffset + y - (boxSize / 2);
+        children: List.generate(patternCount, (boxIndex) {
+          final position = positions[boxIndex];
+          final left = position.dx - (boxSize / 2);
+          final top = position.dy - (boxSize / 2);
 
           // Check if this box has a pattern
           final patternEntry = _currentPatternMap?.entries.firstWhere(

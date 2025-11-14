@@ -40,8 +40,9 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
 
   // Test state
   CANTABPALPhase _phase = CANTABPALPhase.introduction;
-  int _currentStageIndex = 0; // 0-4 for the 5 stages
-  int _currentAttemptInStage = 0; // 0-3 for up to 4 attempts
+  int _currentStageIndex = 0; // 0-6 for the 7 stages
+  int _currentAttemptInStage = 0; // Total attempts at current stage
+  int _failedAttemptsInStage = 0; // Failed attempts at current stage (for termination)
 
   // Pattern display - CANTAB uses abstract colorful patterns
   // Anti-chunking design: asymmetric, non-categorical, non-semantic patterns
@@ -105,6 +106,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     setState(() {
       _currentStageIndex = 0;
       _currentAttemptInStage = 0;
+      _failedAttemptsInStage = 0;
       _phase = CANTABPALPhase.presentation;
     });
     _generateAttempt();
@@ -262,8 +264,11 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _totalErrorsAdjusted++;
       _isFirstAttemptThisStage = false;
 
-      // Check if exceeded max attempts
-      if (_currentAttemptInStage >= CANTABPALConfig.maxFailedAttempts) {
+      // Increment failed attempts counter
+      _failedAttemptsInStage++;
+
+      // Check if exceeded 3 failed attempts
+      if (_failedAttemptsInStage >= CANTABPALConfig.maxFailedAttempts) {
         // Failed stage - test ends
         _stageResults.add(false);
         _errorsPerStage[_currentStageIndex] = _currentStageErrors;
@@ -305,6 +310,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     setState(() {
       _currentStageIndex++;
       _currentAttemptInStage = 0;
+      _failedAttemptsInStage = 0; // Reset for new stage
       _currentStageErrors = 0;
       _isFirstAttemptThisStage = true;
     });
@@ -667,7 +673,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Stage ${_currentStageIndex + 1} of 5',
+                  'Stage ${_currentStageIndex + 1} of ${CANTABPALConfig.totalStages}',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -704,10 +710,11 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Pattern ${_userAnswers.length + 1} of $_currentPatternCount',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
+                  if (_userAnswers.length < _currentPatternCount)
+                    Text(
+                      'Pattern ${_userAnswers.length + 1} of $_currentPatternCount',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
                 ],
               ),
             ),

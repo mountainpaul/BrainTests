@@ -1364,102 +1364,45 @@ class ExerciseGenerator {
   // Helper methods for Spatial Awareness
   static SpatialAwarenessData _generateRotationPuzzle(ExerciseDifficulty difficulty) {
     // 3D rotation puzzles - visualizing 3D objects rotated in space
-    final puzzles = [
-      {
-        'shape': '▲', // Triangle/Pyramid
-        'description': 'Triangle',
-        'rotations': {
-          0: '▲',   // Point up
-          90: '▶',  // Point right
-          180: '▼', // Point down
-          270: '◀', // Point left
-        }
-      },
-      {
-        'shape': '⬟', // Cube with visible edges
-        'description': 'Cube',
-        'rotations': {
-          0: '⬟',   // Front face
-          90: '⬢',  // Rotated 90° (different perspective)
-          180: '⬡', // Back face (180° rotation)
-          270: '⬣', // Rotated 270°
-        }
-      },
-      {
-        'shape': '◭', // Right triangle/wedge
-        'description': 'Wedge',
-        'rotations': {
-          0: '◭',   // Original orientation
-          90: '◮',  // Rotated 90° clockwise
-          180: '◸', // Rotated 180°
-          270: '◹', // Rotated 270°
-        }
-      },
-      {
-        'shape': 'L', // L-shaped block
-        'description': 'L-Block',
-        'rotations': {
-          0: 'L',   // Original L
-          90: '⌐',  // Rotated 90° clockwise
-          180: 'Γ', // Rotated 180° (upside-down backwards L)
-          270: '⌙', // Rotated 270°
-        }
-      },
-      {
-        'shape': '▱', // Rectangular prism
-        'description': 'Rectangle',
-        'rotations': {
-          0: '▱',   // Horizontal rectangle
-          90: '▯',  // Vertical rectangle
-          180: '▱', // Horizontal (same as 0°)
-          270: '▯', // Vertical (same as 90°)
-        }
-      },
-    ];
-
-    final puzzle = puzzles[_random.nextInt(puzzles.length)];
-    final targetShape = puzzle['shape'] as String;
-    final rotations = puzzle['rotations'] as Map<int, String>;
-    final description = puzzle['description'] as String;
+    // Now using shape types instead of Unicode for accurate rendering
+    final shapeTypes = ['L', 'wedge', 'triangle', 'rectangle'];
+    final shapeType = shapeTypes[_random.nextInt(shapeTypes.length)];
 
     final rotationAngles = [0, 90, 180, 270];
     final targetRotation = rotationAngles[_random.nextInt(rotationAngles.length)];
-    final correctAnswer = rotations[targetRotation]!;
 
-    // Generate options: the correct answer plus 3 other rotations from this shape
-    final options = <String>[];
-    options.add(correctAnswer);
-
-    // Add all other rotations of this shape as options
-    for (final rotation in rotationAngles) {
-      if (options.length >= 4) break;
-      final rotatedShape = rotations[rotation]!;
-      if (!options.contains(rotatedShape)) {
-        options.add(rotatedShape);
-      }
+    // For rectangle, 0 == 180 and 90 == 270, so we need unique options
+    List<int> optionRotations;
+    if (shapeType == 'rectangle') {
+      optionRotations = [0, 90, 0, 90]; // Will show as horizontal, vertical, horizontal, vertical
+    } else {
+      optionRotations = [0, 90, 180, 270];
     }
 
-    // If we still need more options (for symmetric shapes), add rotations from other puzzles
-    int attempts = 0;
-    while (options.length < 4 && attempts < 100) {
-      attempts++;
-      final otherPuzzle = puzzles[_random.nextInt(puzzles.length)];
-      final otherRotations = otherPuzzle['rotations'] as Map<int, String>;
-      final randomRotation = rotationAngles[_random.nextInt(rotationAngles.length)];
-      final option = otherRotations[randomRotation]!;
-      if (!options.contains(option)) {
-        options.add(option);
-      }
-    }
+    // Find the index of the correct answer
+    final correctAnswerIndex = optionRotations.indexOf(targetRotation);
+    final correctAnswer = correctAnswerIndex.toString();
 
-    options.shuffle(_random);
+    // Shuffle the options while tracking the correct answer
+    final optionPairs = List.generate(
+      4,
+      (i) => {'rotation': optionRotations[i], 'index': i},
+    );
+    optionPairs.shuffle(_random);
+
+    // Find new index of correct answer after shuffle
+    final shuffledCorrectIndex = optionPairs.indexWhere(
+      (pair) => pair['index'] == correctAnswerIndex,
+    );
 
     return SpatialAwarenessData(
       type: SpatialType.rotation,
-      targetShape: targetShape,  // Just the shape, no description
+      targetShape: shapeType,
       targetRotation: targetRotation,
-      options: options,
-      correctAnswer: correctAnswer,
+      shapeType: shapeType,
+      optionRotations: optionPairs.map((p) => p['rotation'] as int).toList(),
+      options: List.generate(4, (i) => i.toString()),
+      correctAnswer: shuffledCorrectIndex.toString(),
       timeLimit: _getSpatialTimeLimit(difficulty),
     );
   }
@@ -1656,15 +1599,19 @@ class SpatialAwarenessData {
     required this.type,
     required this.targetShape,
     this.targetRotation,
+    this.shapeType,
+    this.optionRotations,
     required this.options,
     required this.correctAnswer,
     required this.timeLimit,
   });
   final SpatialType type;
-  final String targetShape;
-  final int? targetRotation;
-  final List<String> options;
-  final String correctAnswer;
+  final String targetShape; // Display identifier or Unicode (for non-rotation types)
+  final int? targetRotation; // Rotation angle for the target
+  final String? shapeType; // Shape type identifier (L, wedge, triangle, etc.)
+  final List<int>? optionRotations; // Rotation angles for each option
+  final List<String> options; // Display identifiers for the answer options
+  final String correctAnswer; // The correct answer identifier
   final int timeLimit;
 }
 

@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/database.dart';
+import '../../domain/entities/assessment.dart';
+import '../providers/assessment_provider.dart';
 import '../providers/database_provider.dart';
+import '../providers/repository_providers.dart';
 import '../widgets/custom_card.dart';
 
 class TrailMakingTestScreen extends ConsumerStatefulWidget {
@@ -305,31 +308,33 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
   }
 
   Future<void> _saveTestAResults() async {
-    final database = ref.read(databaseProvider);
-    
-    await database.into(database.assessmentTable).insert(
-      AssessmentTableCompanion.insert(
-        type: AssessmentType.processingSpeed,
-        score: (_testATime / 1000).round(), // Time in seconds
-        maxScore: 120, // 2 minutes max reasonable time
-        notes: Value('Trail Making Test A - Time: ${(_testATime / 1000).toStringAsFixed(1)}s, Errors: $_testAErrors'),
-        completedAt: DateTime.now(),
-      ),
+    final notifier = ref.read(assessmentProvider.notifier);
+
+    final assessment = Assessment(
+      type: AssessmentType.processingSpeed,
+      score: (_testATime / 1000).round(), // Time in seconds
+      maxScore: 120, // 2 minutes max reasonable time
+      notes: 'Trail Making Test A - Time: ${(_testATime / 1000).toStringAsFixed(1)}s, Errors: $_testAErrors',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
     );
+
+    await notifier.addAssessment(assessment);
   }
 
   Future<void> _saveTestBResults() async {
-    final database = ref.read(databaseProvider);
-    
-    await database.into(database.assessmentTable).insert(
-      AssessmentTableCompanion.insert(
-        type: AssessmentType.executiveFunction,
-        score: (_testBTime / 1000).round(), // Time in seconds
-        maxScore: 300, // 5 minutes max reasonable time
-        notes: Value('Trail Making Test B - Time: ${(_testBTime / 1000).toStringAsFixed(1)}s, Errors: $_testBErrors'),
-        completedAt: DateTime.now(),
-      ),
+    final notifier = ref.read(assessmentProvider.notifier);
+
+    final assessment = Assessment(
+      type: AssessmentType.executiveFunction,
+      score: (_testBTime / 1000).round(), // Time in seconds
+      maxScore: 300, // 5 minutes max reasonable time
+      notes: 'Trail Making Test B - Time: ${(_testBTime / 1000).toStringAsFixed(1)}s, Errors: $_testBErrors',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
     );
+
+    await notifier.addAssessment(assessment);
   }
 
   String _getTestAPerformanceLevel() {
@@ -574,10 +579,11 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
 
-        Expanded(
+        SizedBox(
+          height: 500,
           child: CustomCard(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -692,10 +698,11 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
-        Expanded(
+
+        SizedBox(
+          height: 500,
           child: CustomCard(
             child: LayoutBuilder(
               builder: (context, constraints) {

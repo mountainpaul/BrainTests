@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/datasources/database.dart';
+import '../../domain/entities/assessment.dart';
 import '../../domain/entities/validated_assessments.dart';
+import '../providers/assessment_provider.dart';
 
 class ClockDrawingTestScreen extends ConsumerStatefulWidget {
   const ClockDrawingTestScreen({super.key});
@@ -478,13 +481,27 @@ class _ClockDrawingTestScreenState extends ConsumerState<ClockDrawingTestScreen>
     });
   }
 
-  void _saveResults() {
+  Future<void> _saveResults() async {
     final results = ClockDrawingResults(
       score: selectedScore,
       scoringNotes: scoringNotes,
       completedAt: DateTime.now(),
       drawingTime: drawingTime ?? Duration.zero,
     );
+
+    // Save to database
+    final notifier = ref.read(assessmentProvider.notifier);
+    final assessment = Assessment(
+      type: AssessmentType.visuospatialSkills,
+      score: selectedScore,
+      maxScore: 6,
+      notes: 'Clock Drawing Test - ${results.interpretation.toString().split('.').last}',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+    await notifier.addAssessment(assessment);
+
+    if (!mounted) return;
 
     // Show success dialog
     showDialog(

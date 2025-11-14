@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -194,23 +194,28 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
     });
 
     try {
-      final db = ref.read(databaseProvider);
-      await db.into(db.cambridgeAssessmentTable).insert(
-        CambridgeAssessmentTableCompanion.insert(
-          testType: CambridgeTestType.swm,
-          durationSeconds: duration,
-          accuracy: accuracy,
-          totalTrials: _results.length,
-          correctTrials: _results.where((r) => r.betweenErrors == 0).length,
-          errorCount: totalErrors,
-          meanLatencyMs: (duration * 1000 / totalSearches).roundToDouble(), // Average time per search
-          medianLatencyMs: avgStrategyScore, // Use strategy score as a proxy
-          normScore: _getNormalizedScore(totalErrors, avgStrategyScore),
-          interpretation: _getInterpretation(totalErrors, avgStrategyScore),
-          specificMetrics: specificMetrics,
-          completedAt: DateTime.now(),
-        ),
+      final notifier = ref.read(cambridgeAssessmentProvider.notifier);
+      final metrics = jsonDecode(specificMetrics) as Map<String, dynamic>;
+
+      // Metrics already include all SWM-specific data
+      final metricsMap = jsonDecode(specificMetrics) as Map<String, dynamic>;
+
+      final result = CambridgeAssessmentResult(
+        testType: CambridgeTestType.swm,
+        completedAt: DateTime.now(),
+        durationSeconds: duration,
+        accuracy: accuracy,
+        totalTrials: _results.length,
+        correctTrials: _results.where((r) => r.betweenErrors == 0).length,
+        errorCount: totalErrors,
+        meanLatencyMs: (duration * 1000 / totalSearches).roundToDouble(),
+        medianLatencyMs: avgStrategyScore,
+        specificMetrics: metricsMap,
+        normScore: _getNormalizedScore(totalErrors, avgStrategyScore),
+        interpretation: _getInterpretation(totalErrors, avgStrategyScore),
       );
+
+      await notifier.addAssessment(result);
     } catch (e) {
       debugPrint('Error saving SWM results: $e');
     }

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as dart_math;
 
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -126,23 +126,25 @@ class _PRMTestScreenState extends ConsumerState<PRMTestScreen> {
     });
 
     try {
-      final db = ref.read(databaseProvider);
-      await db.into(db.cambridgeAssessmentTable).insert(
-        CambridgeAssessmentTableCompanion.insert(
-          testType: CambridgeTestType.prm,
-          durationSeconds: duration,
-          accuracy: accuracy,
-          totalTrials: _results.length,
-          correctTrials: correctCount,
-          errorCount: _results.length - correctCount,
-          meanLatencyMs: avgResponseTime,
-          medianLatencyMs: medianTime,
-          normScore: accuracy, // Could be age-normalized in future
-          interpretation: _getInterpretation(accuracy),
-          specificMetrics: specificMetrics,
-          completedAt: DateTime.now(),
-        ),
+      final notifier = ref.read(cambridgeAssessmentProvider.notifier);
+      final metrics = jsonDecode(specificMetrics) as Map<String, dynamic>;
+
+      final result = CambridgeAssessmentResult(
+        testType: CambridgeTestType.prm,
+        completedAt: DateTime.now(),
+        durationSeconds: duration,
+        accuracy: accuracy,
+        totalTrials: _results.length,
+        correctTrials: correctCount,
+        errorCount: _results.length - correctCount,
+        meanLatencyMs: avgResponseTime,
+        medianLatencyMs: medianTime,
+        specificMetrics: metrics,
+        normScore: accuracy,
+        interpretation: _getInterpretation(accuracy),
       );
+
+      await notifier.addAssessment(result);
     } catch (e) {
       debugPrint('Error saving PRM results: $e');
     }

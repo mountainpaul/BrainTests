@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -141,23 +141,34 @@ class _RTITestScreenState extends ConsumerState<RTITestScreen> {
     });
 
     try {
-      final db = ref.read(databaseProvider);
-      await db.into(db.cambridgeAssessmentTable).insert(
-        CambridgeAssessmentTableCompanion.insert(
-          testType: CambridgeTestType.rti,
-          durationSeconds: duration,
-          accuracy: accuracy,
-          totalTrials: _results.length,
-          correctTrials: correctCount,
-          errorCount: _results.length - correctCount,
-          meanLatencyMs: avgReactionTime,
-          medianLatencyMs: medianTime,
-          normScore: _getNormalizedScore(avgReactionTime),
-          interpretation: _getInterpretation(avgReactionTime),
-          specificMetrics: specificMetrics,
-          completedAt: DateTime.now(),
-        ),
+      final notifier = ref.read(cambridgeAssessmentProvider.notifier);
+
+      // Parse metrics back to use in entity
+      final metrics = jsonDecode(specificMetrics) as Map<String, dynamic>;
+
+      // Add RTI-specific metrics to the metrics map
+      final metricsMap = jsonDecode(specificMetrics) as Map<String, dynamic>;
+      metricsMap['simpleReactionTime'] = avgReactionTime;
+      metricsMap['choiceReactionTime'] = avgReactionTime;
+      metricsMap['movementTime'] = 0.0;
+      metricsMap['anticipations'] = 0;
+
+      final result = CambridgeAssessmentResult(
+        testType: CambridgeTestType.rti,
+        completedAt: DateTime.now(),
+        durationSeconds: duration,
+        accuracy: accuracy,
+        totalTrials: _results.length,
+        correctTrials: correctCount,
+        errorCount: _results.length - correctCount,
+        meanLatencyMs: avgReactionTime,
+        medianLatencyMs: medianTime,
+        specificMetrics: metricsMap,
+        normScore: _getNormalizedScore(avgReactionTime),
+        interpretation: _getInterpretation(avgReactionTime),
       );
+
+      await notifier.addAssessment(result);
     } catch (e) {
       debugPrint('Error saving RTI results: $e');
     }

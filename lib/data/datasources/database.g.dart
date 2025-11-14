@@ -5430,6 +5430,393 @@ class CambridgeAssessmentTableCompanion
   }
 }
 
+class $DailyGoalsTableTable extends DailyGoalsTable
+    with TableInfo<$DailyGoalsTableTable, DailyGoalEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DailyGoalsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+      'date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _targetGamesMeta =
+      const VerificationMeta('targetGames');
+  @override
+  late final GeneratedColumn<int> targetGames = GeneratedColumn<int>(
+      'target_games', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(5));
+  static const VerificationMeta _completedGamesMeta =
+      const VerificationMeta('completedGames');
+  @override
+  late final GeneratedColumn<int> completedGames = GeneratedColumn<int>(
+      'completed_games', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _isCompletedMeta =
+      const VerificationMeta('isCompleted');
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+      'is_completed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_completed" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        date,
+        targetGames,
+        completedGames,
+        isCompleted,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'daily_goals';
+  @override
+  VerificationContext validateIntegrity(Insertable<DailyGoalEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('target_games')) {
+      context.handle(
+          _targetGamesMeta,
+          targetGames.isAcceptableOrUnknown(
+              data['target_games']!, _targetGamesMeta));
+    }
+    if (data.containsKey('completed_games')) {
+      context.handle(
+          _completedGamesMeta,
+          completedGames.isAcceptableOrUnknown(
+              data['completed_games']!, _completedGamesMeta));
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+          _isCompletedMeta,
+          isCompleted.isAcceptableOrUnknown(
+              data['is_completed']!, _isCompletedMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DailyGoalEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DailyGoalEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
+      targetGames: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}target_games'])!,
+      completedGames: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}completed_games'])!,
+      isCompleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_completed'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $DailyGoalsTableTable createAlias(String alias) {
+    return $DailyGoalsTableTable(attachedDatabase, alias);
+  }
+}
+
+class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
+  final int id;
+  final DateTime date;
+  final int targetGames;
+  final int completedGames;
+  final bool isCompleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const DailyGoalEntry(
+      {required this.id,
+      required this.date,
+      required this.targetGames,
+      required this.completedGames,
+      required this.isCompleted,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['date'] = Variable<DateTime>(date);
+    map['target_games'] = Variable<int>(targetGames);
+    map['completed_games'] = Variable<int>(completedGames);
+    map['is_completed'] = Variable<bool>(isCompleted);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DailyGoalsTableCompanion toCompanion(bool nullToAbsent) {
+    return DailyGoalsTableCompanion(
+      id: Value(id),
+      date: Value(date),
+      targetGames: Value(targetGames),
+      completedGames: Value(completedGames),
+      isCompleted: Value(isCompleted),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DailyGoalEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DailyGoalEntry(
+      id: serializer.fromJson<int>(json['id']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      targetGames: serializer.fromJson<int>(json['targetGames']),
+      completedGames: serializer.fromJson<int>(json['completedGames']),
+      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'date': serializer.toJson<DateTime>(date),
+      'targetGames': serializer.toJson<int>(targetGames),
+      'completedGames': serializer.toJson<int>(completedGames),
+      'isCompleted': serializer.toJson<bool>(isCompleted),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DailyGoalEntry copyWith(
+          {int? id,
+          DateTime? date,
+          int? targetGames,
+          int? completedGames,
+          bool? isCompleted,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      DailyGoalEntry(
+        id: id ?? this.id,
+        date: date ?? this.date,
+        targetGames: targetGames ?? this.targetGames,
+        completedGames: completedGames ?? this.completedGames,
+        isCompleted: isCompleted ?? this.isCompleted,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  DailyGoalEntry copyWithCompanion(DailyGoalsTableCompanion data) {
+    return DailyGoalEntry(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      targetGames:
+          data.targetGames.present ? data.targetGames.value : this.targetGames,
+      completedGames: data.completedGames.present
+          ? data.completedGames.value
+          : this.completedGames,
+      isCompleted:
+          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyGoalEntry(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('targetGames: $targetGames, ')
+          ..write('completedGames: $completedGames, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, date, targetGames, completedGames, isCompleted, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DailyGoalEntry &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.targetGames == this.targetGames &&
+          other.completedGames == this.completedGames &&
+          other.isCompleted == this.isCompleted &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
+  final Value<int> id;
+  final Value<DateTime> date;
+  final Value<int> targetGames;
+  final Value<int> completedGames;
+  final Value<bool> isCompleted;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const DailyGoalsTableCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.targetGames = const Value.absent(),
+    this.completedGames = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DailyGoalsTableCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime date,
+    this.targetGames = const Value.absent(),
+    this.completedGames = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : date = Value(date);
+  static Insertable<DailyGoalEntry> custom({
+    Expression<int>? id,
+    Expression<DateTime>? date,
+    Expression<int>? targetGames,
+    Expression<int>? completedGames,
+    Expression<bool>? isCompleted,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (targetGames != null) 'target_games': targetGames,
+      if (completedGames != null) 'completed_games': completedGames,
+      if (isCompleted != null) 'is_completed': isCompleted,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DailyGoalsTableCompanion copyWith(
+      {Value<int>? id,
+      Value<DateTime>? date,
+      Value<int>? targetGames,
+      Value<int>? completedGames,
+      Value<bool>? isCompleted,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return DailyGoalsTableCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      targetGames: targetGames ?? this.targetGames,
+      completedGames: completedGames ?? this.completedGames,
+      isCompleted: isCompleted ?? this.isCompleted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (targetGames.present) {
+      map['target_games'] = Variable<int>(targetGames.value);
+    }
+    if (completedGames.present) {
+      map['completed_games'] = Variable<int>(completedGames.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<bool>(isCompleted.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyGoalsTableCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('targetGames: $targetGames, ')
+          ..write('completedGames: $completedGames, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MealPlanTableTable extends MealPlanTable
     with TableInfo<$MealPlanTableTable, MealPlan> {
   @override
@@ -8457,6 +8844,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $UserProfileTableTable(this);
   late final $CambridgeAssessmentTableTable cambridgeAssessmentTable =
       $CambridgeAssessmentTableTable(this);
+  late final $DailyGoalsTableTable dailyGoalsTable =
+      $DailyGoalsTableTable(this);
   late final $MealPlanTableTable mealPlanTable = $MealPlanTableTable(this);
   late final $FeedingWindowTableTable feedingWindowTable =
       $FeedingWindowTableTable(this);
@@ -8482,6 +8871,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         wordDictionaryTable,
         userProfileTable,
         cambridgeAssessmentTable,
+        dailyGoalsTable,
         mealPlanTable,
         feedingWindowTable,
         fastingTable,
@@ -11091,6 +11481,206 @@ typedef $$CambridgeAssessmentTableTableProcessedTableManager
         ),
         CambridgeAssessmentEntry,
         PrefetchHooks Function()>;
+typedef $$DailyGoalsTableTableCreateCompanionBuilder = DailyGoalsTableCompanion
+    Function({
+  Value<int> id,
+  required DateTime date,
+  Value<int> targetGames,
+  Value<int> completedGames,
+  Value<bool> isCompleted,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$DailyGoalsTableTableUpdateCompanionBuilder = DailyGoalsTableCompanion
+    Function({
+  Value<int> id,
+  Value<DateTime> date,
+  Value<int> targetGames,
+  Value<int> completedGames,
+  Value<bool> isCompleted,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+class $$DailyGoalsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $DailyGoalsTableTable> {
+  $$DailyGoalsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetGames => $composableBuilder(
+      column: $table.targetGames, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get completedGames => $composableBuilder(
+      column: $table.completedGames,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$DailyGoalsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $DailyGoalsTableTable> {
+  $$DailyGoalsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetGames => $composableBuilder(
+      column: $table.targetGames, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get completedGames => $composableBuilder(
+      column: $table.completedGames,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$DailyGoalsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DailyGoalsTableTable> {
+  $$DailyGoalsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get targetGames => $composableBuilder(
+      column: $table.targetGames, builder: (column) => column);
+
+  GeneratedColumn<int> get completedGames => $composableBuilder(
+      column: $table.completedGames, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+      column: $table.isCompleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DailyGoalsTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $DailyGoalsTableTable,
+    DailyGoalEntry,
+    $$DailyGoalsTableTableFilterComposer,
+    $$DailyGoalsTableTableOrderingComposer,
+    $$DailyGoalsTableTableAnnotationComposer,
+    $$DailyGoalsTableTableCreateCompanionBuilder,
+    $$DailyGoalsTableTableUpdateCompanionBuilder,
+    (
+      DailyGoalEntry,
+      BaseReferences<_$AppDatabase, $DailyGoalsTableTable, DailyGoalEntry>
+    ),
+    DailyGoalEntry,
+    PrefetchHooks Function()> {
+  $$DailyGoalsTableTableTableManager(
+      _$AppDatabase db, $DailyGoalsTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DailyGoalsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DailyGoalsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DailyGoalsTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<DateTime> date = const Value.absent(),
+            Value<int> targetGames = const Value.absent(),
+            Value<int> completedGames = const Value.absent(),
+            Value<bool> isCompleted = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              DailyGoalsTableCompanion(
+            id: id,
+            date: date,
+            targetGames: targetGames,
+            completedGames: completedGames,
+            isCompleted: isCompleted,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required DateTime date,
+            Value<int> targetGames = const Value.absent(),
+            Value<int> completedGames = const Value.absent(),
+            Value<bool> isCompleted = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              DailyGoalsTableCompanion.insert(
+            id: id,
+            date: date,
+            targetGames: targetGames,
+            completedGames: completedGames,
+            isCompleted: isCompleted,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DailyGoalsTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $DailyGoalsTableTable,
+    DailyGoalEntry,
+    $$DailyGoalsTableTableFilterComposer,
+    $$DailyGoalsTableTableOrderingComposer,
+    $$DailyGoalsTableTableAnnotationComposer,
+    $$DailyGoalsTableTableCreateCompanionBuilder,
+    $$DailyGoalsTableTableUpdateCompanionBuilder,
+    (
+      DailyGoalEntry,
+      BaseReferences<_$AppDatabase, $DailyGoalsTableTable, DailyGoalEntry>
+    ),
+    DailyGoalEntry,
+    PrefetchHooks Function()>;
 typedef $$MealPlanTableTableCreateCompanionBuilder = MealPlanTableCompanion
     Function({
   Value<int> id,
@@ -12817,6 +13407,8 @@ class $AppDatabaseManager {
   $$CambridgeAssessmentTableTableTableManager get cambridgeAssessmentTable =>
       $$CambridgeAssessmentTableTableTableManager(
           _db, _db.cambridgeAssessmentTable);
+  $$DailyGoalsTableTableTableManager get dailyGoalsTable =>
+      $$DailyGoalsTableTableTableManager(_db, _db.dailyGoalsTable);
   $$MealPlanTableTableTableManager get mealPlanTable =>
       $$MealPlanTableTableTableManager(_db, _db.mealPlanTable);
   $$FeedingWindowTableTableTableManager get feedingWindowTable =>

@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/database.dart';
-import '../providers/database_provider.dart';
+import '../../domain/entities/assessment.dart';
+import '../providers/assessment_provider.dart';
+import '../providers/repository_providers.dart';
 import '../widgets/custom_card.dart';
 
 class FiveWordRecallTestScreen extends ConsumerStatefulWidget {
@@ -159,29 +160,29 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
   }
 
   Future<void> _saveTestResults() async {
-    final database = ref.read(databaseProvider);
-    
+    final notifier = ref.read(assessmentProvider.notifier);
+
     // Save immediate recall test
-    await database.into(database.assessmentTable).insert(
-      AssessmentTableCompanion.insert(
-        type: AssessmentType.memoryRecall,
-        score: _immediateScore,
-        maxScore: 5,
-        notes: Value('5-Word Recall (Immediate): ${_immediateRecall.join(", ")}'),
-        completedAt: DateTime.now(),
-      ),
+    final immediateAssessment = Assessment(
+      type: AssessmentType.memoryRecall,
+      score: _immediateScore,
+      maxScore: 5,
+      notes: '5-Word Recall (Immediate): ${_immediateRecall.join(", ")}',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
     );
-    
+    await notifier.addAssessment(immediateAssessment);
+
     // Save delayed recall test
-    await database.into(database.assessmentTable).insert(
-      AssessmentTableCompanion.insert(
-        type: AssessmentType.memoryRecall,
-        score: _delayedScore,
-        maxScore: 5,
-        notes: Value('5-Word Recall (Delayed): ${_delayedRecall.join(", ")}'),
-        completedAt: DateTime.now(),
-      ),
+    final delayedAssessment = Assessment(
+      type: AssessmentType.memoryRecall,
+      score: _delayedScore,
+      maxScore: 5,
+      notes: '5-Word Recall (Delayed): ${_delayedRecall.join(", ")}',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
     );
+    await notifier.addAssessment(delayedAssessment);
   }
 
   String _getImmediatePerformanceLevel() {

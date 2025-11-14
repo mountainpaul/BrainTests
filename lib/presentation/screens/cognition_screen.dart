@@ -3,10 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/datasources/database.dart';
+import '../../data/datasources/database.dart' hide ActivityType;
+import '../../domain/entities/cognitive_activity.dart';
+import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../providers/assessment_provider.dart';
+import '../providers/cognitive_activity_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
+import '../providers/daily_goals_provider.dart';
+import '../providers/repository_providers.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 import 'assessments_screen.dart';
@@ -153,7 +158,7 @@ class MCITestsTab extends ConsumerWidget {
               subtitle: const Text('PAL, RVP, RTI, SWM, PRM - Clinically validated tests'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                context.go('/cambridge');
+                context.push('/cambridge');
               },
             ),
           ),
@@ -281,6 +286,9 @@ class BrainTrainingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final todayGoalAsync = ref.watch(todayGoalProvider);
+    final currentStreakAsync = ref.watch(currentStreakProvider);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       child: Column(
@@ -296,7 +304,76 @@ class BrainTrainingTab extends ConsumerWidget {
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 16),
-          
+
+          // Daily Goals Card
+          todayGoalAsync.when(
+            data: (goal) => CustomCard(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.flag, color: Theme.of(context).primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Daily Goal: ${goal.completedGames}/${goal.targetGames} Games',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                        if (goal.isCompleted)
+                          Icon(Icons.check_circle, color: Colors.green[600], size: 28),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: goal.progressPercentage,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          goal.isCompleted ? Colors.green : Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    currentStreakAsync.when(
+                      data: (streak) => Row(
+                        children: [
+                          Icon(Icons.local_fire_department, color: Colors.orange[700], size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$streak day streak',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            loading: () => const CustomCard(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 16),
+
           CustomCard(
             child: ListTile(
               leading: Icon(Icons.psychology, color: Theme.of(context).primaryColor),
@@ -422,7 +499,7 @@ class CognitionOverviewTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recentExercises = ref.watch(recentExercisesProvider);
+    final recentActivities = ref.watch(recentCognitiveActivityProvider);
     final completedExercises = ref.watch(completedExercisesProvider);
     final weeklyMCITestCount = ref.watch(weeklyMCITestCountProvider);
 
@@ -441,8 +518,8 @@ class CognitionOverviewTab extends ConsumerWidget {
           CustomCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: recentExercises.when(
-                data: (exercises) => Column(
+              child: recentActivities.when(
+                data: (activities) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -456,7 +533,7 @@ class CognitionOverviewTab extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    if (exercises.isEmpty) ...[
+                    if (activities.isEmpty) ...[
                       const Text('No recent cognitive tests completed.'),
                       const SizedBox(height: 8),
                       TextButton.icon(
@@ -465,24 +542,26 @@ class CognitionOverviewTab extends ConsumerWidget {
                         label: const Text('Start Your First Test'),
                       ),
                     ] else ...[
-                      ...exercises.take(3).map((exercise) => Padding(
+                      ...activities.take(5).map((activity) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           children: [
                             Icon(
-                              _getExerciseIcon(exercise.type),
+                              activity.type == ActivityType.assessment
+                                  ? Icons.assessment
+                                  : _getExerciseIcon(activity.exercise?.type ?? ExerciseType.memoryGame),
                               size: 20,
                               color: Colors.grey[600],
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '${exercise.name} - ${exercise.score}%',
+                                '${activity.name} - ${activity.score}%',
                                 style: TextStyle(color: Colors.grey[700]),
                               ),
                             ),
                             Text(
-                              _formatDate(exercise.completedAt),
+                              _formatDate(activity.completedAt),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[500],
@@ -539,9 +618,30 @@ class CognitionOverviewTab extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _buildGoalItem('Complete 5 MCI tests (weekly)', weeklyMCITestCount.asData?.value ?? 0, 5),
-                      _buildGoalItem('Play 5 brain games (daily)', todayExercises.length, 5),
-                      _buildGoalItem('Daily streak', currentStreak, currentStreak + 1),
+                      _buildGoalItem(
+                        context,
+                        ref,
+                        'Complete 5 MCI tests (weekly)',
+                        weeklyMCITestCount.asData?.value ?? 0,
+                        5,
+                        () => _showWeeklyMCITestsDialog(context, ref),
+                      ),
+                      _buildGoalItem(
+                        context,
+                        ref,
+                        'Play 5 brain games (daily)',
+                        todayExercises.length,
+                        5,
+                        () => _showDailyExercisesDialog(context, ref, todayExercises),
+                      ),
+                      _buildGoalItem(
+                        context,
+                        ref,
+                        'Daily streak',
+                        currentStreak,
+                        currentStreak + 1,
+                        () => _showStreakHistoryDialog(context, ref, exercises),
+                      ),
                     ],
                   );
                 },
@@ -560,9 +660,9 @@ class CognitionOverviewTab extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildGoalItem('Complete 5 MCI tests (weekly)', 0, 5),
-                    _buildGoalItem('Play 5 brain games (today)', 0, 5),
-                    _buildGoalItem('Daily streak', 0, 1),
+                    _buildGoalItem(context, ref, 'Complete 5 MCI tests (weekly)', 0, 5, null),
+                    _buildGoalItem(context, ref, 'Play 5 brain games (today)', 0, 5, null),
+                    _buildGoalItem(context, ref, 'Daily streak', 0, 1, null),
                   ],
                 ),
               ),
@@ -609,34 +709,215 @@ class CognitionOverviewTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoalItem(String title, int current, int target) {
+  Widget _buildGoalItem(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    int current,
+    int target,
+    VoidCallback? onTap,
+  ) {
     final progress = target > 0 ? current / target : 0.0;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
+                Row(
+                  children: [
+                    Text('$current/$target'),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 4),
+                      Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress >= 1.0 ? Colors.green : Colors.blue,
               ),
-              const SizedBox(width: 8),
-              Text('$current/$target'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showWeeklyMCITestsDialog(BuildContext context, WidgetRef ref) async {
+    final repository = ref.read(assessmentRepositoryProvider);
+    final allAssessments = await repository.getAllAssessments();
+
+    // Calculate this week's assessments
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
+
+    final thisWeekMCITests = allAssessments.where((assessment) {
+      final isThisWeek = assessment.completedAt.isAfter(weekStartMidnight) ||
+                         assessment.completedAt.isAtSameMomentAs(weekStartMidnight);
+      final isMCITest = assessment.type == AssessmentType.processingSpeed ||
+                        assessment.type == AssessmentType.executiveFunction ||
+                        assessment.type == AssessmentType.languageSkills ||
+                        assessment.type == AssessmentType.visuospatialSkills ||
+                        assessment.type == AssessmentType.memoryRecall;
+      return isThisWeek && isMCITest;
+    }).toList();
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Weekly MCI Tests'),
+        content: SingleChildScrollView(
+          child: thisWeekMCITests.isEmpty
+              ? const Text('No MCI tests completed this week yet.')
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: thisWeekMCITests.map((assessment) {
+                    final activity = CognitiveActivity.fromAssessment(assessment);
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle, color: Colors.green),
+                      title: Text(activity.name),
+                      subtitle: Text(
+                        '${activity.score}% - ${DateFormat('MMM d, h:mm a').format(assessment.completedAt)}',
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDailyExercisesDialog(
+    BuildContext context,
+    WidgetRef ref,
+    List exercises,
+  ) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Today\'s Brain Games'),
+        content: SingleChildScrollView(
+          child: exercises.isEmpty
+              ? const Text('No brain games played today yet.')
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: exercises.map<Widget>((exercise) {
+                    final percentage = exercise.score != null && exercise.maxScore > 0
+                        ? (exercise.score! / exercise.maxScore * 100).round()
+                        : 0;
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle, color: Colors.green),
+                      title: Text(exercise.name),
+                      subtitle: Text(
+                        '$percentage% - ${exercise.completedAt != null ? DateFormat('h:mm a').format(exercise.completedAt!) : ""}',
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showStreakHistoryDialog(
+    BuildContext context,
+    WidgetRef ref,
+    List exercises,
+  ) async {
+    final exerciseList = exercises.cast<CognitiveExercise>();
+    final streak = StreakCalculator.calculateDailyStreak(exerciseList);
+
+    // Get unique dates with activity
+    final streakDates = <DateTime>[];
+    for (final exercise in exerciseList) {
+      if (exercise.completedAt != null) {
+        final date = DateTime(
+          exercise.completedAt!.year,
+          exercise.completedAt!.month,
+          exercise.completedAt!.day,
+        );
+        if (!streakDates.any((d) => d.isAtSameMomentAs(date))) {
+          streakDates.add(date);
+        }
+      }
+    }
+    streakDates.sort((a, b) => b.compareTo(a));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Daily Streak'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Current Streak: $streak days',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              if (streakDates.isEmpty)
+                const Text('Complete an exercise to start your streak!')
+              else ...[
+                const Text('Recent activity days:'),
+                const SizedBox(height: 8),
+                ...streakDates.take(7).map((date) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const SizedBox(width: 8),
+                      Text(DateFormat('EEEE, MMM d').format(date)),
+                    ],
+                  ),
+                )),
+              ],
             ],
           ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(
-              progress >= 1.0 ? Colors.green : Colors.blue,
-            ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
         ],
       ),

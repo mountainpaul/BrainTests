@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/native_speech_recognition_service.dart';
 import '../../core/services/google_cloud_speech_service.dart';
+import '../../data/datasources/database.dart';
+import '../../domain/entities/assessment.dart';
+import '../providers/assessment_provider.dart';
 import '../widgets/custom_card.dart';
 
 class FluencyTestScreen extends ConsumerStatefulWidget {
@@ -283,6 +286,22 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
       _testCompleted = true;
     });
     _calculateScore();
+    _saveResults();
+  }
+
+  Future<void> _saveResults() async {
+    final notifier = ref.read(assessmentProvider.notifier);
+
+    final assessment = Assessment(
+      type: AssessmentType.languageSkills,
+      score: _score,
+      maxScore: 20, // Typical max for fluency tests
+      notes: 'Fluency Test (Animals): ${_validWords.length} valid animals',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+
+    await notifier.addAssessment(assessment);
   }
 
   void _calculateScore() {

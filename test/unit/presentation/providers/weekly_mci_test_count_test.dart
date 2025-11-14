@@ -138,13 +138,13 @@ void main() {
       expect(count, 0);
     });
 
-    test('should count only MCI test types (processingSpeed and executiveFunction)', () async {
+    test('should count all 5 MCI test types (not attentionFocus)', () async {
       // Arrange
       final now = DateTime.now();
       final thisWeekMonday = now.subtract(Duration(days: now.weekday - 1));
 
       final assessments = [
-        // Non-MCI tests (should NOT be counted)
+        // MCI tests (SHOULD be counted - 5 types)
         Assessment(
           id: 1,
           type: AssessmentType.memoryRecall,
@@ -153,6 +153,7 @@ void main() {
           completedAt: thisWeekMonday.add(const Duration(days: 1)),
           createdAt: thisWeekMonday.add(const Duration(days: 1)),
         ),
+        // Non-MCI test (should NOT be counted)
         Assessment(
           id: 2,
           type: AssessmentType.attentionFocus,
@@ -161,7 +162,6 @@ void main() {
           completedAt: thisWeekMonday.add(const Duration(days: 1)),
           createdAt: thisWeekMonday.add(const Duration(days: 1)),
         ),
-        // MCI tests (SHOULD be counted)
         Assessment(
           id: 3,
           type: AssessmentType.executiveFunction, // Trail Making Test B
@@ -207,8 +207,9 @@ void main() {
       // Act
       final count = await container.read(weeklyMCITestCountProvider.future);
 
-      // Assert - Only processingSpeed and executiveFunction should be counted
-      expect(count, 2);
+      // Assert - All 5 MCI test types should be counted
+      // (processingSpeed, executiveFunction, languageSkills, visuospatialSkills, memoryRecall)
+      expect(count, 5);
     });
   });
 }

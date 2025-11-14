@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/database.dart';
-import '../providers/database_provider.dart';
+import '../../domain/entities/assessment.dart';
+import '../providers/assessment_provider.dart';
 import '../widgets/custom_card.dart';
 
 class SDMTTestScreen extends ConsumerStatefulWidget {
@@ -134,17 +134,18 @@ class _SDMTTestScreenState extends ConsumerState<SDMTTestScreen> {
   }
 
   Future<void> _saveTestResults() async {
-    final database = ref.read(databaseProvider);
-    
-    await database.into(database.assessmentTable).insert(
-      AssessmentTableCompanion.insert(
-        type: AssessmentType.processingSpeed,
-        score: _correctAnswers,
-        maxScore: _currentIndex, // Total attempted
-        notes: Value('SDMT - Correct: $_correctAnswers, Attempted: $_currentIndex, Accuracy: ${_getAccuracyPercentage()}%'),
-        completedAt: DateTime.now(),
-      ),
+    final notifier = ref.read(assessmentProvider.notifier);
+
+    final assessment = Assessment(
+      type: AssessmentType.processingSpeed,
+      score: _correctAnswers,
+      maxScore: _currentIndex, // Total attempted
+      notes: 'SDMT - Correct: $_correctAnswers, Attempted: $_currentIndex, Accuracy: ${_getAccuracyPercentage()}%',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
     );
+
+    await notifier.addAssessment(assessment);
   }
 
   double _getAccuracyPercentage() {

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../screens/about_screen.dart';
 import '../screens/assessments_screen.dart';
 import '../screens/cambridge/cambridge_results_screen.dart';
 import '../screens/cambridge/cantab_pal_test_screen.dart';
@@ -14,6 +15,7 @@ import '../screens/cambridge/swm_test_screen.dart';
 import '../screens/cambridge_assessments_screen.dart';
 import '../screens/cognition_screen.dart';
 import '../screens/exercises_screen.dart';
+import '../screens/exports_screen.dart';
 import '../screens/fasting_screen.dart';
 import '../screens/journal_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -92,6 +94,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/exports',
+        name: 'exports',
+        builder: (context, state) => const ExportsScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        name: 'about',
+        builder: (context, state) => const AboutScreen(),
       ),
       GoRoute(
         path: '/cambridge',

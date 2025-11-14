@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as dart_math;
 
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:brain_plan/presentation/screens/cambridge/cantab_pal_config.dart';
 import 'package:brain_plan/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
@@ -338,9 +338,8 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   Future<void> _saveResults(Duration duration, double accuracy, int stagesCompleted) async {
-    // P0 Fix: Add error handling for database operations
     try {
-      final db = ref.read(databaseProvider);
+      final notifier = ref.read(cambridgeAssessmentProvider.notifier);
 
       final detailedMetrics = {
         'stagesCompleted': stagesCompleted,
@@ -351,8 +350,9 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         'testType': 'CANTAB-PAL',
       };
 
-      final result = CambridgeAssessmentTableCompanion.insert(
+      final result = CambridgeAssessmentResult(
         testType: CambridgeTestType.pal,
+        completedAt: DateTime.now(),
         durationSeconds: duration.inSeconds,
         accuracy: accuracy,
         totalTrials: _stageResults.length,
@@ -360,13 +360,12 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         errorCount: _totalErrorsAdjusted,
         meanLatencyMs: 0.0,
         medianLatencyMs: 0.0,
+        specificMetrics: detailedMetrics,
         normScore: CANTABPALConfig.calculateNormScore(stagesCompleted, _firstAttemptMemoryScore),
         interpretation: CANTABPALConfig.getInterpretation(stagesCompleted, _totalErrorsAdjusted),
-        specificMetrics: jsonEncode(detailedMetrics),
-        completedAt: DateTime.now(),
       );
 
-      await db.into(db.cambridgeAssessmentTable).insert(result);
+      await notifier.addAssessment(result);
       debugPrint('CANTAB_PAL: Results saved successfully');
     } catch (e, stackTrace) {
       debugPrint('CANTAB_PAL Error: Failed to save results: $e');

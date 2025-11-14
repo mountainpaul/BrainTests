@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/services/analytics_service.dart';
+import 'core/services/auto_backup_service.dart';
 import 'core/services/data_migration_service.dart';
+import 'core/services/google_drive_backup_service.dart';
 import 'core/services/meal_plan_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/performance_monitoring_service.dart';
@@ -20,8 +22,12 @@ void main() async {
   await NotificationService.initialize();
   await AnalyticsService.initialize();
   await PerformanceMonitoringService.initialize();
-  // Note: Google Drive is initialized on-demand when backup is triggered
-  // await GoogleDriveBackupService.initialize();
+
+  // Initialize Google Drive backup service
+  await GoogleDriveBackupService.initialize();
+
+  // Initialize automatic backup service
+  await AutoBackupService.initialize();
 
   // CRITICAL: Restore database backup BEFORE creating AppDatabase instance
   // This ensures the restored database file is in place before Drift opens it
@@ -72,6 +78,7 @@ class _BrainPlanAppState extends ConsumerState<BrainPlanApp> with WidgetsBinding
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    AutoBackupService.dispose();
     super.dispose();
   }
 

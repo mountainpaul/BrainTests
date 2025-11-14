@@ -2,7 +2,7 @@ name: brain_plan
 description: "A production-ready, offline-first Flutter app for cognitive health tracking"
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.4.3+15
 
 environment:
   sdk: ^3.5.0
@@ -18,14 +18,14 @@ dependencies:
   
   # Database
   drift: ^2.20.3
-  sqlite3: ^2.9.3
+  sqlite3: ^2.9.4
   sqlite3_flutter_libs: ^0.5.24
   path_provider: ^2.1.4
   path: ^1.9.0
   flutter_secure_storage: ^9.2.2
   
   # Navigation
-  go_router: ^16.2.5
+  go_router: ^17.0.0
   
   # Charts
   fl_chart: ^1.1.1
@@ -51,10 +51,12 @@ dependencies:
   intl: ^0.20.2
   equatable: ^2.0.5
   shared_preferences: ^2.3.3
+  share_plus: ^12.0.1
+  file_picker: ^10.3.6
   wakelock_plus: ^1.2.8
   vector_math: ^2.1.4
-  connectivity_plus: ^6.0.5
-  package_info_plus: ^8.1.2
+  connectivity_plus: ^7.0.0
+  package_info_plus: ^9.0.0
 
   # Firebase Analytics & Crashlytics
   firebase_core: ^4.2.0
@@ -71,12 +73,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  
+
   # Code Generation
   build_runner: ^2.4.13
   drift_dev: ^2.20.1
   riverpod_generator: ^3.0.3
-  
+
   # Testing
   mockito: ^5.4.4
 

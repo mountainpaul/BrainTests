@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/datasources/database.dart';
 import '../../domain/entities/assessment.dart';
+import 'cognitive_activity_provider.dart';
 import 'repository_providers.dart';
 
 part 'assessment_provider.g.dart';
@@ -28,8 +29,25 @@ final averageScoresByTypeProvider = FutureProvider<Map<AssessmentType, double>>(
 });
 
 /// Provider to count MCI tests completed this week
-/// MCI tests include Trail Making Test A (Processing Speed) and Test B (Executive Function)
-final weeklyMCITestCountProvider = FutureProvider<int>((ref) async {
+/// MCI tests include all assessment types:
+/// - Processing Speed (Trail Making Test A)
+/// - Executive Function (Trail Making Test B)
+/// - Language Skills
+/// - Visuospatial Skills
+/// - Memory Recall
+/// Refresh trigger - increments every time assessments change
+@riverpod
+class AssessmentRefreshTrigger extends _$AssessmentRefreshTrigger {
+  @override
+  int build() => 0;
+
+  void increment() => state++;
+}
+
+final weeklyMCITestCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  // Watch the refresh trigger to rebuild when assessments change
+  ref.watch(assessmentRefreshTriggerProvider);
+
   final repository = ref.read(assessmentRepositoryProvider);
   final allAssessments = await repository.getAllAssessments();
 
@@ -38,12 +56,16 @@ final weeklyMCITestCountProvider = FutureProvider<int>((ref) async {
   final weekStart = now.subtract(Duration(days: now.weekday - 1));
   final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
 
-  // Filter for MCI tests (Trail Making A and B) from this week
+  // Filter for MCI tests from this week
+  // All cognitive assessment types are part of MCI screening except attentionFocus
   final thisWeekMCITests = allAssessments.where((assessment) {
     final isThisWeek = assessment.completedAt.isAfter(weekStartMidnight) ||
                        assessment.completedAt.isAtSameMomentAs(weekStartMidnight);
     final isMCITest = assessment.type == AssessmentType.processingSpeed ||
-                      assessment.type == AssessmentType.executiveFunction;
+                      assessment.type == AssessmentType.executiveFunction ||
+                      assessment.type == AssessmentType.languageSkills ||
+                      assessment.type == AssessmentType.visuospatialSkills ||
+                      assessment.type == AssessmentType.memoryRecall;
     return isThisWeek && isMCITest;
   }).toList();
 
@@ -68,10 +90,14 @@ class AssessmentNotifier extends _$AssessmentNotifier {
 
       state = const AsyncValue.data(null);
 
-      // Invalidate related providers to trigger refresh
+      // Trigger refresh by incrementing the trigger
+      ref.read(assessmentRefreshTriggerProvider.notifier).increment();
+
+      // Invalidate related providers
       ref.invalidate(assessmentsProvider);
       ref.invalidate(recentAssessmentsProvider);
       ref.invalidate(averageScoresByTypeProvider);
+      ref.invalidate(recentCognitiveActivityProvider);
     } catch (error, stackTrace) {
       if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);
@@ -91,6 +117,8 @@ class AssessmentNotifier extends _$AssessmentNotifier {
       ref.invalidate(assessmentsProvider);
       ref.invalidate(recentAssessmentsProvider);
       ref.invalidate(averageScoresByTypeProvider);
+      ref.invalidate(weeklyMCITestCountProvider);
+      ref.invalidate(recentCognitiveActivityProvider);
     } catch (error, stackTrace) {
       if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);
@@ -110,6 +138,8 @@ class AssessmentNotifier extends _$AssessmentNotifier {
       ref.invalidate(assessmentsProvider);
       ref.invalidate(recentAssessmentsProvider);
       ref.invalidate(averageScoresByTypeProvider);
+      ref.invalidate(weeklyMCITestCountProvider);
+      ref.invalidate(recentCognitiveActivityProvider);
     } catch (error, stackTrace) {
       if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:brain_plan/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -224,11 +224,18 @@ class _PALTestScreenState extends ConsumerState<PALTestScreen> {
   }
 
   Future<void> _saveResults(Duration duration, double accuracy) async {
-    final db = ref.read(databaseProvider);
+    final notifier = ref.read(cambridgeAssessmentProvider.notifier);
     final normScore = await _calculateNormScore(accuracy);
 
-    final result = CambridgeAssessmentTableCompanion.insert(
+    final palMetrics = {
+      'stagesCompleted': _stagesCompleted,
+      'firstTrialMemoryScore': _firstTrialMemoryScore,
+      'totalErrors': _totalErrors.toDouble(),
+    };
+
+    final result = CambridgeAssessmentResult(
       testType: CambridgeTestType.pal,
+      completedAt: DateTime.now(),
       durationSeconds: duration.inSeconds,
       accuracy: accuracy,
       totalTrials: _trialResults.length,
@@ -237,13 +244,12 @@ class _PALTestScreenState extends ConsumerState<PALTestScreen> {
       meanLatencyMs: _trialLatencies.isEmpty ? 0 :
           _trialLatencies.reduce((a, b) => a + b) / _trialLatencies.length,
       medianLatencyMs: 0.0,
+      specificMetrics: palMetrics,
       normScore: normScore,
       interpretation: _getInterpretation(accuracy, _stagesCompleted),
-      specificMetrics: jsonEncode(_detailedMetrics),
-      completedAt: DateTime.now(),
     );
 
-    await db.into(db.cambridgeAssessmentTable).insert(result);
+    await notifier.addAssessment(result);
   }
 
   Future<double> _calculateNormScore(double accuracy) async {
@@ -251,7 +257,8 @@ class _PALTestScreenState extends ConsumerState<PALTestScreen> {
     // Based on normative data from Heinz Nixdorf Recall study
     // Reference: PMC6305838 - Normative data from CANTAB
 
-    final userAge = await ref.read(databaseProvider).getUserAge();
+    // TODO: Implement user age retrieval
+    final userAge = 65; // Default age for now
 
     // Raw score (total errors adjusted is the primary PAL outcome measure)
     final rawScore = _totalErrors.toDouble();

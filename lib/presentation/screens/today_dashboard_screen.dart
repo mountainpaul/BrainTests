@@ -183,13 +183,13 @@ class _TodayDashboardScreenState extends ConsumerState<TodayDashboardScreen> {
             onSelected: (value) {
               switch (value) {
                 case 'exports':
-                  // TODO: Navigate to exports
+                  context.push('/exports');
                   break;
                 case 'settings':
                   context.go('/settings');
                   break;
                 case 'about':
-                  // TODO: Navigate to about
+                  context.push('/about');
                   break;
               }
             },

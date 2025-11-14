@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import '../../core/services/auto_backup_service.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/repositories/cognitive_exercise_repository.dart';
 import '../datasources/database.dart';
@@ -49,7 +50,7 @@ class CognitiveExerciseRepositoryImpl implements CognitiveExerciseRepository {
 
   @override
   Future<int> insertExercise(CognitiveExercise exercise) async {
-    return await _database.into(_database.cognitiveExerciseTable).insert(
+    final id = await _database.into(_database.cognitiveExerciseTable).insert(
       CognitiveExerciseTableCompanion.insert(
         name: exercise.name,
         type: exercise.type,
@@ -63,6 +64,16 @@ class CognitiveExerciseRepositoryImpl implements CognitiveExerciseRepository {
         createdAt: Value(exercise.createdAt),
       ),
     );
+
+    // Trigger backup (non-blocking - don't let backup failures prevent saves)
+    try {
+      await AutoBackupService.triggerBackupAfterChange(changeType: 'exercise_added');
+    } catch (e) {
+      // Backup failed but that's OK - don't block the save
+      print('Backup after exercise add failed: $e');
+    }
+
+    return id;
   }
 
   @override
@@ -83,6 +94,15 @@ class CognitiveExerciseRepositoryImpl implements CognitiveExerciseRepository {
         completedAt: Value(exercise.completedAt),
       ),
     );
+
+    if (rowsUpdated > 0) {
+      try {
+        await AutoBackupService.triggerBackupAfterChange(changeType: 'exercise_updated');
+      } catch (e) {
+        print('Backup after exercise update failed: $e');
+      }
+    }
+
     return rowsUpdated > 0;
   }
 

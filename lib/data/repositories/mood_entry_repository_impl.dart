@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import '../../core/services/auto_backup_service.dart';
 import '../../domain/entities/mood_entry.dart';
 import '../../domain/repositories/mood_entry_repository.dart';
 import '../datasources/database.dart';
@@ -46,7 +47,7 @@ class MoodEntryRepositoryImpl implements MoodEntryRepository {
 
   @override
   Future<int> insertMoodEntry(MoodEntry moodEntry) async {
-    return await _database.into(_database.moodEntryTable).insert(
+    final id = await _database.into(_database.moodEntryTable).insert(
       MoodEntryTableCompanion.insert(
         mood: moodEntry.mood,
         energyLevel: moodEntry.energyLevel,
@@ -57,6 +58,13 @@ class MoodEntryRepositoryImpl implements MoodEntryRepository {
         createdAt: Value(moodEntry.createdAt),
       ),
     );
+
+    try {
+      await AutoBackupService.triggerBackupAfterChange(changeType: 'mood_entry_added');
+    } catch (e) {
+      print('Backup after mood entry add failed: $e');
+    }
+    return id;
   }
 
   @override
@@ -74,6 +82,15 @@ class MoodEntryRepositoryImpl implements MoodEntryRepository {
         entryDate: Value(moodEntry.entryDate),
       ),
     );
+
+    if (rowsUpdated > 0) {
+      try {
+        await AutoBackupService.triggerBackupAfterChange(changeType: 'mood_entry_updated');
+      } catch (e) {
+        print('Backup after mood entry update failed: $e');
+      }
+    }
+
     return rowsUpdated > 0;
   }
 

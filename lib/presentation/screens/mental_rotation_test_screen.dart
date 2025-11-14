@@ -1,5 +1,8 @@
+import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/assessment.dart';
 import 'package:brain_plan/domain/models/block_3d_shape.dart';
 import 'package:brain_plan/domain/services/mental_rotation_generator.dart';
+import 'package:brain_plan/presentation/providers/assessment_provider.dart';
 import 'package:brain_plan/presentation/widgets/block_3d_renderer.dart';
 import 'package:brain_plan/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
@@ -92,10 +95,24 @@ class _MentalRotationTestScreenState extends ConsumerState<MentalRotationTestScr
     });
   }
 
-  void _showResults() {
+  void _showResults() async {
     final correctCount = _results.where((r) => r).length;
     final accuracy = (correctCount / _results.length) * 100;
     final avgTime = _responseTimes.fold<Duration>(Duration.zero, (sum, time) => sum + time).inMilliseconds / _responseTimes.length;
+
+    // Save to database
+    final notifier = ref.read(assessmentProvider.notifier);
+    final assessment = Assessment(
+      type: AssessmentType.visuospatialSkills,
+      score: correctCount,
+      maxScore: _results.length,
+      notes: 'Mental Rotation Test - Accuracy: ${accuracy.toStringAsFixed(1)}%',
+      completedAt: DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+    await notifier.addAssessment(assessment);
+
+    if (!mounted) return;
 
     showDialog(
       context: context,

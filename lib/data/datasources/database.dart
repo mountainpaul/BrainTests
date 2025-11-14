@@ -425,6 +425,20 @@ class CambridgeAssessmentTable extends Table {
   String get tableName => 'cambridge_assessments';
 }
 
+@DataClassName('DailyGoalEntry')
+class DailyGoalsTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get date => dateTime()();
+  IntColumn get targetGames => integer().withDefault(const Constant(5))();
+  IntColumn get completedGames => integer().withDefault(const Constant(0))();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  String get tableName => 'daily_goals';
+}
+
 @DriftDatabase(tables: [
   AssessmentTable,
   ReminderTable,
@@ -436,6 +450,7 @@ class CambridgeAssessmentTable extends Table {
   WordDictionaryTable,
   UserProfileTable,
   CambridgeAssessmentTable,
+  DailyGoalsTable,
   MealPlanTable,
   FeedingWindowTable,
   FastingTable,
@@ -449,7 +464,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -495,6 +510,10 @@ class AppDatabase extends _$AppDatabase {
         // Add programStartDate column to user profile table for dynamic cycle calculation
         await m.addColumn(userProfileTable, userProfileTable.programStartDate);
       }
+      if (from < 9) {
+        // Add daily goals table for brain game tracking
+        await m.createTable(dailyGoalsTable);
+      }
     },
   );
 
@@ -515,5 +534,44 @@ class AppDatabase extends _$AppDatabase {
     final profiles = await select(userProfileTable).get();
     if (profiles.isEmpty) return null;
     return profiles.first.age;
+  }
+
+  // Daily Goals methods
+  Future<DailyGoalEntry?> getDailyGoalForDate(DateTime date) async {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final goals = await (select(dailyGoalsTable)
+          ..where((t) => t.date.equals(normalized)))
+        .get();
+    return goals.isEmpty ? null : goals.first;
+  }
+
+  Future<int> insertDailyGoal(DailyGoalEntry goal) async {
+    return await into(dailyGoalsTable).insert(goal);
+  }
+
+  Future<bool> updateDailyGoal(DailyGoalEntry goal) async {
+    return await update(dailyGoalsTable).replace(goal);
+  }
+
+  Future<List<DailyGoalEntry>> getAllDailyGoals() async {
+    return await (select(dailyGoalsTable)
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+        .get();
+  }
+
+  Future<List<DailyGoalEntry>> getDailyGoalsInRange(
+      DateTime start, DateTime end) async {
+    final normalizedStart = DateTime(start.year, start.month, start.day);
+    final normalizedEnd = DateTime(end.year, end.month, end.day);
+    return await (select(dailyGoalsTable)
+          ..where((t) =>
+              t.date.isBiggerOrEqualValue(normalizedStart) &
+              t.date.isSmallerOrEqualValue(normalizedEnd))
+          ..orderBy([(t) => OrderingTerm.asc(t.date)]))
+        .get();
+  }
+
+  Future<void> deleteDailyGoal(int id) async {
+    await (delete(dailyGoalsTable)..where((t) => t.id.equals(id))).go();
   }
 }

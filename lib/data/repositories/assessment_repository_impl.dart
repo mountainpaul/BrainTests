@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import '../../core/services/auto_backup_service.dart';
 import '../../domain/entities/assessment.dart';
 import '../../domain/repositories/assessment_repository.dart';
 import '../datasources/database.dart';
@@ -42,7 +43,7 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
 
   @override
   Future<int> insertAssessment(Assessment assessment) async {
-    return await _database.into(_database.assessmentTable).insert(
+    final id = await _database.into(_database.assessmentTable).insert(
       AssessmentTableCompanion.insert(
         type: assessment.type,
         score: assessment.score,
@@ -52,6 +53,15 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
         createdAt: Value(assessment.createdAt),
       ),
     );
+
+    // Trigger backup (non-blocking - don't let backup failures prevent saves)
+    try {
+      await AutoBackupService.triggerBackupAfterChange(changeType: 'assessment_added');
+    } catch (e) {
+      print('Backup after assessment add failed: $e');
+    }
+
+    return id;
   }
 
   @override
@@ -68,6 +78,15 @@ class AssessmentRepositoryImpl implements AssessmentRepository {
         completedAt: Value(assessment.completedAt),
       ),
     );
+
+    if (rowsUpdated > 0) {
+      try {
+        await AutoBackupService.triggerBackupAfterChange(changeType: 'assessment_updated');
+      } catch (e) {
+        print('Backup after assessment update failed: $e');
+      }
+    }
+
     return rowsUpdated > 0;
   }
 

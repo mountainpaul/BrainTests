@@ -34,7 +34,7 @@ final class CognitiveExerciseNotifierProvider
 }
 
 String _$cognitiveExerciseNotifierHash() =>
-    r'd89c219b2187e2a5257b4cc589e422f52f8b1a8f';
+    r'eed293aee1969b8d661941e6d2a101b5973d034c';
 
 abstract class _$CognitiveExerciseNotifier extends $AsyncNotifier<void> {
   FutureOr<void> build();

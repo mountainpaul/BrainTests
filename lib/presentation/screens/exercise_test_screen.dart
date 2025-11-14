@@ -12,6 +12,7 @@ import '../../domain/services/exercise_generator.dart';
 import '../providers/cognitive_exercise_provider.dart';
 import '../providers/database_provider.dart';
 import '../widgets/custom_card.dart';
+import '../widgets/shape_painter.dart';
 
 class ExerciseTestScreen extends ConsumerStatefulWidget {
 
@@ -3170,15 +3171,23 @@ class _SpatialAwarenessWidgetState extends State<SpatialAwarenessWidget> {
                             ],
                           ),
                           child: Center(
-                            child: Text(
-                              option,
-                              style: TextStyle(
-                                fontSize: spatialData.type == SpatialType.folding || spatialData.type == SpatialType.rotation ? 36 : 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                                fontFamily: 'monospace',
-                              ),
-                            ),
+                            child: (spatialData.type == SpatialType.rotation &&
+                                    spatialData.shapeType != null &&
+                                    spatialData.optionRotations != null)
+                                ? ShapeWidget(
+                                    shapeType: spatialData.shapeType!,
+                                    rotation: spatialData.optionRotations![int.parse(option)],
+                                    size: 60,
+                                  )
+                                : Text(
+                                    option,
+                                    style: TextStyle(
+                                      fontSize: spatialData.type == SpatialType.folding || spatialData.type == SpatialType.rotation ? 36 : 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
                           ),
                         ),
                       );
@@ -3243,15 +3252,21 @@ class _SpatialAwarenessWidgetState extends State<SpatialAwarenessWidget> {
                 ],
               ),
               child: Center(
-                child: Text(
-                  spatialData.targetShape,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black87,
-                    fontFamily: 'monospace',
-                  ),
-                ),
+                child: spatialData.shapeType != null
+                    ? ShapeWidget(
+                        shapeType: spatialData.shapeType!,
+                        rotation: spatialData.targetRotation ?? 0,
+                        size: 90,
+                      )
+                    : Text(
+                        spatialData.targetShape,
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black87,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
               ),
             ),
             if (spatialData.targetRotation != null) ...[

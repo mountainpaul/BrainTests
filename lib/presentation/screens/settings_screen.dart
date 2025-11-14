@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/services/auto_backup_service.dart';
 import '../../core/services/data_migration_service.dart';
 import '../../core/services/google_drive_backup_service.dart';
 import '../../core/services/pdf_service.dart';
 import '../providers/assessment_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
+import '../providers/google_drive_provider.dart';
 import '../providers/mood_entry_provider.dart';
 import '../widgets/custom_card.dart';
 
@@ -34,7 +36,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             _buildSettingsSection(context, [
-              _buildGoogleDriveBackupTile(context),
+              _buildGoogleDriveBackupTile(context, ref),
             ]),
 
             const SizedBox(height: 24),
@@ -106,16 +108,46 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoogleDriveBackupTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.cloud),
-      title: const Text('Google Drive Backup'),
-      subtitle: const Text('Sign in to backup your data to the cloud'),
-      trailing: IconButton(
-        icon: const Icon(Icons.login, size: 20),
-        onPressed: () => _signInGoogleDrive(context),
-        tooltip: 'Sign in',
-      ),
+  Widget _buildGoogleDriveBackupTile(BuildContext context, WidgetRef ref) {
+    // Use provider instead of static getters to enable automatic rebuilds
+    final isSignedIn = ref.watch(isGoogleDriveSignedInProvider);
+    final userEmail = ref.watch(googleDriveUserEmailProvider);
+
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.cloud),
+          title: Text(isSignedIn ? 'Google Drive Backup' : 'Sign in to Google Drive'),
+          subtitle: Text(isSignedIn && userEmail != null
+              ? userEmail
+              : 'Sign in to backup your data to the cloud'),
+          trailing: IconButton(
+            icon: Icon(isSignedIn ? Icons.logout : Icons.login, size: 20),
+            onPressed: () => isSignedIn
+                ? _signOutGoogleDrive(context)
+                : _signInGoogleDrive(context),
+            tooltip: isSignedIn ? 'Sign out' : 'Sign in',
+          ),
+        ),
+        if (isSignedIn) ...[
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.backup, size: 20),
+            title: const Text('Manual Backup'),
+            subtitle: const Text('Backup now to Google Drive'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => _manualBackup(context),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.download, size: 20),
+            title: const Text('Restore from Google Drive'),
+            subtitle: const Text('Download your latest backup'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => _restoreFromGoogleDrive(context),
+          ),
+        ],
+      ],
     );
   }
 
@@ -229,19 +261,43 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _manualBackup(BuildContext context) async {
+    if (!GoogleDriveBackupService.isSignedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in to Google Drive first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Backing up to Google Drive...')),
     );
 
-    await DataMigrationService.backupDatabase();
+    final success = await AutoBackupService.performBackup(
+      source: 'manual_user_request',
+      force: true,
+    );
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Backup completed successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (success) {
+        final lastBackup = AutoBackupService.getLastBackupTime();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup completed successfully\n${lastBackup?.toString() ?? ""}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backup failed. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
 import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
+import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:brain_plan/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,7 +167,7 @@ class _RVPTestScreenState extends ConsumerState<RVPTestScreen> {
   }
 
   Future<void> _saveResults(Duration duration, double accuracy, int totalTargets) async {
-    final db = ref.read(databaseProvider);
+    final notifier = ref.read(cambridgeAssessmentProvider.notifier);
 
     // Calculate sensitivity (A') and response bias
     final hitRate = totalTargets > 0 ? _correctDetections / totalTargets : 0.0;
@@ -185,8 +185,15 @@ class _RVPTestScreenState extends ConsumerState<RVPTestScreen> {
       'reactionTimes': _reactionTimes,
     };
 
-    final result = CambridgeAssessmentTableCompanion.insert(
+    final aPrime = 0.5 + ((hitRate - falseAlarmRate) * (1 + hitRate - falseAlarmRate) / (4 * hitRate * (1 - falseAlarmRate)));
+
+    // Add RVP-specific metrics to detailedMetrics
+    detailedMetrics['aPrime'] = aPrime;
+    detailedMetrics['correctRejections'] = _currentSequence!.digits.length - _falseAlarms;
+
+    final result = CambridgeAssessmentResult(
       testType: CambridgeTestType.rvp,
+      completedAt: DateTime.now(),
       durationSeconds: duration.inSeconds,
       accuracy: accuracy,
       totalTrials: totalTargets,
@@ -195,13 +202,12 @@ class _RVPTestScreenState extends ConsumerState<RVPTestScreen> {
       meanLatencyMs: _reactionTimes.isEmpty ? 0 :
           _reactionTimes.reduce((a, b) => a + b) / _reactionTimes.length,
       medianLatencyMs: _reactionTimes.isEmpty ? 0 : _calculateMedian(_reactionTimes),
+      specificMetrics: detailedMetrics,
       normScore: _calculateNormScore(accuracy),
       interpretation: _getInterpretation(accuracy, hitRate),
-      specificMetrics: jsonEncode(detailedMetrics),
-      completedAt: DateTime.now(),
     );
 
-    await db.into(db.cambridgeAssessmentTable).insert(result);
+    await notifier.addAssessment(result);
   }
 
   double _calculateMedian(List<int> values) {

@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/datasources/database.dart';
 import '../../domain/entities/cognitive_exercise.dart';
+import 'cognitive_activity_provider.dart';
+import 'daily_goals_provider.dart';
 import 'repository_providers.dart';
 
 part 'cognitive_exercise_provider.g.dart';
@@ -49,10 +51,15 @@ class CognitiveExerciseNotifier extends _$CognitiveExerciseNotifier {
     try {
       final repository = ref.read(cognitiveExerciseRepositoryProvider);
       await repository.insertExercise(exercise);
+
+      // Check if still mounted after async operation
+      if (!ref.mounted) return;
+
       state = const AsyncValue.data(null);
 
       _invalidateProviders();
     } catch (error, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);
     }
   }
@@ -62,10 +69,14 @@ class CognitiveExerciseNotifier extends _$CognitiveExerciseNotifier {
     try {
       final repository = ref.read(cognitiveExerciseRepositoryProvider);
       await repository.updateExercise(exercise);
+
+      if (!ref.mounted) return;
+
       state = const AsyncValue.data(null);
 
       _invalidateProviders();
     } catch (error, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);
     }
   }
@@ -75,10 +86,14 @@ class CognitiveExerciseNotifier extends _$CognitiveExerciseNotifier {
     try {
       final repository = ref.read(cognitiveExerciseRepositoryProvider);
       await repository.deleteExercise(id);
+
+      if (!ref.mounted) return;
+
       state = const AsyncValue.data(null);
 
       _invalidateProviders();
     } catch (error, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncValue.error(error, stackTrace);
     }
   }
@@ -96,6 +111,10 @@ class CognitiveExerciseNotifier extends _$CognitiveExerciseNotifier {
           completedAt: DateTime.now(),
         );
         await repository.updateExercise(completedExercise);
+
+        // Increment daily goals counter
+        final dailyGoalsRepo = ref.read(dailyGoalsRepositoryProvider);
+        await dailyGoalsRepo.incrementCompletedGames();
       }
       state = const AsyncValue.data(null);
 
@@ -108,7 +127,10 @@ class CognitiveExerciseNotifier extends _$CognitiveExerciseNotifier {
   void _invalidateProviders() {
     ref.invalidate(cognitiveExercisesProvider);
     ref.invalidate(completedExercisesProvider);
+    ref.invalidate(todayGoalProvider);
+    ref.invalidate(currentStreakProvider);
     ref.invalidate(recentExercisesProvider);
     ref.invalidate(averageExerciseScoresByTypeProvider);
+    ref.invalidate(recentCognitiveActivityProvider);
   }
 }

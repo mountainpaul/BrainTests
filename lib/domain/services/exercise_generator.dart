@@ -1379,9 +1379,8 @@ class ExerciseGenerator {
       optionRotations = [0, 90, 180, 270];
     }
 
-    // Find the index of the correct answer
+    // Find all indices that match the target rotation (handles duplicates like rectangle)
     final correctAnswerIndex = optionRotations.indexOf(targetRotation);
-    final correctAnswer = correctAnswerIndex.toString();
 
     // Shuffle the options while tracking the correct answer
     final optionPairs = List.generate(
@@ -1392,8 +1391,11 @@ class ExerciseGenerator {
 
     // Find new index of correct answer after shuffle
     final shuffledCorrectIndex = optionPairs.indexWhere(
-      (pair) => pair['index'] == correctAnswerIndex,
+      (pair) => pair['rotation'] == targetRotation,
     );
+
+    // Fallback: if somehow not found (should never happen), use first match
+    final finalCorrectIndex = shuffledCorrectIndex >= 0 ? shuffledCorrectIndex : 0;
 
     return SpatialAwarenessData(
       type: SpatialType.rotation,
@@ -1402,7 +1404,7 @@ class ExerciseGenerator {
       shapeType: shapeType,
       optionRotations: optionPairs.map((p) => p['rotation'] as int).toList(),
       options: List.generate(4, (i) => i.toString()),
-      correctAnswer: shuffledCorrectIndex.toString(),
+      correctAnswer: finalCorrectIndex.toString(),
       timeLimit: _getSpatialTimeLimit(difficulty),
     );
   }

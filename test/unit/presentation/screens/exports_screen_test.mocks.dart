@@ -5,7 +5,6 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:brain_plan/data/datasources/database.dart' as _i5;
 import 'package:brain_plan/domain/entities/assessment.dart' as _i4;
 import 'package:brain_plan/domain/entities/cognitive_exercise.dart' as _i9;
 import 'package:brain_plan/domain/entities/mood_entry.dart' as _i7;
@@ -15,6 +14,7 @@ import 'package:brain_plan/domain/repositories/cognitive_exercise_repository.dar
     as _i8;
 import 'package:brain_plan/domain/repositories/mood_entry_repository.dart'
     as _i6;
+import 'package:brain_plan/domain/types/types.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -30,6 +30,7 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 /// A class which mocks [AssessmentRepository].
 ///
@@ -285,7 +286,7 @@ class MockCognitiveExerciseRepository extends _i1.Mock
 
   @override
   _i3.Future<List<_i9.CognitiveExercise>> getExercisesByDifficulty(
-          _i5.ExerciseDifficulty? difficulty) =>
+          dynamic difficulty) =>
       (super.noSuchMethod(
         Invocation.method(
           #getExercisesByDifficulty,

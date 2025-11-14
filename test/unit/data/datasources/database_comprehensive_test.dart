@@ -44,13 +44,13 @@ void main() {
     });
 
     test('should have correct schema version', () {
-      expect(database.schemaVersion, 8);
+      expect(database.schemaVersion, 9);
     });
 
     test('should create memory database successfully', () {
       final memDb = AppDatabase.memory();
       expect(memDb, isNotNull);
-      expect(memDb.schemaVersion, 8);
+      expect(memDb.schemaVersion, 9);
       memDb.close();
     });
   });

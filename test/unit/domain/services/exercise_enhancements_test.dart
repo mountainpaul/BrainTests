@@ -134,10 +134,10 @@ void main() {
           expect(puzzle.targetShape.contains('Square'), isFalse);
           expect(puzzle.targetShape.contains('Circle'), isFalse);
 
-          // Should be a short symbol (1-5 characters typically)
-          expect(puzzle.targetShape.length, lessThanOrEqualTo(5),
+          // Should be a valid shape type identifier
+          expect(['L', 'triangle', 'rectangle', 'wedge'].contains(puzzle.targetShape), isTrue,
               reason:
-                  'targetShape should be a symbol, not text: ${puzzle.targetShape}');
+                  'targetShape should be a valid shape type: ${puzzle.targetShape}');
         }
       });
 

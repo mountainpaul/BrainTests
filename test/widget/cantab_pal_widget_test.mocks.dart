@@ -24,6 +24,7 @@ import 'package:mockito/src/dummies.dart' as _i6;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 class _FakeMigrationStrategy_0 extends _i1.SmartFake
     implements _i2.MigrationStrategy {
@@ -36,207 +37,207 @@ class _FakeMigrationStrategy_0 extends _i1.SmartFake
         );
 }
 
-class _Fake$AssessmentTableTable_1 extends _i1.SmartFake
-    implements _i3.$AssessmentTableTable {
-  _Fake$AssessmentTableTable_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$ReminderTableTable_2 extends _i1.SmartFake
-    implements _i3.$ReminderTableTable {
-  _Fake$ReminderTableTable_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$CognitiveExerciseTableTable_3 extends _i1.SmartFake
-    implements _i3.$CognitiveExerciseTableTable {
-  _Fake$CognitiveExerciseTableTable_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$MoodEntryTableTable_4 extends _i1.SmartFake
-    implements _i3.$MoodEntryTableTable {
-  _Fake$MoodEntryTableTable_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$DailyTrackingTableTable_5 extends _i1.SmartFake
-    implements _i3.$DailyTrackingTableTable {
-  _Fake$DailyTrackingTableTable_5(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$SleepTrackingTableTable_6 extends _i1.SmartFake
-    implements _i3.$SleepTrackingTableTable {
-  _Fake$SleepTrackingTableTable_6(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$CyclingTrackingTableTable_7 extends _i1.SmartFake
-    implements _i3.$CyclingTrackingTableTable {
-  _Fake$CyclingTrackingTableTable_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$WordDictionaryTableTable_8 extends _i1.SmartFake
-    implements _i3.$WordDictionaryTableTable {
-  _Fake$WordDictionaryTableTable_8(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$UserProfileTableTable_9 extends _i1.SmartFake
-    implements _i3.$UserProfileTableTable {
-  _Fake$UserProfileTableTable_9(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$CambridgeAssessmentTableTable_10 extends _i1.SmartFake
-    implements _i3.$CambridgeAssessmentTableTable {
-  _Fake$CambridgeAssessmentTableTable_10(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$DailyGoalsTableTable_11 extends _i1.SmartFake
-    implements _i3.$DailyGoalsTableTable {
-  _Fake$DailyGoalsTableTable_11(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$MealPlanTableTable_12 extends _i1.SmartFake
-    implements _i3.$MealPlanTableTable {
-  _Fake$MealPlanTableTable_12(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$FeedingWindowTableTable_13 extends _i1.SmartFake
-    implements _i3.$FeedingWindowTableTable {
-  _Fake$FeedingWindowTableTable_13(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$FastingTableTable_14 extends _i1.SmartFake
-    implements _i3.$FastingTableTable {
-  _Fake$FastingTableTable_14(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$SupplementsTableTable_15 extends _i1.SmartFake
-    implements _i3.$SupplementsTableTable {
-  _Fake$SupplementsTableTable_15(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$SupplementLogsTableTable_16 extends _i1.SmartFake
-    implements _i3.$SupplementLogsTableTable {
-  _Fake$SupplementLogsTableTable_16(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$PlanningTableTable_17 extends _i1.SmartFake
-    implements _i3.$PlanningTableTable {
-  _Fake$PlanningTableTable_17(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$JournalTableTable_18 extends _i1.SmartFake
-    implements _i3.$JournalTableTable {
-  _Fake$JournalTableTable_18(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$AppDatabaseManager_19 extends _i1.SmartFake
+class _Fake$AppDatabaseManager_1 extends _i1.SmartFake
     implements _i3.$AppDatabaseManager {
-  _Fake$AppDatabaseManager_19(
+  _Fake$AppDatabaseManager_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$AssessmentTableTable_2 extends _i1.SmartFake
+    implements _i3.$AssessmentTableTable {
+  _Fake$AssessmentTableTable_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$ReminderTableTable_3 extends _i1.SmartFake
+    implements _i3.$ReminderTableTable {
+  _Fake$ReminderTableTable_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CognitiveExerciseTableTable_4 extends _i1.SmartFake
+    implements _i3.$CognitiveExerciseTableTable {
+  _Fake$CognitiveExerciseTableTable_4(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$MoodEntryTableTable_5 extends _i1.SmartFake
+    implements _i3.$MoodEntryTableTable {
+  _Fake$MoodEntryTableTable_5(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$DailyTrackingTableTable_6 extends _i1.SmartFake
+    implements _i3.$DailyTrackingTableTable {
+  _Fake$DailyTrackingTableTable_6(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$SleepTrackingTableTable_7 extends _i1.SmartFake
+    implements _i3.$SleepTrackingTableTable {
+  _Fake$SleepTrackingTableTable_7(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CyclingTrackingTableTable_8 extends _i1.SmartFake
+    implements _i3.$CyclingTrackingTableTable {
+  _Fake$CyclingTrackingTableTable_8(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$WordDictionaryTableTable_9 extends _i1.SmartFake
+    implements _i3.$WordDictionaryTableTable {
+  _Fake$WordDictionaryTableTable_9(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$UserProfileTableTable_10 extends _i1.SmartFake
+    implements _i3.$UserProfileTableTable {
+  _Fake$UserProfileTableTable_10(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CambridgeAssessmentTableTable_11 extends _i1.SmartFake
+    implements _i3.$CambridgeAssessmentTableTable {
+  _Fake$CambridgeAssessmentTableTable_11(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$DailyGoalsTableTable_12 extends _i1.SmartFake
+    implements _i3.$DailyGoalsTableTable {
+  _Fake$DailyGoalsTableTable_12(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$MealPlanTableTable_13 extends _i1.SmartFake
+    implements _i3.$MealPlanTableTable {
+  _Fake$MealPlanTableTable_13(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$FeedingWindowTableTable_14 extends _i1.SmartFake
+    implements _i3.$FeedingWindowTableTable {
+  _Fake$FeedingWindowTableTable_14(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$FastingTableTable_15 extends _i1.SmartFake
+    implements _i3.$FastingTableTable {
+  _Fake$FastingTableTable_15(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$SupplementsTableTable_16 extends _i1.SmartFake
+    implements _i3.$SupplementsTableTable {
+  _Fake$SupplementsTableTable_16(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$SupplementLogsTableTable_17 extends _i1.SmartFake
+    implements _i3.$SupplementLogsTableTable {
+  _Fake$SupplementLogsTableTable_17(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$PlanningTableTable_18 extends _i1.SmartFake
+    implements _i3.$PlanningTableTable {
+  _Fake$PlanningTableTable_18(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$JournalTableTable_19 extends _i1.SmartFake
+    implements _i3.$JournalTableTable {
+  _Fake$JournalTableTable_19(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -452,9 +453,18 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
       ) as _i2.MigrationStrategy);
 
   @override
+  _i3.$AppDatabaseManager get managers => (super.noSuchMethod(
+        Invocation.getter(#managers),
+        returnValue: _Fake$AppDatabaseManager_1(
+          this,
+          Invocation.getter(#managers),
+        ),
+      ) as _i3.$AppDatabaseManager);
+
+  @override
   _i3.$AssessmentTableTable get assessmentTable => (super.noSuchMethod(
         Invocation.getter(#assessmentTable),
-        returnValue: _Fake$AssessmentTableTable_1(
+        returnValue: _Fake$AssessmentTableTable_2(
           this,
           Invocation.getter(#assessmentTable),
         ),
@@ -463,7 +473,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$ReminderTableTable get reminderTable => (super.noSuchMethod(
         Invocation.getter(#reminderTable),
-        returnValue: _Fake$ReminderTableTable_2(
+        returnValue: _Fake$ReminderTableTable_3(
           this,
           Invocation.getter(#reminderTable),
         ),
@@ -473,7 +483,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   _i3.$CognitiveExerciseTableTable get cognitiveExerciseTable =>
       (super.noSuchMethod(
         Invocation.getter(#cognitiveExerciseTable),
-        returnValue: _Fake$CognitiveExerciseTableTable_3(
+        returnValue: _Fake$CognitiveExerciseTableTable_4(
           this,
           Invocation.getter(#cognitiveExerciseTable),
         ),
@@ -482,7 +492,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$MoodEntryTableTable get moodEntryTable => (super.noSuchMethod(
         Invocation.getter(#moodEntryTable),
-        returnValue: _Fake$MoodEntryTableTable_4(
+        returnValue: _Fake$MoodEntryTableTable_5(
           this,
           Invocation.getter(#moodEntryTable),
         ),
@@ -491,7 +501,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$DailyTrackingTableTable get dailyTrackingTable => (super.noSuchMethod(
         Invocation.getter(#dailyTrackingTable),
-        returnValue: _Fake$DailyTrackingTableTable_5(
+        returnValue: _Fake$DailyTrackingTableTable_6(
           this,
           Invocation.getter(#dailyTrackingTable),
         ),
@@ -500,7 +510,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$SleepTrackingTableTable get sleepTrackingTable => (super.noSuchMethod(
         Invocation.getter(#sleepTrackingTable),
-        returnValue: _Fake$SleepTrackingTableTable_6(
+        returnValue: _Fake$SleepTrackingTableTable_7(
           this,
           Invocation.getter(#sleepTrackingTable),
         ),
@@ -510,7 +520,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   _i3.$CyclingTrackingTableTable get cyclingTrackingTable =>
       (super.noSuchMethod(
         Invocation.getter(#cyclingTrackingTable),
-        returnValue: _Fake$CyclingTrackingTableTable_7(
+        returnValue: _Fake$CyclingTrackingTableTable_8(
           this,
           Invocation.getter(#cyclingTrackingTable),
         ),
@@ -519,7 +529,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$WordDictionaryTableTable get wordDictionaryTable => (super.noSuchMethod(
         Invocation.getter(#wordDictionaryTable),
-        returnValue: _Fake$WordDictionaryTableTable_8(
+        returnValue: _Fake$WordDictionaryTableTable_9(
           this,
           Invocation.getter(#wordDictionaryTable),
         ),
@@ -528,7 +538,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$UserProfileTableTable get userProfileTable => (super.noSuchMethod(
         Invocation.getter(#userProfileTable),
-        returnValue: _Fake$UserProfileTableTable_9(
+        returnValue: _Fake$UserProfileTableTable_10(
           this,
           Invocation.getter(#userProfileTable),
         ),
@@ -538,7 +548,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   _i3.$CambridgeAssessmentTableTable get cambridgeAssessmentTable =>
       (super.noSuchMethod(
         Invocation.getter(#cambridgeAssessmentTable),
-        returnValue: _Fake$CambridgeAssessmentTableTable_10(
+        returnValue: _Fake$CambridgeAssessmentTableTable_11(
           this,
           Invocation.getter(#cambridgeAssessmentTable),
         ),
@@ -547,7 +557,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$DailyGoalsTableTable get dailyGoalsTable => (super.noSuchMethod(
         Invocation.getter(#dailyGoalsTable),
-        returnValue: _Fake$DailyGoalsTableTable_11(
+        returnValue: _Fake$DailyGoalsTableTable_12(
           this,
           Invocation.getter(#dailyGoalsTable),
         ),
@@ -556,7 +566,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$MealPlanTableTable get mealPlanTable => (super.noSuchMethod(
         Invocation.getter(#mealPlanTable),
-        returnValue: _Fake$MealPlanTableTable_12(
+        returnValue: _Fake$MealPlanTableTable_13(
           this,
           Invocation.getter(#mealPlanTable),
         ),
@@ -565,7 +575,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$FeedingWindowTableTable get feedingWindowTable => (super.noSuchMethod(
         Invocation.getter(#feedingWindowTable),
-        returnValue: _Fake$FeedingWindowTableTable_13(
+        returnValue: _Fake$FeedingWindowTableTable_14(
           this,
           Invocation.getter(#feedingWindowTable),
         ),
@@ -574,7 +584,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$FastingTableTable get fastingTable => (super.noSuchMethod(
         Invocation.getter(#fastingTable),
-        returnValue: _Fake$FastingTableTable_14(
+        returnValue: _Fake$FastingTableTable_15(
           this,
           Invocation.getter(#fastingTable),
         ),
@@ -583,7 +593,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$SupplementsTableTable get supplementsTable => (super.noSuchMethod(
         Invocation.getter(#supplementsTable),
-        returnValue: _Fake$SupplementsTableTable_15(
+        returnValue: _Fake$SupplementsTableTable_16(
           this,
           Invocation.getter(#supplementsTable),
         ),
@@ -592,7 +602,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$SupplementLogsTableTable get supplementLogsTable => (super.noSuchMethod(
         Invocation.getter(#supplementLogsTable),
-        returnValue: _Fake$SupplementLogsTableTable_16(
+        returnValue: _Fake$SupplementLogsTableTable_17(
           this,
           Invocation.getter(#supplementLogsTable),
         ),
@@ -601,7 +611,7 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$PlanningTableTable get planningTable => (super.noSuchMethod(
         Invocation.getter(#planningTable),
-        returnValue: _Fake$PlanningTableTable_17(
+        returnValue: _Fake$PlanningTableTable_18(
           this,
           Invocation.getter(#planningTable),
         ),
@@ -610,20 +620,11 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   @override
   _i3.$JournalTableTable get journalTable => (super.noSuchMethod(
         Invocation.getter(#journalTable),
-        returnValue: _Fake$JournalTableTable_18(
+        returnValue: _Fake$JournalTableTable_19(
           this,
           Invocation.getter(#journalTable),
         ),
       ) as _i3.$JournalTableTable);
-
-  @override
-  _i3.$AppDatabaseManager get managers => (super.noSuchMethod(
-        Invocation.getter(#managers),
-        returnValue: _Fake$AppDatabaseManager_19(
-          this,
-          Invocation.getter(#managers),
-        ),
-      ) as _i3.$AppDatabaseManager);
 
   @override
   Iterable<_i2.TableInfo<_i2.Table, Object?>> get allTables =>

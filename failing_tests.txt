@@ -1,0 +1,49 @@
+/Users/paulegges/alzheimers/alzheimers/test/architecture/layer_boundary_test.dart Architecture Layer Boundary Tests domain layer must not import from presentation or data layers [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Deletion should delete assessment by id [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Progress Tracking should track multiple assessment types concurrently [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Saving should save attention focus assessment with low score [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Saving should save executive function assessment with notes [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Saving should save memory recall assessment [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Types Filtering should filter assessments by type [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Assessment Update should update assessment with new notes [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Error Handling should handle database insertion errors gracefully [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Error Handling should handle retrieval errors gracefully [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/assessment_completion_workflow_test.dart Assessment Completion Workflow Integration Tests Recent Assessments Retrieval should retrieve recently completed assessments in order [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/circuit_breaker_exercise_integration_test.dart Circuit Breaker Exercise Integration should close circuit after successful generation following timeout [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/circuit_breaker_exercise_integration_test.dart Circuit Breaker Exercise Integration should open circuit after repeated exercise generation failures [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/circuit_breaker_exercise_integration_test.dart Circuit Breaker Exercise Integration should return fallback when circuit is open [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/cognition_overview_integration_test.dart Cognition Overview Integration Tests Recent Activity should show assessments AND exercises [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/error_scenario_integration_test.dart Error Scenario Integration Tests Database Connection Failures should handle graceful degradation when database is unavailable [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/exercise_completion_workflow_test.dart Exercise Completion Workflow Completed exercise should count in daily brain games goal [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/exercise_completion_workflow_test.dart Exercise Completion Workflow Memory Game should save to database via provider     01:49 +1821 ~32 -65
+/Users/paulegges/alzheimers/alzheimers/test/integration/exercise_completion_workflow_test.dart Exercise Completion Workflow Memory Game should save to database via provider     01:49 +1866 ~32 -66
+/Users/paulegges/alzheimers/alzheimers/test/integration/exercise_completion_workflow_test.dart Exercise Completion Workflow Memory Game should save to database via provider     01:52 +1975 ~32 -67
+/Users/paulegges/alzheimers/alzheimers/test/integration/overview_navigation_refresh_test.dart Overview Navigation Refresh Tests Clicking info icon MUST show same count as Overview display [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/overview_navigation_refresh_test.dart Overview Navigation Refresh Tests Overview MCI count MUST refresh when navigating back from test screen [E]
+/Users/paulegges/alzheimers/alzheimers/test/integration/trail_making_integration_test.dart Trail Making Test Integration should use repository layer not direct database access [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/domain/services/exercise_enhancements_test.dart ExerciseGenerator - Spatial Awareness Fixes Rotation Puzzles should generate valid rotation puzzles for all difficulties [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/domain/services/spatial_rotation_fix_test.dart Spatial Rotation Puzzle Character Verification Right triangle rotations should use correct Unicode characters [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/providers/assessment_provider_test.dart ... Provider Tests Error Recovery should recover from transient errors     01:47 +1754 ~32 -64
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/providers/assessment_provider_test.dart ... Tests assessmentsProvider should handle repository errors gracefully       01:16 +1456 -32
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/providers/assessment_provider_test.dart Assessment Provider Tests Error Recovery should recover from transient errors  01:38 +1728 -46
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/providers/assessment_provider_test.dart Assessment Provider Tests Error Recovery should recover from transient errors  01:38 +1729 -47
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/assessments_screen_test.dart AssessmentsScreen Tests Data Display Tests should display assessment data when available [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/assessments_screen_test.dart AssessmentsScreen Tests Data Display Tests should display empty state when no assessments [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/assessments_screen_test.dart AssessmentsScreen Tests Multiple Assessments Display Tests should display multiple recent assessments [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/assessments_screen_test.dart AssessmentsScreen Tests Multiple Assessments Display Tests should limit display to 5 recent assessments [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/assessments_screen_test.dart AssessmentsScreen Tests Score Indicator Tests should display green indicator for high scores [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/daily_living_assistant_test.dart DailyLivingAssistant Tests should display medical information in emergency tab [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/mood_tracking_screen_test.dart MoodTrackingScreen Tests Loading and Error States Tests should display loading indicators [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/mood_tracking_screen_test.dart MoodTrackingScreen Tests Loading and Error States Tests should handle provider errors gracefully [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/mood_tracking_screen_test.dart MoodTrackingScreen Tests Today Mood Entry Tests should display wellness score correctly [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/presentation/screens/reminders_screen_test.dart RemindersScreen Tests Loading and Error States Tests should handle provider errors gracefully [E]
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/riverpod_provider_test.dart ... Tests Assessment Provider Tests should handle assessment repository errors gracefully     00:45 +1080 -10
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/riverpod_provider_test.dart Riverpod Provider Tests Provider Integration Tests should handle provider error propagation   01:16 +1454 -31
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/simple_provider_test.dart Simple Provider Tests Provider Error Handling should handle async provider errors                 00:31 +699 -2
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/simple_provider_test.dart Simple Provider Tests Provider Error Handling should handle async provider errors                 00:35 +750 -3
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/simple_provider_test.dart Simple Provider Tests Provider Error Handling should handle async provider errors                 00:35 +756 -5
+/Users/paulegges/alzheimers/alzheimers/test/unit/providers/simple_provider_test.dart Simple Provider Tests Provider Error Handling should handle async provider errors                 00:37 +761 -6
+/Users/paulegges/alzheimers/alzheimers/test/widget/cognition_overview_test.dart CognitionOverviewTab - Start Your First Test Button should call onStartTest callback when "Start Your First Test" is pressed [E]
+/Users/paulegges/alzheimers/alzheimers/test/widget/cognition_overview_test.dart CognitionOverviewTab - Start Your First Test Button should NOT show "Start Your First Test" button when exercises exist [E]
+/Users/paulegges/alzheimers/alzheimers/test/widget/cognition_overview_test.dart CognitionOverviewTab - Start Your First Test Button should show "Start Your First Test" button when no exercises completed [E]
+/Users/paulegges/alzheimers/alzheimers/test/widget/feeding_window_config_screen_test.dart FeedingWindowConfigScreen Widget Tests should display empty state when no windows configured [E]

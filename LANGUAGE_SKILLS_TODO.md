@@ -1,0 +1,1 @@
+Language Skills speech-only conversion requires creating a new dedicated screen. Current implementation has TextField + old SpeechToText. Recommendation: Create new LanguageSkillsTestScreen.dart based on FluencyTestScreen.dart in a focused session.

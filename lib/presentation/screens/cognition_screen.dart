@@ -18,6 +18,7 @@ import 'assessments_screen.dart';
 import 'exercises_screen.dart';
 import 'five_word_recall_test_screen.dart';
 import 'fluency_test_screen.dart';
+import 'language_skills_test_screen.dart';
 import 'sdmt_test_screen.dart';
 import 'trail_making_test_screen.dart';
 
@@ -103,9 +104,70 @@ class MCITestsTab extends ConsumerWidget {
             'Tests verbal fluency and executive function',
             () => _startFluencyTest(context),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
+          // Language Skills Tests - Multiple Categories
+          _buildMCITestCard(
+            context,
+            'Language Skills: Foods',
+            'Name as many foods as you can',
+            Icons.restaurant,
+            'Tests verbal fluency - food category',
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const LanguageSkillsTestScreen(category: 'foods')),
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          _buildMCITestCard(
+            context,
+            'Language Skills: Countries',
+            'Name as many countries as you can',
+            Icons.public,
+            'Tests verbal fluency - geography',
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const LanguageSkillsTestScreen(category: 'countries')),
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          _buildMCITestCard(
+            context,
+            'Language Skills: Letter F',
+            'Name words starting with the letter F',
+            Icons.abc,
+            'Tests phonemic fluency',
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const LanguageSkillsTestScreen(category: 'words starting with F')),
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          _buildMCITestCard(
+            context,
+            'Language Skills: Professions',
+            'Name as many professions/jobs as you can',
+            Icons.work,
+            'Tests semantic fluency - occupations',
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const LanguageSkillsTestScreen(category: 'professions or jobs')),
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
           _buildMCITestCard(
             context,
             '5-Word Recall Test',

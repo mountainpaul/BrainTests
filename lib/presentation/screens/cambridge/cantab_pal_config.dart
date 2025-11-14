@@ -3,6 +3,8 @@
 /// This class centralizes all test configuration parameters following the
 /// official Cambridge Cognition CANTAB PAL protocol.
 /// Reference: PMC10879687
+import 'pal_box_layout.dart';
+
 class CANTABPALConfig {
   // Prevent instantiation
   const CANTABPALConfig._();
@@ -12,20 +14,31 @@ class CANTABPALConfig {
   // ============================================================================
 
   /// Number of stages in the test
-  /// Modified: 8 stages with increasing difficulty
-  static const int totalStages = 8;
+  /// CANTAB standard: 7 stages (2, 4, 5, 6, 7, 8 patterns)
+  static const int totalStages = 7;
 
-  /// Pattern counts for each stage: [2, 3, 4, 5, 6, 8, 10]
-  /// Progressive difficulty with more granular steps
-  static const List<int> stagePatternCounts = [2, 3, 4, 5, 6, 8, 10];
+  /// Pattern counts for each stage: [2, 4, 5, 6, 7, 8]
+  /// Official CANTAB PAL progression
+  static const List<int> stagePatternCounts = [2, 4, 5, 6, 7, 8];
 
-  /// Maximum number of attempts allowed per stage before test termination
-  /// CANTAB standard: 4 attempts
-  static const int maxAttemptsPerStage = 4;
+  /// Maximum number of failed attempts before test termination
+  /// CANTAB standard: 3 failed attempts stops test
+  static const int maxFailedAttempts = 3;
 
-  /// Total number of boxes in the circular arrangement
-  /// Must be >= max pattern count (10) to accommodate all patterns
+  /// Total number of boxes available
+  /// Must be >= max pattern count (8) to accommodate all patterns
   static const int totalBoxes = 10;
+
+  /// Box layout type for each stage
+  /// Stage 1 (2 patterns): Horizontal
+  /// Stage 2 (4 patterns): Grid (2x2)
+  /// Stages 3-7 (5-8 patterns): Circle
+  static BoxLayout getLayoutForStage(int stageIndex) {
+    final patternCount = stagePatternCounts[stageIndex];
+    if (patternCount == 2) return BoxLayout.horizontal;
+    if (patternCount == 4) return BoxLayout.grid;
+    return BoxLayout.circle;
+  }
 
   // ============================================================================
   // Timing Configuration

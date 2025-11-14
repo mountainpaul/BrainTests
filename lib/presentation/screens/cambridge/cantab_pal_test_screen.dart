@@ -116,16 +116,12 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     // Generate random pattern-position mappings
     final patternCount = _currentPatternCount;
 
-    // For horizontal and grid layouts, use exactly the pattern count
-    // For circle, we can use more boxes if needed
-    final layout = CANTABPALConfig.getLayoutForStage(_currentStageIndex);
-    final boxCount = (layout == BoxLayout.circle && patternCount < 10) ? 10 : patternCount;
+    // CRITICAL FIX: We render exactly patternCount boxes in _buildBoxGrid
+    // So we must use positions 0 to (patternCount-1) only
+    // Simply assign each pattern to a unique box in that range
+    final List<int> selectedPositions = List.generate(patternCount, (i) => i)..shuffle();
 
-    // Randomly select which boxes will have patterns
-    final availablePositions = List.generate(boxCount, (i) => i)..shuffle();
-    final selectedPositions = availablePositions.take(patternCount).toList();
-
-    // Map patterns to positions
+    // Map patterns to positions (1-to-1 mapping)
     final Map<int, int> patternMap = {};
     for (int i = 0; i < patternCount; i++) {
       patternMap[i] = selectedPositions[i];
@@ -767,25 +763,24 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     );
   }
 
-  List<Offset> _generateBoxPositions(BoxLayout layout, int patternCount, Size screenSize) {
-    const boxSize = 60.0;
+  List<Offset> _generateBoxPositions(BoxLayout layout, int patternCount, Size containerSize) {
+    // All positions are relative to the container, not screen
+    // Container will be centered on screen
+    final centerX = containerSize.width * 0.5;
+    final centerY = containerSize.height * 0.5;
 
     switch (layout) {
       case BoxLayout.horizontal:
-        // Stage 1 (2 patterns): Horizontal layout
-        final centerY = screenSize.height * 0.5;
-        final spacing = screenSize.width * 0.5;
-        final centerX = screenSize.width * 0.5;
+        // Stage 1 (2 patterns): Horizontal layout centered
+        final spacing = containerSize.width * 0.4;
         return [
           Offset(centerX - spacing/2, centerY),
           Offset(centerX + spacing/2, centerY),
         ];
 
       case BoxLayout.grid:
-        // Stage 2 (4 patterns): 2x2 grid
-        final centerX = screenSize.width * 0.5;
-        final centerY = screenSize.height * 0.5;
-        final spacing = 90.0;
+        // Stage 2 (4 patterns): 2x2 grid centered
+        final spacing = 80.0;
         return [
           Offset(centerX - spacing, centerY - spacing), // Top-left
           Offset(centerX + spacing, centerY - spacing), // Top-right
@@ -794,12 +789,8 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         ];
 
       case BoxLayout.circle:
-        // Stages 3-7 (5-8 patterns): Circular arrangement
-        final availableWidth = screenSize.width * 0.85;
-        final availableHeight = screenSize.height * 0.4;
-        final radius = (availableWidth < availableHeight ? availableWidth : availableHeight) * 0.35;
-        final centerX = screenSize.width * 0.5;
-        final centerY = screenSize.height * 0.5;
+        // Stages 3-7 (5-8 patterns): Circular arrangement centered
+        final radius = dart_math.min(containerSize.width, containerSize.height) * 0.35;
 
         return List.generate(patternCount, (i) {
           final angle = (i * 2 * 3.14159) / patternCount - (3.14159 / 2);
@@ -817,19 +808,19 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Generate positions based on layout
-    final positions = _generateBoxPositions(layout, patternCount, Size(screenWidth, screenHeight));
+    // Container size - consistent across all layouts for centering
+    final containerWidth = screenWidth * 0.9;
+    final containerHeight = screenHeight * 0.5; // Use half screen height
 
-    // For circular layout, we need a container; for others, we can use the positions directly
-    final containerSize = layout == BoxLayout.circle
-      ? (screenWidth * 0.85) * 0.7 + boxSize
-      : screenHeight * 0.6;
+    // Generate positions based on layout (relative to container)
+    final positions = _generateBoxPositions(layout, patternCount, Size(containerWidth, containerHeight));
 
-    return SizedBox(
-      width: screenWidth,
-      height: containerSize,
-      child: Stack(
-        children: List.generate(patternCount, (boxIndex) {
+    return Center(
+      child: SizedBox(
+        width: containerWidth,
+        height: containerHeight,
+        child: Stack(
+          children: List.generate(patternCount, (boxIndex) {
           final position = positions[boxIndex];
           final left = position.dx - (boxSize / 2);
           final top = position.dy - (boxSize / 2);
@@ -868,6 +859,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                   ),
           );
         }),
+        ),
       ),
     );
   }

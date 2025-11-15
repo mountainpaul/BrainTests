@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/datasources/database.dart';
 import '../../domain/entities/assessment.dart';
+import 'cambridge_assessment_provider.dart';
 import 'cognitive_activity_provider.dart';
 import 'repository_providers.dart';
 
@@ -48,17 +49,20 @@ final weeklyMCITestCountProvider = FutureProvider.autoDispose<int>((ref) async {
   // Watch the refresh trigger to rebuild when assessments change
   ref.watch(assessmentRefreshTriggerProvider);
 
-  final repository = ref.read(assessmentRepositoryProvider);
-  final allAssessments = await repository.getAllAssessments();
+  final assessmentRepository = ref.read(assessmentRepositoryProvider);
+  final cambridgeRepository = ref.read(cambridgeAssessmentRepositoryProvider);
+
+  // Get both regular and Cambridge assessments
+  final regularAssessments = await assessmentRepository.getAllAssessments();
+  final cambridgeAssessments = await cambridgeRepository.getAllAssessments();
 
   // Calculate this week's Monday at midnight
   final now = DateTime.now();
   final weekStart = now.subtract(Duration(days: now.weekday - 1));
   final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
 
-  // Filter for MCI tests from this week
-  // All cognitive assessment types are part of MCI screening except attentionFocus
-  final thisWeekMCITests = allAssessments.where((assessment) {
+  // Filter for regular MCI tests from this week
+  final thisWeekRegularMCITests = regularAssessments.where((assessment) {
     final isThisWeek = assessment.completedAt.isAfter(weekStartMidnight) ||
                        assessment.completedAt.isAtSameMomentAs(weekStartMidnight);
     final isMCITest = assessment.type == AssessmentType.processingSpeed ||
@@ -69,7 +73,14 @@ final weeklyMCITestCountProvider = FutureProvider.autoDispose<int>((ref) async {
     return isThisWeek && isMCITest;
   }).toList();
 
-  return thisWeekMCITests.length;
+  // Filter for Cambridge tests from this week
+  final thisWeekCambridgeTests = cambridgeAssessments.where((result) {
+    final isThisWeek = result.completedAt.isAfter(weekStartMidnight) ||
+                       result.completedAt.isAtSameMomentAs(weekStartMidnight);
+    return isThisWeek;
+  }).toList();
+
+  return thisWeekRegularMCITests.length + thisWeekCambridgeTests.length;
 });
 
 @riverpod

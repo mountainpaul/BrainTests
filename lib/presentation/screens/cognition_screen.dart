@@ -8,6 +8,7 @@ import '../../domain/entities/cognitive_activity.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../providers/assessment_provider.dart';
+import '../providers/cambridge_assessment_provider.dart';
 import '../providers/cognitive_activity_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
 import '../providers/daily_goals_provider.dart';
@@ -825,15 +826,20 @@ class CognitionOverviewTab extends ConsumerWidget {
   }
 
   Future<void> _showWeeklyMCITestsDialog(BuildContext context, WidgetRef ref) async {
-    final repository = ref.read(assessmentRepositoryProvider);
-    final allAssessments = await repository.getAllAssessments();
+    final assessmentRepository = ref.read(assessmentRepositoryProvider);
+    final cambridgeRepository = ref.read(cambridgeAssessmentRepositoryProvider);
+
+    // Get both regular and Cambridge assessments
+    final regularAssessments = await assessmentRepository.getAllAssessments();
+    final cambridgeAssessments = await cambridgeRepository.getAllAssessments();
 
     // Calculate this week's assessments
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
     final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
 
-    final thisWeekMCITests = allAssessments.where((assessment) {
+    // Filter regular MCI tests from this week
+    final thisWeekRegularMCITests = regularAssessments.where((assessment) {
       final isThisWeek = assessment.completedAt.isAfter(weekStartMidnight) ||
                          assessment.completedAt.isAtSameMomentAs(weekStartMidnight);
       final isMCITest = assessment.type == AssessmentType.processingSpeed ||
@@ -844,6 +850,15 @@ class CognitionOverviewTab extends ConsumerWidget {
       return isThisWeek && isMCITest;
     }).toList();
 
+    // Filter Cambridge tests from this week (PAL, RTI, etc.)
+    final thisWeekCambridgeTests = cambridgeAssessments.where((result) {
+      final isThisWeek = result.completedAt.isAfter(weekStartMidnight) ||
+                         result.completedAt.isAtSameMomentAs(weekStartMidnight);
+      return isThisWeek;
+    }).toList();
+
+    final totalMCITestsThisWeek = thisWeekRegularMCITests.length + thisWeekCambridgeTests.length;
+
     if (!context.mounted) return;
 
     showDialog(
@@ -851,22 +866,37 @@ class CognitionOverviewTab extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Weekly MCI Tests'),
         content: SingleChildScrollView(
-          child: thisWeekMCITests.isEmpty
+          child: totalMCITestsThisWeek == 0
               ? const Text('No MCI tests completed this week yet.')
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: thisWeekMCITests.map((assessment) {
-                    final activity = CognitiveActivity.fromAssessment(assessment);
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.check_circle, color: Colors.green),
-                      title: Text(activity.name),
-                      subtitle: Text(
-                        '${activity.score}% - ${DateFormat('MMM d, h:mm a').format(assessment.completedAt)}',
-                      ),
-                    );
-                  }).toList(),
+                  children: [
+                    // Show regular MCI tests
+                    ...thisWeekRegularMCITests.map((assessment) {
+                      final activity = CognitiveActivity.fromAssessment(assessment);
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.check_circle, color: Colors.green),
+                        title: Text(activity.name),
+                        subtitle: Text(
+                          '${activity.score}% - ${DateFormat('MMM d, h:mm a').format(assessment.completedAt)}',
+                        ),
+                      );
+                    }),
+                    // Show Cambridge tests (PAL, RTI, etc.)
+                    ...thisWeekCambridgeTests.map((result) {
+                      final testName = result.testType.name.toUpperCase();
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.science, color: Colors.purple),
+                        title: Text('CANTAB $testName'),
+                        subtitle: Text(
+                          '${result.accuracy.toStringAsFixed(1)}% - ${DateFormat('MMM d, h:mm a').format(result.completedAt)}',
+                        ),
+                      );
+                    }),
+                  ],
                 ),
         ),
         actions: [

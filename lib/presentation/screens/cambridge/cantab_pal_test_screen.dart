@@ -337,11 +337,12 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     final stagesCompleted = _stageResults.where((r) => r).length;
     final accuracy = stagesCompleted / CANTABPALConfig.totalStages * 100;
 
+    // Save results BEFORE changing phase to avoid ref disposal issues
+    _saveResults(duration, accuracy, stagesCompleted);
+
     setState(() {
       _phase = CANTABPALPhase.results;
     });
-
-    _saveResults(duration, accuracy, stagesCompleted);
   }
 
   Future<void> _saveResults(Duration duration, double accuracy, int stagesCompleted) async {

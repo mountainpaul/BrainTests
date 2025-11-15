@@ -18,7 +18,11 @@ class CambridgeAssessment extends _$CambridgeAssessment {
   Future<void> addAssessment(CambridgeAssessmentResult assessment) async {
     final repository = ref.read(cambridgeAssessmentRepositoryProvider);
     await repository.insertAssessment(assessment);
-    ref.invalidateSelf();
+
+    // Check if still mounted before invalidating
+    if (ref.mounted) {
+      ref.invalidateSelf();
+    }
   }
 
   /// Get assessments by test type

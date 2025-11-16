@@ -1,6 +1,6 @@
 // This is a basic Flutter widget test for the Brain Plan app.
 
-import 'package:brain_plan/main.dart';
+import 'package:brain_tests/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-import 'package:brain_plan/core/services/analytics_service.dart';
+import 'package:brain_tests/core/services/analytics_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:brain_plan/domain/models/block_3d_shape.dart';
+import 'package:brain_tests/domain/models/block_3d_shape.dart';
 import 'package:flutter/material.dart' as material show Colors;
 import 'package:flutter/material.dart' hide Colors;
 import 'package:vector_math/vector_math_64.dart';

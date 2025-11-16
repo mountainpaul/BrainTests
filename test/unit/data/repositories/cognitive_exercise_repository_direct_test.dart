@@ -1,6 +1,6 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/data/repositories/cognitive_exercise_repository_impl.dart';
-import 'package:brain_plan/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/data/repositories/cognitive_exercise_repository_impl.dart';
+import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Direct test of repository to verify exercises are saved

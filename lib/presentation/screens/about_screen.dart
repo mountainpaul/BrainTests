@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 
 class AboutScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _AboutScreenState extends State<AboutScreen> {
           _buildContactCard(),
         ],
       ),
+      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 4),
     );
   }
 

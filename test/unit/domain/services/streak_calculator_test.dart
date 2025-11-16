@@ -1,6 +1,6 @@
-import 'package:brain_plan/domain/entities/cognitive_exercise.dart';
-import 'package:brain_plan/domain/services/streak_calculator.dart';
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/domain/services/streak_calculator.dart';
+import 'package:brain_tests/data/datasources/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

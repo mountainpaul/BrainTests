@@ -1,6 +1,6 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/entities/assessment.dart';
-import 'package:brain_plan/presentation/widgets/charts/assessment_chart.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/assessment.dart';
+import 'package:brain_tests/presentation/widgets/charts/assessment_chart.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

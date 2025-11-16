@@ -1,4 +1,4 @@
-import 'package:brain_plan/core/services/encryption_key_manager.dart';
+import 'package:brain_tests/core/services/encryption_key_manager.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';

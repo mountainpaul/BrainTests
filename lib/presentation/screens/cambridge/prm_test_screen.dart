@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as dart_math;
 
-import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
-import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
-import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
+import 'package:brain_tests/domain/entities/cambridge_assessment.dart';
+import 'package:brain_tests/domain/services/cambridge_test_generator.dart';
+import 'package:brain_tests/presentation/providers/cambridge_assessment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';

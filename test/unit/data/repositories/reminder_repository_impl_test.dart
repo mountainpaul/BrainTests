@@ -1,6 +1,6 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/data/repositories/reminder_repository_impl.dart';
-import 'package:brain_plan/domain/entities/reminder.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/data/repositories/reminder_repository_impl.dart';
+import 'package:brain_tests/domain/entities/reminder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/test_database.dart';

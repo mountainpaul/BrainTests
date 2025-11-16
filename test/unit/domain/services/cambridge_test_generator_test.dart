@@ -1,4 +1,4 @@
-import 'package:brain_plan/domain/services/cambridge_test_generator.dart';
+import 'package:brain_tests/domain/services/cambridge_test_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

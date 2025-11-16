@@ -27,7 +27,7 @@ class GoogleDriveBackupService {
   ];
 
   /// OAuth Web Client ID from Google Cloud Console (not Android client ID)
-  static const String _serverClientId = '565609588193-06dkaefd85fg8thpeihpenia1nmgvkbg.apps.googleusercontent.com';
+  static const String _serverClientId = '817677274854-kememf9orcave4p5hr53m8vpintk8e8f.apps.googleusercontent.com';
 
   /// Initialize Google Sign-In
   static Future<void> initialize() async {
@@ -57,7 +57,7 @@ class GoogleDriveBackupService {
     _currentUser = user;
 
     if (user != null) {
-      _setupAuthenticatedClient(user);
+      await _setupAuthenticatedClient(user);
       // Save the account email for future silent sign-ins
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_savedAccountKey, user.email);
@@ -69,6 +69,7 @@ class GoogleDriveBackupService {
       await prefs.remove(_savedAccountKey);
     }
   }
+
 
   static Future<void> _setupAuthenticatedClient(GoogleSignInAccount user) async {
     try {
@@ -89,6 +90,8 @@ class GoogleDriveBackupService {
         await initialize();
       }
 
+      // Use authenticate() to request Drive access
+      debugPrint('Requesting authentication with Drive scopes: $_scopes');
       await GoogleSignIn.instance.authenticate();
 
       // Wait for user to be available via authentication event callback
@@ -104,9 +107,7 @@ class GoogleDriveBackupService {
         return null;
       }
 
-      // Now explicitly request authorization for Drive scopes
-      debugPrint('User signed in, now requesting Drive scopes...');
-      await _setupAuthenticatedClient(_currentUser!);
+      debugPrint('User signed in: ${_currentUser!.email}');
 
       if (_authenticatedClient != null) {
         debugPrint('✓ Signed in as ${_currentUser!.email} with authenticated client ready');

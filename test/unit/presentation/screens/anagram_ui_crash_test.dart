@@ -1,7 +1,7 @@
-import 'package:brain_plan/core/services/word_dictionary_service.dart';
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/presentation/providers/database_provider.dart';
-import 'package:brain_plan/presentation/screens/exercise_test_screen.dart';
+import 'package:brain_tests/core/services/word_dictionary_service.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/presentation/screens/exercise_test_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

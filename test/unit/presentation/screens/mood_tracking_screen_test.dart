@@ -1,7 +1,7 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/entities/mood_entry.dart';
-import 'package:brain_plan/presentation/providers/mood_entry_provider.dart';
-import 'package:brain_plan/presentation/screens/mood_tracking_screen.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/mood_entry.dart';
+import 'package:brain_tests/presentation/providers/mood_entry_provider.dart';
+import 'package:brain_tests/presentation/screens/mood_tracking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

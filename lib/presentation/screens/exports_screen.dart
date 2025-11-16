@@ -13,6 +13,7 @@ import '../../core/services/json_import_service.dart';
 import '../../core/services/pdf_service.dart';
 import '../providers/database_provider.dart';
 import '../providers/repository_providers.dart';
+import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 
 class ExportsScreen extends ConsumerStatefulWidget {
@@ -40,16 +41,16 @@ class _ExportsScreenState extends ConsumerState<ExportsScreen> {
 
         case 'pdf':
           final assessmentRepo = ref.read(assessmentRepositoryProvider);
-          final moodRepo = ref.read(moodEntryRepositoryProvider);
+          final cambridgeRepo = ref.read(cambridgeAssessmentRepositoryProvider);
           final exerciseRepo = ref.read(cognitiveExerciseRepositoryProvider);
 
           final assessments = await assessmentRepo.getAllAssessments();
-          final moodEntries = await moodRepo.getAllMoodEntries();
+          final cambridgeResults = await cambridgeRepo.getAllAssessments();
           final exercises = await exerciseRepo.getAllExercises();
 
           await PDFService.generateAndShareReport(
             assessments: assessments,
-            moodEntries: moodEntries,
+            cambridgeResults: cambridgeResults,
             exercises: exercises,
           );
           break;
@@ -646,6 +647,7 @@ class _ExportsScreenState extends ConsumerState<ExportsScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 2),
     );
   }
 }

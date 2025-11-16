@@ -109,7 +109,7 @@ final class IsGoogleDriveSignedInProvider
 }
 
 String _$isGoogleDriveSignedInHash() =>
-    r'a904a88eadb2a9c91bdb28abf687398e0d69a23d';
+    r'e7360289e4a89b27a665c748e5508373e2042619';
 
 /// Convenience provider for user email
 
@@ -156,4 +156,4 @@ final class GoogleDriveUserEmailProvider
 }
 
 String _$googleDriveUserEmailHash() =>
-    r'a6c3dc7767ba5125b4b62bdba39039fcf9fc15dc';
+    r'c635c4c74b8dfae23688e76466e28e484a39764a';

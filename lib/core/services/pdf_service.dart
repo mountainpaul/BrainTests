@@ -10,12 +10,12 @@ import 'package:printing/printing.dart';
 import '../../data/datasources/database.dart';
 import '../../domain/entities/assessment.dart';
 import '../../domain/entities/cognitive_exercise.dart';
-import '../../domain/entities/mood_entry.dart';
+import '../../domain/entities/cambridge_assessment.dart' show CambridgeAssessmentResult;
 
 class PDFService {
   static Future<void> generateAndShareReport({
     required List<Assessment> assessments,
-    required List<MoodEntry> moodEntries,
+    required List<CambridgeAssessmentResult> cambridgeResults,
     required List<CognitiveExercise> exercises,
   }) async {
     final pdf = pw.Document();
@@ -80,8 +80,8 @@ class PDFService {
       );
     }
 
-    // Add mood tracking page
-    if (moodEntries.isNotEmpty) {
+    // Add Cambridge assessments page
+    if (cambridgeResults.isNotEmpty) {
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -90,16 +90,14 @@ class PDFService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'Mood & Wellness Summary',
+                  'Cambridge CANTAB Tests',
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.SizedBox(height: 20),
-                _buildMoodTable(moodEntries),
-                pw.SizedBox(height: 20),
-                _buildMoodAverages(moodEntries),
+                _buildCambridgeTable(cambridgeResults),
               ],
             );
           },
@@ -142,7 +140,7 @@ class PDFService {
 
   static Future<void> saveReportToDevice({
     required List<Assessment> assessments,
-    required List<MoodEntry> moodEntries,
+    required List<CambridgeAssessmentResult> cambridgeResults,
     required List<CognitiveExercise> exercises,
   }) async {
     final pdf = pw.Document();
@@ -274,63 +272,13 @@ class PDFService {
     );
   }
 
-  static pw.Widget _buildMoodTable(List<MoodEntry> moodEntries) {
-    return pw.Table.fromTextArray(
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-      data: [
-        ['Date', 'Mood', 'Energy', 'Stress', 'Sleep', 'Wellness'],
-        ...moodEntries.take(10).map((entry) => [
-          '${entry.entryDate.day}/${entry.entryDate.month}/${entry.entryDate.year}',
-          _getMoodLevelString(entry.mood),
-          '${entry.energyLevel}/10',
-          '${entry.stressLevel}/10',
-          '${entry.sleepQuality}/10',
-          '${entry.overallWellness.toStringAsFixed(1)}/10',
-        ]),
-      ],
-    );
+  // Mood tracking removed - stub methods for compatibility
+  static pw.Widget _buildMoodTable(List<dynamic> moodEntries) {
+    return pw.SizedBox.shrink();
   }
 
-  static pw.Widget _buildMoodAverages(List<MoodEntry> moodEntries) {
-    final averageWellness = moodEntries
-        .map((e) => e.overallWellness)
-        .reduce((a, b) => a + b) / moodEntries.length;
-    
-    final averageEnergy = moodEntries
-        .map((e) => e.energyLevel)
-        .reduce((a, b) => a + b) / moodEntries.length;
-    
-    final averageStress = moodEntries
-        .map((e) => e.stressLevel)
-        .reduce((a, b) => a + b) / moodEntries.length;
-    
-    final averageSleep = moodEntries
-        .map((e) => e.sleepQuality)
-        .reduce((a, b) => a + b) / moodEntries.length;
-
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          'Average Wellness Metrics',
-          style: pw.TextStyle(
-            fontSize: 16,
-            fontWeight: pw.FontWeight.bold,
-          ),
-        ),
-        pw.SizedBox(height: 10),
-        pw.Table.fromTextArray(
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          data: [
-            ['Metric', 'Average Score'],
-            ['Overall Wellness', '${averageWellness.toStringAsFixed(1)}/10'],
-            ['Energy Level', '${averageEnergy.toStringAsFixed(1)}/10'],
-            ['Stress Level', '${averageStress.toStringAsFixed(1)}/10'],
-            ['Sleep Quality', '${averageSleep.toStringAsFixed(1)}/10'],
-          ],
-        ),
-      ],
-    );
+  static pw.Widget _buildMoodAverages(List<dynamic> moodEntries) {
+    return pw.SizedBox.shrink();
   }
 
   static pw.Widget _buildExerciseTable(List<CognitiveExercise> exercises) {
@@ -398,5 +346,24 @@ class PDFService {
       default:
         return 'Unknown';
     }
+  }
+
+  static pw.Widget _buildCambridgeTable(List<CambridgeAssessmentResult> results) {
+    return pw.Table.fromTextArray(
+      headers: ['Test', 'Accuracy', 'Errors', 'Time', 'Norm Score', 'Date'],
+      data: results.map((result) {
+        return [
+          result.testType.name.toUpperCase(),
+          '${result.accuracy.toStringAsFixed(1)}%',
+          '${result.errorCount}',
+          '${result.durationSeconds}s',
+          result.normScore.toStringAsFixed(1),
+          '${result.completedAt.month}/${result.completedAt.day}/${result.completedAt.year}',
+        ];
+      }).toList(),
+      border: pw.TableBorder.all(),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      cellAlignment: pw.Alignment.centerLeft,
+    );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:brain_plan/core/utils/cycle_day_calculator.dart';
+import 'package:brain_tests/core/utils/cycle_day_calculator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

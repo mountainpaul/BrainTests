@@ -1,6 +1,6 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/models/assessment_models.dart';
-import 'package:brain_plan/domain/services/assessment_generator.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/models/assessment_models.dart';
+import 'package:brain_tests/domain/services/assessment_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

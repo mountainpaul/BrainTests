@@ -1,5 +1,5 @@
-import 'package:brain_plan/domain/entities/assessment_results.dart';
-import 'package:brain_plan/domain/entities/validated_assessments.dart';
+import 'package:brain_tests/domain/entities/assessment_results.dart';
+import 'package:brain_tests/domain/entities/validated_assessments.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

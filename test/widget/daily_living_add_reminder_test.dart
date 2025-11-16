@@ -1,4 +1,4 @@
-import 'package:brain_plan/presentation/screens/daily_living_assistant.dart';
+import 'package:brain_tests/presentation/screens/daily_living_assistant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

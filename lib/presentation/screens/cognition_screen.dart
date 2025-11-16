@@ -71,7 +71,7 @@ class _CognitionScreenState extends ConsumerState<CognitionScreen> with TickerPr
           CognitionOverviewTab(onStartTest: _switchToBrainTrainingTab),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 3),
+      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 0),
     );
   }
 }
@@ -875,12 +875,27 @@ class CognitionOverviewTab extends ConsumerWidget {
                     // Show regular MCI tests
                     ...thisWeekRegularMCITests.map((assessment) {
                       final activity = CognitiveActivity.fromAssessment(assessment);
+
+                      // For timed tests (Trail Making, SDMT), show time and errors
+                      String scoreDisplay;
+                      if (assessment.type == AssessmentType.processingSpeed ||
+                          assessment.type == AssessmentType.executiveFunction) {
+                        // These are timed tests - extract errors from notes
+                        final notes = assessment.notes ?? '';
+                        final errorsMatch = RegExp(r'Errors: (\d+)').firstMatch(notes);
+                        final errors = errorsMatch != null ? errorsMatch.group(1) : '0';
+                        scoreDisplay = '${assessment.score}s (${errors} errors)';
+                      } else {
+                        // Other tests use percentage scoring
+                        scoreDisplay = '${activity.score}%';
+                      }
+
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.check_circle, color: Colors.green),
                         title: Text(activity.name),
                         subtitle: Text(
-                          '${activity.score}% - ${DateFormat('MMM d, h:mm a').format(assessment.completedAt)}',
+                          '$scoreDisplay - ${DateFormat('MMM d, h:mm a').format(assessment.completedAt)}',
                         ),
                       );
                     }),
@@ -912,7 +927,7 @@ class CognitionOverviewTab extends ConsumerWidget {
   Future<void> _showDailyExercisesDialog(
     BuildContext context,
     WidgetRef ref,
-    List exercises,
+    List<CognitiveExercise> exercises,
   ) async {
     showDialog(
       context: context,
@@ -952,9 +967,9 @@ class CognitionOverviewTab extends ConsumerWidget {
   Future<void> _showStreakHistoryDialog(
     BuildContext context,
     WidgetRef ref,
-    List exercises,
+    List<CognitiveExercise> exercises,
   ) async {
-    final exerciseList = exercises.cast<CognitiveExercise>();
+    final exerciseList = exercises;
     final streak = StreakCalculator.calculateDailyStreak(exerciseList);
 
     // Get unique dates with activity

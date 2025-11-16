@@ -1,5 +1,5 @@
-import 'package:brain_plan/presentation/screens/about_screen.dart';
-import 'package:brain_plan/presentation/screens/exports_screen.dart';
+import 'package:brain_tests/presentation/screens/about_screen.dart';
+import 'package:brain_tests/presentation/screens/exports_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -83,37 +83,8 @@ class JsonImportService {
     AppDatabase database,
     List<dynamic> moodEntriesData,
   ) async {
-    int imported = 0;
-
-    for (final item in moodEntriesData) {
-      try {
-        final moodMap = item as Map<String, dynamic>;
-
-        // Parse mood level
-        final moodString = moodMap['mood'] as String;
-        final mood = MoodLevel.values.firstWhere(
-          (e) => e.toString() == moodString,
-          orElse: () => throw FormatException('Invalid mood level: $moodString'),
-        );
-
-        final moodNotesValue = moodMap['notes'] as String?;
-        final moodEntry = MoodEntryTableCompanion.insert(
-          mood: mood,
-          energyLevel: moodMap['energy_level'] as int,
-          stressLevel: moodMap['stress_level'] as int,
-          sleepQuality: moodMap['sleep_quality'] as int,
-          entryDate: DateTime.parse(moodMap['entry_date'] as String),
-          notes: moodNotesValue != null ? Value(moodNotesValue) : const Value.absent(),
-        );
-
-        await database.into(database.moodEntryTable).insert(moodEntry);
-        imported++;
-      } catch (e) {
-        print('Error importing mood entry: $e');
-      }
-    }
-
-    return imported;
+    // Mood tracking feature removed - skip import
+    return 0;
   }
 
   /// Imports exercises from JSON data
@@ -182,7 +153,6 @@ class JsonImportService {
       // Optionally clear existing data
       if (clearExisting) {
         await database.delete(database.assessmentTable).go();
-        await database.delete(database.moodEntryTable).go();
         await database.delete(database.cognitiveExerciseTable).go();
       }
 

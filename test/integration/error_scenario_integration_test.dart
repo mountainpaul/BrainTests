@@ -1,12 +1,12 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/data/repositories/assessment_repository_impl.dart';
-import 'package:brain_plan/data/repositories/cognitive_exercise_repository_impl.dart';
-import 'package:brain_plan/data/repositories/mood_entry_repository_impl.dart';
-import 'package:brain_plan/data/repositories/reminder_repository_impl.dart';
-import 'package:brain_plan/domain/entities/assessment.dart';
-import 'package:brain_plan/domain/entities/cognitive_exercise.dart';
-import 'package:brain_plan/domain/entities/mood_entry.dart';
-import 'package:brain_plan/domain/entities/reminder.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/data/repositories/assessment_repository_impl.dart';
+import 'package:brain_tests/data/repositories/cognitive_exercise_repository_impl.dart';
+import 'package:brain_tests/data/repositories/mood_entry_repository_impl.dart';
+import 'package:brain_tests/data/repositories/reminder_repository_impl.dart';
+import 'package:brain_tests/domain/entities/assessment.dart';
+import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/domain/entities/mood_entry.dart';
+import 'package:brain_tests/domain/entities/reminder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 

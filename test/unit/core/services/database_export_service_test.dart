@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:brain_plan/core/services/database_export_service.dart';
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_tests/core/services/database_export_service.dart';
+import 'package:brain_tests/data/datasources/database.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 // Mock for PathProviderPlatform

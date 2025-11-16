@@ -1,7 +1,7 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/entities/cognitive_exercise.dart';
-import 'package:brain_plan/presentation/providers/cognitive_exercise_provider.dart';
-import 'package:brain_plan/presentation/screens/cognition_screen.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/presentation/providers/cognitive_exercise_provider.dart';
+import 'package:brain_tests/presentation/screens/cognition_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

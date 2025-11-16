@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/services/pdf_service.dart';
 import '../../domain/entities/assessment.dart';
 import '../../domain/entities/cognitive_exercise.dart';
-import '../../domain/entities/mood_entry.dart';
+import '../../domain/entities/cambridge_assessment.dart' show CambridgeAssessmentResult;
 
 part 'pdf_provider.g.dart';
 
@@ -21,14 +21,14 @@ class PDFGeneratorNotifier extends _$PDFGeneratorNotifier {
 
   Future<void> generateAndShareReport({
     required List<Assessment> assessments,
-    required List<MoodEntry> moodEntries,
+    required List<CambridgeAssessmentResult> cambridgeResults,
     required List<CognitiveExercise> exercises,
   }) async {
     state = const AsyncValue.loading();
     try {
       await PDFService.generateAndShareReport(
         assessments: assessments,
-        moodEntries: moodEntries,
+        cambridgeResults: cambridgeResults,
         exercises: exercises,
       );
       state = const AsyncValue.data(null);
@@ -39,14 +39,14 @@ class PDFGeneratorNotifier extends _$PDFGeneratorNotifier {
 
   Future<void> saveReportToDevice({
     required List<Assessment> assessments,
-    required List<MoodEntry> moodEntries,
+    required List<CambridgeAssessmentResult> cambridgeResults,
     required List<CognitiveExercise> exercises,
   }) async {
     state = const AsyncValue.loading();
     try {
       await PDFService.saveReportToDevice(
         assessments: assessments,
-        moodEntries: moodEntries,
+        cambridgeResults: cambridgeResults,
         exercises: exercises,
       );
       state = const AsyncValue.data(null);

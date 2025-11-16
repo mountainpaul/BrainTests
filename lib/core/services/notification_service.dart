@@ -243,5 +243,102 @@ class NotificationService {
     final location = tz.local;
     return tz.TZDateTime.from(dateTime, location);
   }
+
+  /// Schedule weekly MCI test reminder (Mondays at 9:00 AM)
+  static Future<void> scheduleWeeklyMCITestReminder({int hour = 9, int minute = 0}) async {
+    if (!_initialized) await initialize();
+
+    // Calculate next Monday at specified time
+    final now = DateTime.now();
+    var nextMonday = DateTime(now.year, now.month, now.day, hour, minute);
+
+    // Find next Monday
+    while (nextMonday.weekday != DateTime.monday || nextMonday.isBefore(now)) {
+      nextMonday = nextMonday.add(const Duration(days: 1));
+    }
+
+    const androidDetails = AndroidNotificationDetails(
+      'mci_tests',
+      'MCI Test Reminders',
+      channelDescription: 'Weekly reminders to complete MCI cognitive tests',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const notificationDetails = NotificationDetails(android: androidDetails);
+
+    await _notifications.zonedSchedule(
+      100, // Unique ID for weekly MCI reminder
+      'Weekly MCI Tests',
+      'Time to complete your 5 MCI cognitive tests this week! 🧠',
+      _convertToTZDateTime(nextMonday),
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+    );
+
+    debugPrint('Scheduled weekly MCI test reminder for Mondays at $hour:${minute.toString().padLeft(2, '0')}');
+  }
+
+  /// Schedule daily exercise reminder (every morning at specified time)
+  static Future<void> scheduleDailyExerciseReminder({int hour = 9, int minute = 0}) async {
+    if (!_initialized) await initialize();
+
+    // Calculate next occurrence at specified time
+    var nextReminder = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, hour, minute);
+
+    // If time has passed today, schedule for tomorrow
+    if (nextReminder.isBefore(DateTime.now())) {
+      nextReminder = nextReminder.add(const Duration(days: 1));
+    }
+
+    const androidDetails = AndroidNotificationDetails(
+      'daily_exercises',
+      'Daily Exercise Reminders',
+      channelDescription: 'Daily reminders to play brain training exercises',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const notificationDetails = NotificationDetails(android: androidDetails);
+
+    await _notifications.zonedSchedule(
+      101, // Unique ID for daily exercise reminder
+      'Daily Brain Training',
+      'Start your day with brain exercises! Complete 5 games today 🎯',
+      _convertToTZDateTime(nextReminder),
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+
+    debugPrint('Scheduled daily exercise reminder for $hour:${minute.toString().padLeft(2, '0')}');
+  }
+
+  /// Cancel weekly MCI test reminder
+  static Future<void> cancelWeeklyMCITestReminder() async {
+    await _notifications.cancel(100);
+    debugPrint('Cancelled weekly MCI test reminder');
+  }
+
+  /// Cancel daily exercise reminder
+  static Future<void> cancelDailyExerciseReminder() async {
+    await _notifications.cancel(101);
+    debugPrint('Cancelled daily exercise reminder');
+  }
+
+  /// Enable both default reminders
+  static Future<void> enableDefaultReminders() async {
+    await scheduleWeeklyMCITestReminder();
+    await scheduleDailyExerciseReminder();
+  }
+
+  /// Disable all cognitive reminders
+  static Future<void> disableAllCognitiveReminders() async {
+    await cancelWeeklyMCITestReminder();
+    await cancelDailyExerciseReminder();
+  }
 }
 

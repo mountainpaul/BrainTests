@@ -1,4 +1,4 @@
-import 'package:brain_plan/domain/models/assessment_models.dart';
+import 'package:brain_tests/domain/models/assessment_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

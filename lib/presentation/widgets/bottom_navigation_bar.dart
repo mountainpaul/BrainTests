@@ -20,24 +20,24 @@ class CustomBottomNavigationBar extends ConsumerWidget {
       onTap: (index) => _onItemTapped(context, index),
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.psychology),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Plan',
+          icon: Icon(Icons.person),
+          label: 'Profile',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.access_time),
-          label: 'Fasting',
+          icon: Icon(Icons.file_download),
+          label: 'Exports',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.psychology),
-          label: 'Cognition',
+          icon: Icon(Icons.settings),
+          label: 'Settings',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Journal',
+          icon: Icon(Icons.info),
+          label: 'About',
         ),
       ],
     );
@@ -49,16 +49,16 @@ class CustomBottomNavigationBar extends ConsumerWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/plan');
+        context.go('/profile');
         break;
       case 2:
-        context.go('/fasting');
+        context.go('/exports');
         break;
       case 3:
-        context.go('/cognition');
+        context.go('/settings');
         break;
       case 4:
-        context.go('/journal');
+        context.go('/about');
         break;
     }
   }

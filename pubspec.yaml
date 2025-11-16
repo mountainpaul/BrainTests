@@ -1,8 +1,8 @@
-name: brain_plan
-description: "A production-ready, offline-first Flutter app for cognitive health tracking"
+name: brain_tests
+description: "Cognitive assessment tests and brain training exercises"
 publish_to: 'none'
 
-version: 1.4.3+15
+version: 1.0.0+1
 
 environment:
   sdk: ^3.5.0
@@ -86,3 +86,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/google_cloud_credentials.json
+    - assets/patterns/

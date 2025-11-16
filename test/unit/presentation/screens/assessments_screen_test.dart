@@ -1,7 +1,7 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/entities/assessment.dart';
-import 'package:brain_plan/presentation/providers/assessment_provider.dart';
-import 'package:brain_plan/presentation/screens/assessments_screen.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/assessment.dart';
+import 'package:brain_tests/presentation/providers/assessment_provider.dart';
+import 'package:brain_tests/presentation/screens/assessments_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

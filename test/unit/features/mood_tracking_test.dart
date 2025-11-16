@@ -1,6 +1,6 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/entities/mood_entry.dart';
-import 'package:brain_plan/domain/repositories/mood_entry_repository.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/mood_entry.dart';
+import 'package:brain_tests/domain/repositories/mood_entry_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

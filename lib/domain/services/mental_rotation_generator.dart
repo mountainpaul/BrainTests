@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:brain_plan/domain/models/block_3d_shape.dart';
+import 'package:brain_tests/domain/models/block_3d_shape.dart';
 
 /// Data class for a mental rotation task
 class MentalRotationTask {

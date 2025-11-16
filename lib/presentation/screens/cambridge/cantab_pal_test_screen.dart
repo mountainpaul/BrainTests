@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as dart_math;
 
-import 'package:brain_plan/domain/entities/cambridge_assessment.dart';
-import 'package:brain_plan/presentation/providers/cambridge_assessment_provider.dart';
-import 'package:brain_plan/presentation/screens/cambridge/cantab_pal_config.dart';
-import 'package:brain_plan/presentation/screens/cambridge/pal_box_layout.dart';
-import 'package:brain_plan/presentation/widgets/custom_card.dart';
+import 'package:brain_tests/domain/entities/cambridge_assessment.dart';
+import 'package:brain_tests/presentation/providers/cambridge_assessment_provider.dart';
+import 'package:brain_tests/presentation/screens/cambridge/cantab_pal_config.dart';
+import 'package:brain_tests/presentation/screens/cambridge/pal_box_layout.dart';
+import 'package:brain_tests/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,23 +44,17 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   int _currentAttemptInStage = 0; // Total attempts at current stage
   int _failedAttemptsInStage = 0; // Failed attempts at current stage (for termination)
 
-  // Pattern display - CANTAB uses abstract colorful patterns
-  // Anti-chunking design: asymmetric, non-categorical, non-semantic patterns
-  // Color strategy: Mix warm/cool unpredictably, avoid color family grouping
-  // Each pattern has unique, non-obvious color pairings to prevent color-based chunking
-  final List<List<Color>> _patternColors = [
-    [const Color(0xFFE91E63), const Color(0xFF00BCD4)],  // Pattern 0: Pink + Cyan (warm + cool)
-    [const Color(0xFF795548), const Color(0xFFFFEB3B)],  // Pattern 1: Brown + Yellow (earth + bright)
-    [const Color(0xFF9C27B0), const Color(0xFF4CAF50)],  // Pattern 2: Purple + Green (non-complementary)
-    [const Color(0xFFFF5722), const Color(0xFF3F51B5)],  // Pattern 3: Deep Orange + Indigo (warm + cool)
-    [const Color(0xFF00BCD4), const Color(0xFFE91E63)],  // Pattern 4: Cyan + Pink (inverted from 0)
-    [const Color(0xFF8BC34A), const Color(0xFF673AB7)],  // Pattern 5: Light Green + Deep Purple
-    [const Color(0xFFFF9800), const Color(0xFF009688)],  // Pattern 6: Orange + Teal
-    [const Color(0xFF5E35B1), const Color(0xFFFFA726)],  // Pattern 7: Deep Purple + Light Orange
-    [const Color(0xFF26A69A), const Color(0xFFEC407A)],  // Pattern 8: Teal + Pink
-    [const Color(0xFFFFEB3B), const Color(0xFF5D4037)],  // Pattern 9: Yellow + Deep Brown
-    [const Color(0xFFE53935), const Color(0xFF66BB6A)],  // Pattern 10: Red + Light Green
-    [const Color(0xFF42A5F5), const Color(0xFFFFCA28)],  // Pattern 11: Blue + Amber
+  // Pattern display - CANTAB uses abstract patterns from image files
+  // Using pre-designed abstract patterns from assets/patterns/
+  final List<String> _patternImages = [
+    'assets/patterns/abs1.png',
+    'assets/patterns/abs2.png',
+    'assets/patterns/abs3.png',
+    'assets/patterns/abs4.png',
+    'assets/patterns/abs5.png',
+    'assets/patterns/abs6.png',
+    'assets/patterns/abs7.png',
+    'assets/patterns/abs8.png',
   ];
 
   // Current trial data
@@ -720,10 +714,17 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                       border: Border.all(color: Colors.deepPurple, width: 3),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: CustomPaint(
-                      painter: ComplexPatternPainter(
-                        _currentPatternBeingRecalled,
-                        _patternColors[_currentPatternBeingRecalled],
+                    child: Container(
+                      padding: const EdgeInsets.all(1), // 1 pixel margin
+                      color: Colors.white,
+                      child: Container(
+                        color: Colors.black, // Black background for pattern
+                        child: Image.asset(
+                          _patternImages[_currentPatternBeingRecalled % _patternImages.length],
+                          width: 38,
+                          height: 38,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
@@ -766,14 +767,10 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: isPlaced
-                  ? Colors.grey[300]
-                  : _patternColors[patternIndex % _patternColors.length][0].withOpacity(0.1),
+              color: isPlaced ? Colors.grey[300] : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isPlaced
-                    ? Colors.grey
-                    : _patternColors[patternIndex % _patternColors.length][0],
+                color: isPlaced ? Colors.grey : Colors.blue,
                 width: 2,
               ),
             ),
@@ -829,7 +826,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   Widget _buildBoxGrid({required bool showPatterns}) {
     final layout = CANTABPALConfig.getLayoutForStage(_currentStageIndex);
     final patternCount = _currentPatternCount;
-    const boxSize = 60.0;
+    const boxSize = 80.0;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -874,8 +871,8 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                     showPattern: showPatterns && hasPattern && isCurrentBox,
                   )
                 : Container(
-                    width: 60,
-                    height: 60,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(8),
@@ -899,8 +896,8 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         } : null,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 60,
-          height: 60,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -917,9 +914,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
             ],
           ),
           child: showPattern
-              ? Center(
-                  child: _buildComplexPattern(patternIndex),
-                )
+              ? _buildComplexPattern(patternIndex)
               : null,
         ),
       ),
@@ -1085,13 +1080,20 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     );
   }
 
-  // Build complex abstract patterns (not simple shapes)
+  // Build abstract patterns from image files
   Widget _buildComplexPattern(int patternIndex) {
-    final colors = _patternColors[patternIndex % _patternColors.length];
+    final imagePath = _patternImages[patternIndex % _patternImages.length];
 
-    return CustomPaint(
-      size: const Size(40, 40),
-      painter: ComplexPatternPainter(patternIndex, colors),
+    return Container(
+      padding: const EdgeInsets.all(1), // 1 pixel white margin
+      color: Colors.white, // White border/margin
+      child: Container(
+        color: Colors.black, // Black background for pattern
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover, // Fill the entire space
+        ),
+      ),
     );
   }
 }

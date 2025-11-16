@@ -5,7 +5,6 @@ import 'core/services/analytics_service.dart';
 import 'core/services/auto_backup_service.dart';
 import 'core/services/data_migration_service.dart';
 import 'core/services/google_drive_backup_service.dart';
-import 'core/services/meal_plan_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/performance_monitoring_service.dart';
 import 'core/services/user_profile_service.dart';
@@ -20,6 +19,10 @@ void main() async {
 
   // Initialize services
   await NotificationService.initialize();
+
+  // Enable default cognitive reminders (weekly MCI tests on Monday, daily exercises)
+  await NotificationService.enableDefaultReminders();
+
   await AnalyticsService.initialize();
   await PerformanceMonitoringService.initialize();
 
@@ -39,8 +42,6 @@ void main() async {
   // Only initialize default data if NOT restored from backup
   if (!wasRestored) {
     print('Initializing fresh database with default data...');
-    await MealPlanService.initializeDefaultMealPlans(database);
-    await MealPlanService.initializeDefaultFeedingWindow(database);
     await WordDictionaryService.initializeWordDictionaries(database);
   } else {
     print('Database restored from backup - skipping default data initialization');
@@ -98,7 +99,7 @@ class _BrainPlanAppState extends ConsumerState<BrainPlanApp> with WidgetsBinding
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Brain Plan',
+      title: 'Brain Tests',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,

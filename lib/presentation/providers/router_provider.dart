@@ -16,13 +16,10 @@ import '../screens/cambridge_assessments_screen.dart';
 import '../screens/cognition_screen.dart';
 import '../screens/exercises_screen.dart';
 import '../screens/exports_screen.dart';
-import '../screens/fasting_screen.dart';
-import '../screens/journal_screen.dart';
 import '../screens/onboarding_screen.dart';
-import '../screens/plan_screen.dart';
+import '../screens/profile_setup_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/settings_screen.dart';
-import '../screens/today_dashboard_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -52,27 +49,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         name: 'home',
-        builder: (context, state) => const TodayDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/plan',
-        name: 'plan',
-        builder: (context, state) => const PlanScreen(),
-      ),
-      GoRoute(
-        path: '/fasting',
-        name: 'fasting',
-        builder: (context, state) => const FastingScreen(),
-      ),
-      GoRoute(
-        path: '/cognition',
-        name: 'cognition',
         builder: (context, state) => const CognitionScreen(),
       ),
       GoRoute(
-        path: '/journal',
-        name: 'journal',
-        builder: (context, state) => const JournalScreen(),
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfileSetupScreen(),
       ),
       // Legacy routes for assessments and exercises (now part of cognition)
       GoRoute(

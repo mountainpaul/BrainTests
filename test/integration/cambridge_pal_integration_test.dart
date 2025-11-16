@@ -1,6 +1,6 @@
-import 'package:brain_plan/presentation/screens/cambridge/pal_test_screen.dart';
-import 'package:brain_plan/presentation/screens/cambridge_assessments_screen.dart';
-import 'package:brain_plan/presentation/screens/cognition_screen.dart';
+import 'package:brain_tests/presentation/screens/cambridge/pal_test_screen.dart';
+import 'package:brain_tests/presentation/screens/cambridge_assessments_screen.dart';
+import 'package:brain_tests/presentation/screens/cognition_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

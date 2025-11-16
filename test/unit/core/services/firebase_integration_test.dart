@@ -1,5 +1,5 @@
-import 'package:brain_plan/core/services/analytics_service.dart';
-import 'package:brain_plan/core/services/performance_monitoring_service.dart';
+import 'package:brain_tests/core/services/analytics_service.dart';
+import 'package:brain_tests/core/services/performance_monitoring_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';

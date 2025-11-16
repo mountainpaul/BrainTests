@@ -35,13 +35,13 @@ class GoogleDriveAuth extends _$GoogleDriveAuth {
 
 /// Convenience provider for sign-in status (bool)
 @riverpod
-bool isGoogleDriveSignedIn(ref) {
+bool isGoogleDriveSignedIn(Ref ref) {
   return ref.watch(googleDriveAuthProvider);
 }
 
 /// Convenience provider for user email
 @riverpod
-String? googleDriveUserEmail(ref) {
-  final isSignedIn = ref.watch(googleDriveAuthProvider);
+String? googleDriveUserEmail(Ref ref) {
+  final bool isSignedIn = ref.watch(googleDriveAuthProvider);
   return isSignedIn ? GoogleDriveBackupService.userEmail : null;
 }

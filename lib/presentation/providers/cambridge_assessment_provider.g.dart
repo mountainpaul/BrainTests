@@ -34,7 +34,7 @@ final class CambridgeAssessmentProvider extends $AsyncNotifierProvider<
 }
 
 String _$cambridgeAssessmentHash() =>
-    r'6f06cce92f5e900c1c6f37c58424c0e416b3522f';
+    r'c9421b86f9eb52b48c161e76b1eea9973d82533b';
 
 abstract class _$CambridgeAssessment
     extends $AsyncNotifier<List<CambridgeAssessmentResult>> {

@@ -1,4 +1,4 @@
-import 'package:brain_plan/data/datasources/database.dart';
+import 'package:brain_tests/data/datasources/database.dart';
 import 'package:drift/drift.dart';
 
 /// Helper to create test database instances safely

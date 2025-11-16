@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/auto_backup_service.dart';
 import '../../core/services/data_migration_service.dart';
 import '../../core/services/google_drive_backup_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/services/pdf_service.dart';
 import '../providers/assessment_provider.dart';
+import '../providers/cambridge_assessment_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
 import '../providers/google_drive_provider.dart';
 import '../providers/mood_entry_provider.dart';
+import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -96,6 +100,7 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 3),
     );
   }
 
@@ -336,18 +341,91 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showNotificationSettings(BuildContext context) {
+  void _showNotificationSettings(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final mciEnabled = prefs.getBool('mci_reminder_enabled') ?? true;
+    final exerciseEnabled = prefs.getBool('exercise_reminder_enabled') ?? true;
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Notification Settings'),
-        content: const Text('Notification settings will be implemented with background task integration.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Notification Settings'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Cognitive Health Reminders', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Weekly MCI Tests'),
+                  subtitle: const Text('Mondays at 9:00 AM'),
+                  value: mciEnabled,
+                  onChanged: (value) async {
+                    setState(() {});
+                    await prefs.setBool('mci_reminder_enabled', value);
+                    if (value) {
+                      await NotificationService.scheduleWeeklyMCITestReminder();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Weekly MCI test reminder enabled')),
+                        );
+                      }
+                    } else {
+                      await NotificationService.cancelWeeklyMCITestReminder();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Weekly MCI test reminder disabled')),
+                        );
+                      }
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Daily Brain Training'),
+                  subtitle: const Text('Every day at 9:00 AM'),
+                  value: exerciseEnabled,
+                  onChanged: (value) async {
+                    setState(() {});
+                    await prefs.setBool('exercise_reminder_enabled', value);
+                    if (value) {
+                      await NotificationService.scheduleDailyExerciseReminder();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Daily exercise reminder enabled')),
+                        );
+                      }
+                    } else {
+                      await NotificationService.cancelDailyExerciseReminder();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Daily exercise reminder disabled')),
+                        );
+                      }
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Reminders help you stay consistent with your cognitive health routine.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -364,13 +442,13 @@ class SettingsScreen extends ConsumerWidget {
 
       // Fetch all data from providers
       final assessments = await ref.read(assessmentsProvider.future);
-      final moodEntries = await ref.read(moodEntriesProvider.future);
+      final cambridgeResults = await ref.read(cambridgeAssessmentProvider.future);
       final exercises = await ref.read(cognitiveExercisesProvider.future);
 
       // Generate and share PDF report
       await PDFService.generateAndShareReport(
         assessments: assessments,
-        moodEntries: moodEntries,
+        cambridgeResults: cambridgeResults,
         exercises: exercises,
       );
 

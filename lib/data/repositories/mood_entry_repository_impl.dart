@@ -1,150 +1,40 @@
-import 'package:drift/drift.dart';
-import '../../core/services/auto_backup_service.dart';
 import '../../domain/entities/mood_entry.dart';
 import '../../domain/repositories/mood_entry_repository.dart';
 import '../datasources/database.dart';
 
+/// Mood tracking feature removed - this implementation returns empty data
 class MoodEntryRepositoryImpl implements MoodEntryRepository {
 
   MoodEntryRepositoryImpl(this._database);
   final AppDatabase _database;
 
   @override
-  Future<List<MoodEntry>> getAllMoodEntries() async {
-    final entries = await (_database.select(_database.moodEntryTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.entryDate)]))
-        .get();
-    return entries.map(_mapToEntity).toList();
-  }
+  Future<List<MoodEntry>> getAllMoodEntries() async => [];
 
   @override
-  Future<List<MoodEntry>> getMoodEntriesByDateRange(DateTime start, DateTime end) async {
-    final entries = await (_database.select(_database.moodEntryTable)
-          ..where((t) => t.entryDate.isBetweenValues(start, end))
-          ..orderBy([(t) => OrderingTerm.desc(t.entryDate)]))
-        .get();
-    return entries.map(_mapToEntity).toList();
-  }
+  Future<List<MoodEntry>> getMoodEntriesByDateRange(DateTime start, DateTime end) async => [];
 
   @override
-  Future<MoodEntry?> getMoodEntryById(int id) async {
-    final entry = await (_database.select(_database.moodEntryTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
-    return entry != null ? _mapToEntity(entry) : null;
-  }
+  Future<MoodEntry?> getMoodEntryById(int id) async => null;
 
   @override
-  Future<MoodEntry?> getMoodEntryByDate(DateTime date) async {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-    
-    final entry = await (_database.select(_database.moodEntryTable)
-          ..where((t) => t.entryDate.isBetweenValues(startOfDay, endOfDay)))
-        .getSingleOrNull();
-    return entry != null ? _mapToEntity(entry) : null;
-  }
+  Future<MoodEntry?> getMoodEntryByDate(DateTime date) async => null;
 
   @override
-  Future<int> insertMoodEntry(MoodEntry moodEntry) async {
-    final id = await _database.into(_database.moodEntryTable).insert(
-      MoodEntryTableCompanion.insert(
-        mood: moodEntry.mood,
-        energyLevel: moodEntry.energyLevel,
-        stressLevel: moodEntry.stressLevel,
-        sleepQuality: moodEntry.sleepQuality,
-        notes: Value(moodEntry.notes),
-        entryDate: moodEntry.entryDate,
-        createdAt: Value(moodEntry.createdAt),
-      ),
-    );
-
-    try {
-      await AutoBackupService.triggerBackupAfterChange(changeType: 'mood_entry_added');
-    } catch (e) {
-      print('Backup after mood entry add failed: $e');
-    }
-    return id;
-  }
+  Future<int> insertMoodEntry(MoodEntry moodEntry) async => 0;
 
   @override
-  Future<bool> updateMoodEntry(MoodEntry moodEntry) async {
-    if (moodEntry.id == null) return false;
-    final rowsUpdated = await (_database.update(_database.moodEntryTable)
-          ..where((t) => t.id.equals(moodEntry.id!)))
-        .write(
-      MoodEntryTableCompanion(
-        mood: Value(moodEntry.mood),
-        energyLevel: Value(moodEntry.energyLevel),
-        stressLevel: Value(moodEntry.stressLevel),
-        sleepQuality: Value(moodEntry.sleepQuality),
-        notes: Value(moodEntry.notes),
-        entryDate: Value(moodEntry.entryDate),
-      ),
-    );
-
-    if (rowsUpdated > 0) {
-      try {
-        await AutoBackupService.triggerBackupAfterChange(changeType: 'mood_entry_updated');
-      } catch (e) {
-        print('Backup after mood entry update failed: $e');
-      }
-    }
-
-    return rowsUpdated > 0;
-  }
+  Future<bool> updateMoodEntry(MoodEntry moodEntry) async => false;
 
   @override
-  Future<bool> deleteMoodEntry(int id) async {
-    final rowsDeleted = await (_database.delete(_database.moodEntryTable)
-          ..where((t) => t.id.equals(id)))
-        .go();
-    return rowsDeleted > 0;
-  }
+  Future<bool> deleteMoodEntry(int id) async => false;
 
   @override
-  Future<Map<MoodLevel, int>> getMoodDistribution() async {
-    final entries = await getAllMoodEntries();
-    final Map<MoodLevel, int> distribution = {};
-    
-    for (final mood in MoodLevel.values) {
-      distribution[mood] = entries.where((e) => e.mood == mood).length;
-    }
-    
-    return distribution;
-  }
+  Future<Map<MoodLevel, int>> getMoodDistribution() async => {};
 
   @override
-  Future<List<MoodEntry>> getRecentMoodEntries({int limit = 7}) async {
-    final entries = await (_database.select(_database.moodEntryTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.entryDate)])
-          ..limit(limit))
-        .get();
-    return entries.map(_mapToEntity).toList();
-  }
+  Future<List<MoodEntry>> getRecentMoodEntries({int limit = 7}) async => [];
 
   @override
-  Future<double> getAverageWellnessScore() async {
-    final entries = await getAllMoodEntries();
-    if (entries.isEmpty) return 0.0;
-    
-    final totalWellness = entries
-        .map((e) => e.overallWellness)
-        .reduce((a, b) => a + b);
-    
-    return totalWellness / entries.length;
-  }
-
-  MoodEntry _mapToEntity(MoodEntryData entry) {
-    return MoodEntry(
-      id: entry.id,
-      mood: entry.mood,
-      energyLevel: entry.energyLevel,
-      stressLevel: entry.stressLevel,
-      sleepQuality: entry.sleepQuality,
-      notes: entry.notes,
-      entryDate: entry.entryDate,
-      createdAt: entry.createdAt,
-    );
-  }
+  Future<double> getAverageWellnessScore() async => 0.0;
 }

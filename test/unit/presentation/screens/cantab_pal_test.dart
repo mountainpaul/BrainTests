@@ -1,5 +1,5 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/presentation/screens/cambridge/cantab_pal_test_screen.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/presentation/screens/cambridge/cantab_pal_test_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 

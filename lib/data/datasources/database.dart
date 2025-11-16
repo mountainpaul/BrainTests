@@ -441,30 +441,18 @@ class DailyGoalsTable extends Table {
 
 @DriftDatabase(tables: [
   AssessmentTable,
-  ReminderTable,
   CognitiveExerciseTable,
-  MoodEntryTable,
-  DailyTrackingTable,
-  SleepTrackingTable,
-  CyclingTrackingTable,
   WordDictionaryTable,
   UserProfileTable,
   CambridgeAssessmentTable,
   DailyGoalsTable,
-  MealPlanTable,
-  FeedingWindowTable,
-  FastingTable,
-  SupplementsTable,
-  SupplementLogsTable,
-  PlanningTable,
-  JournalTable,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -472,22 +460,6 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      if (from < 2) {
-        // Add new tables for MCI tracking
-        await m.createTable(dailyTrackingTable);
-        await m.createTable(mealPlanTable);
-        await m.createTable(feedingWindowTable);
-        await m.createTable(fastingTable);
-        await m.createTable(supplementsTable);
-        await m.createTable(supplementLogsTable);
-        await m.createTable(planningTable);
-        await m.createTable(journalTable);
-      }
-      if (from < 3) {
-        // Add sleep tracking table and yoga column
-        await m.createTable(sleepTrackingTable);
-        await m.addColumn(dailyTrackingTable, dailyTrackingTable.yoga);
-      }
       if (from < 4) {
         // Add word dictionary table
         await m.createTable(wordDictionaryTable);
@@ -514,6 +486,8 @@ class AppDatabase extends _$AppDatabase {
         // Add daily goals table for brain game tracking
         await m.createTable(dailyGoalsTable);
       }
+      // Version 10: Removed unused tables (reminders, mood, fasting, meal plans, etc.)
+      // Tables are automatically dropped when removed from @DriftDatabase annotation
     },
   );
 

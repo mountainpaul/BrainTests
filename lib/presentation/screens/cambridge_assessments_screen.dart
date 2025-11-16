@@ -1,7 +1,7 @@
-import 'package:brain_plan/data/datasources/database.dart';
-import 'package:brain_plan/domain/models/block_3d_shape.dart';
-import 'package:brain_plan/presentation/screens/mental_rotation_test_screen.dart';
-import 'package:brain_plan/presentation/widgets/custom_card.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/models/block_3d_shape.dart';
+import 'package:brain_tests/presentation/screens/mental_rotation_test_screen.dart';
+import 'package:brain_tests/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

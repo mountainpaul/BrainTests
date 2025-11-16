@@ -1,5 +1,5 @@
-import 'package:brain_plan/domain/models/block_3d_shape.dart';
-import 'package:brain_plan/domain/services/mental_rotation_generator.dart';
+import 'package:brain_tests/domain/models/block_3d_shape.dart';
+import 'package:brain_tests/domain/services/mental_rotation_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

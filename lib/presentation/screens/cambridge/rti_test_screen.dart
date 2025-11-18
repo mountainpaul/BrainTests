@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-/// RTI (Reaction Time) Test Screen - Cambridge CANTAB assessment
+/// RTI (Reaction Time) Test Screen
 /// Measures simple and choice reaction times
 class RTITestScreen extends ConsumerStatefulWidget {
   const RTITestScreen({super.key});

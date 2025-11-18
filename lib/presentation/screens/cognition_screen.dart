@@ -202,14 +202,14 @@ class MCITestsTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // Cambridge CANTAB-style tests section
+          // Advanced cognitive tests section
           Text(
-            'Cambridge Cognitive Tests',
+            'Advanced Cognitive Tests',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
           Text(
-            'CANTAB-style tests - highly sensitive for early detection',
+            'Specialized tests for early detection',
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 16),
@@ -217,8 +217,8 @@ class MCITestsTab extends ConsumerWidget {
           CustomCard(
             child: ListTile(
               leading: const Icon(Icons.psychology, color: Colors.deepPurple),
-              title: const Text('Cambridge Assessments'),
-              subtitle: const Text('PAL, RVP, RTI, SWM, PRM - Clinically validated tests'),
+              title: const Text('Advanced Assessments'),
+              subtitle: const Text('PAL, RVP, RTI, SWM, PRM, OTS'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 context.push('/cambridge');
@@ -829,7 +829,7 @@ class CognitionOverviewTab extends ConsumerWidget {
     final assessmentRepository = ref.read(assessmentRepositoryProvider);
     final cambridgeRepository = ref.read(cambridgeAssessmentRepositoryProvider);
 
-    // Get both regular and Cambridge assessments
+    // Get both regular and advanced assessments
     final regularAssessments = await assessmentRepository.getAllAssessments();
     final cambridgeAssessments = await cambridgeRepository.getAllAssessments();
 
@@ -850,14 +850,14 @@ class CognitionOverviewTab extends ConsumerWidget {
       return isThisWeek && isMCITest;
     }).toList();
 
-    // Filter Cambridge tests from this week (PAL, RTI, etc.)
-    final thisWeekCambridgeTests = cambridgeAssessments.where((result) {
+    // Filter advanced tests from this week (PAL, RTI, etc.)
+    final thisWeekAdvancedTests = cambridgeAssessments.where((result) {
       final isThisWeek = result.completedAt.isAfter(weekStartMidnight) ||
                          result.completedAt.isAtSameMomentAs(weekStartMidnight);
       return isThisWeek;
     }).toList();
 
-    final totalMCITestsThisWeek = thisWeekRegularMCITests.length + thisWeekCambridgeTests.length;
+    final totalMCITestsThisWeek = thisWeekRegularMCITests.length + thisWeekAdvancedTests.length;
 
     if (!context.mounted) return;
 
@@ -899,13 +899,13 @@ class CognitionOverviewTab extends ConsumerWidget {
                         ),
                       );
                     }),
-                    // Show Cambridge tests (PAL, RTI, etc.)
-                    ...thisWeekCambridgeTests.map((result) {
+                    // Show advanced tests (PAL, RTI, etc.)
+                    ...thisWeekAdvancedTests.map((result) {
                       final testName = result.testType.name.toUpperCase();
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.science, color: Colors.purple),
-                        title: Text('CANTAB $testName'),
+                        title: Text(testName),
                         subtitle: Text(
                           '${result.accuracy.toStringAsFixed(1)}% - ${DateFormat('MMM d, h:mm a').format(result.completedAt)}',
                         ),

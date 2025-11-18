@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-/// OTS (One Touch Stockings of Cambridge) Test Screen - Cambridge CANTAB assessment
+/// OTS (One Touch Stockings) Test Screen
 /// Tests spatial planning and problem-solving
 class OTSTestScreen extends ConsumerStatefulWidget {
   const OTSTestScreen({super.key});
@@ -155,7 +155,7 @@ class _OTSTestScreenState extends ConsumerState<OTSTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stockings of Cambridge (OTS)'),
+        title: const Text('One Touch Stockings (OTS)'),
         backgroundColor: Colors.teal[700],
       ),
       body: SafeArea(
@@ -183,7 +183,7 @@ class _OTSTestScreenState extends ConsumerState<OTSTestScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Stockings of Cambridge',
+            'One Touch Stockings',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.teal[700],

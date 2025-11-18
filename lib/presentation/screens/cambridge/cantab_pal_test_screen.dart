@@ -10,9 +10,9 @@ import 'package:brain_tests/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// CANTAB-Accurate PAL (Paired Associates Learning) Test Screen
-/// Based on Cambridge Cognition's validated protocol
-/// Reference: PMC10879687 - Official CANTAB PAL methodology
+/// PAL (Paired Associates Learning) Test Screen
+/// Research-validated protocol for visual episodic memory assessment
+/// Reference: PMC10879687 - Clinical PAL methodology
 ///
 /// Key features:
 /// - 5 stages: 2, 4, 6, 8, 10 pattern-location pairings
@@ -410,7 +410,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CANTAB PAL Test'),
+        title: const Text('PAL Test'),
         backgroundColor: Colors.deepPurple,
       ),
       body: _buildPhaseContent(),

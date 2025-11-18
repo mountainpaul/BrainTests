@@ -13,7 +13,7 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cambridge Cognitive Tests'),
+        title: const Text('Advanced Cognitive Tests'),
         backgroundColor: Colors.deepPurple,
       ),
       body: SingleChildScrollView(
@@ -100,14 +100,14 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'CANTAB-Style Tests',
+                      'Advanced Assessments',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Clinically validated cognitive assessments',
+                      'Specialized cognitive assessments',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
                       ),
@@ -116,13 +116,6 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 12),
-          Text(
-            'These tests are based on the Cambridge Neuropsychological Test Automated Battery (CANTAB), used in clinical research worldwide.',
-            style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -153,12 +146,13 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
     required IconData icon,
     required Color color,
     required String sensitivity,
+    String? route, // Optional custom route
   }) {
     return CustomCard(
       child: InkWell(
         onTap: () {
-          // Navigate to specific test
-          context.push('/cambridge/${testType.name}');
+          // Navigate to specific test (use custom route if provided)
+          context.push(route ?? '/cambridge/${testType.name}');
         },
         child: Padding(
           padding: const EdgeInsets.all(4),
@@ -258,8 +252,8 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
           _buildInfoItem(
             context,
             Icons.check_circle_outline,
-            'Clinically Validated',
-            'Based on CANTAB tests used in research worldwide',
+            'Research Validated',
+            'Tests used in cognitive research worldwide',
           ),
           const SizedBox(height: 8),
           _buildInfoItem(
@@ -315,156 +309,17 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
   }
 
   Widget _buildPALTestSection(BuildContext context) {
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.view_carousel, color: Colors.purple, size: 32),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PAL - Paired Associates Learning',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Visual episodic memory',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Most sensitive test for early Alzheimer\'s detection. Remember where patterns are hidden.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 12),
-          Text(
-            'Choose Test Version:',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: () => context.push('/cambridge/cantab-pal'),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.deepPurple.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.science, color: Colors.deepPurple, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'CANTAB Protocol',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'NEW',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Research-validated: 1, 2, 3, 6, 8 patterns • 10 trials max • ~10-15 min',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.grey[400]),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () => context.push('/cambridge/pal'),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.purple.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.view_carousel, color: Colors.purple, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Simplified Version',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Progressive difficulty: 8 stages • Place one pattern at a time • ~8 min',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.grey[400]),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return _buildTestCard(
+      context,
+      testType: CambridgeTestType.pal,
+      title: 'PAL - Paired Associates Learning',
+      subtitle: 'Visual episodic memory',
+      description: 'Most sensitive test for early Alzheimer\'s detection. Remember where patterns are hidden in boxes.',
+      duration: '~10-15 min',
+      icon: Icons.view_carousel,
+      color: Colors.purple,
+      sensitivity: 'Visual memory',
+      route: '/cambridge/cantab-pal', // Direct link to PAL test
     );
   }
 

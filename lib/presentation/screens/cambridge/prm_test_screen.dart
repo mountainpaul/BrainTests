@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-/// PRM (Pattern Recognition Memory) Test Screen - Cambridge CANTAB assessment
+/// PRM (Pattern Recognition Memory) Test Screen
 /// Tests visual pattern recognition memory
 class PRMTestScreen extends ConsumerStatefulWidget {
   const PRMTestScreen({super.key});
@@ -215,12 +215,12 @@ class _PRMTestScreenState extends ConsumerState<PRMTestScreen> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    '• First, you will study a series of abstract patterns\\n'
-                    '• Try to remember each pattern\\n'
-                    '• Then you will see test patterns one at a time\\n'
-                    '• Some patterns are OLD (you saw them before)\\n'
-                    '• Some patterns are NEW (you haven\'t seen them)\\n'
-                    '• Tap "OLD" if you recognize the pattern\\n'
+                    '• First, you will study a series of abstract patterns\n'
+                    '• Try to remember each pattern\n'
+                    '• Then you will see test patterns one at a time\n'
+                    '• Some patterns are OLD (you saw them before)\n'
+                    '• Some patterns are NEW (you haven\'t seen them)\n'
+                    '• Tap "OLD" if you recognize the pattern\n'
                     '• Tap "NEW" if you haven\'t seen it before',
                     style: TextStyle(fontSize: 16, height: 1.5),
                   ),

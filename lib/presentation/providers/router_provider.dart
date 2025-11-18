@@ -7,7 +7,6 @@ import '../screens/assessments_screen.dart';
 import '../screens/cambridge/cambridge_results_screen.dart';
 import '../screens/cambridge/cantab_pal_test_screen.dart';
 import '../screens/cambridge/ots_test_screen.dart';
-import '../screens/cambridge/pal_test_screen.dart';
 import '../screens/cambridge/prm_test_screen.dart';
 import '../screens/cambridge/rti_test_screen.dart';
 import '../screens/cambridge/rvp_test_screen.dart';
@@ -94,12 +93,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/cambridge/pal',
-        name: 'cambridge_pal',
-        builder: (context, state) => const PALTestScreen(),
+        name: 'pal',
+        builder: (context, state) => const CANTABPALTestScreen(),
       ),
       GoRoute(
         path: '/cambridge/cantab-pal',
-        name: 'cambridge_cantab_pal',
+        name: 'cantab_pal',
         builder: (context, state) => const CANTABPALTestScreen(),
       ),
       GoRoute(

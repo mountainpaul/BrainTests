@@ -90,7 +90,7 @@ class PDFService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'Cambridge CANTAB Tests',
+                  'Advanced Cognitive Tests',
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,

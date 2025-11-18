@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-/// SWM (Spatial Working Memory) Test Screen - Cambridge CANTAB assessment
+/// SWM (Spatial Working Memory) Test Screen
 /// Tests working memory and strategy use
 class SWMTestScreen extends ConsumerStatefulWidget {
   const SWMTestScreen({super.key});

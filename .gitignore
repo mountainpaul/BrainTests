@@ -44,4 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 assets/google_cloud_credentials.json
-assets/google_cloud_credentials.json
+
+# APK files (build artifacts)
+*.apk

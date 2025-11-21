@@ -3,11 +3,14 @@ import 'package:brain_tests/domain/entities/assessment.dart';
 import 'package:brain_tests/domain/repositories/assessment_repository.dart';
 import 'package:brain_tests/presentation/providers/assessment_provider.dart';
 import 'package:brain_tests/presentation/providers/repository_providers.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
+import '../../../helpers/mock_path_provider.dart';
 import 'weekly_mci_test_count_test.mocks.dart';
 
 @GenerateMocks([AssessmentRepository])
@@ -17,6 +20,13 @@ void main() {
     late ProviderContainer container;
 
     setUp(() {
+      // Initialize binding
+      TestWidgetsFlutterBinding.ensureInitialized();
+      
+      // Setup mock path provider to resolve MissingPluginException
+      PathProviderPlatform.instance = MockPathProviderPlatform();
+      
+      // Create mock repository
       mockRepository = MockAssessmentRepository();
     });
 

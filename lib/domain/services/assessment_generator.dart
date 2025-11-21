@@ -2,32 +2,26 @@ import 'dart:math';
 
 import '../../data/datasources/database.dart';
 import '../models/assessment_models.dart';
+import 'assessment_asset_loader.dart';
 
 /// Service that generates actual cognitive assessment questions
 class AssessmentGenerator {
   static final Random _random = Random();
+  static final _assetLoader = AssessmentAssetLoader();
 
   /// Generate Memory Recall Assessment - Word List Learning
-  static MemoryRecallQuestion generateMemoryRecallQuestion({
+  static Future<MemoryRecallQuestion> generateMemoryRecallQuestion({
     int difficulty = 1, // 1-5 scale
-  }) {
-    // Word lists based on difficulty
-    final wordLists = {
-      1: ['cat', 'dog', 'sun', 'car', 'book'], // 5 common words
-      2: ['apple', 'chair', 'phone', 'water', 'happy', 'green'], // 6 words
-      3: ['elephant', 'bicycle', 'kitchen', 'purple', 'doctor', 'mountain', 'ocean'], // 7 words
-      4: ['telephone', 'butterfly', 'newspaper', 'hospital', 'vacation', 'chocolate', 'umbrella', 'calendar'], // 8 words
-      5: ['refrigerator', 'gymnasium', 'photograph', 'restaurant', 'dictionary', 'calculator', 'basketball', 'television', 'helicopter'], // 9 words
-    };
+  }) async {
+    final data = await _assetLoader.getMemoryRecallData();
+    final wordLists = (data['word_lists'] as Map).map((key, value) =>
+        MapEntry(int.parse(key), (value as List).cast<String>()));
 
     final baseWords = wordLists[difficulty] ?? wordLists[3]!;
-    final wordsToUse = baseWords.take(5 + difficulty).toList();
+    final wordsToUse = baseWords.toList();
     
     // Create recognition options (target words + distractors)
-    final distractors = [
-      'table', 'window', 'flower', 'pencil', 'music', 'orange', 'castle', 'rabbit',
-      'guitar', 'planet', 'diamond', 'forest', 'thunder', 'sandwich', 'volcano'
-    ];
+    final distractors = (data['distractors'] as List).cast<String>();
     
     final recognitionOptions = <String>[];
     recognitionOptions.addAll(wordsToUse);
@@ -120,16 +114,12 @@ class AssessmentGenerator {
   }
 
   /// Generate Language Skills Assessment - Category Fluency
-  static LanguageSkillsQuestion generateLanguageSkillsQuestion({
+  static Future<LanguageSkillsQuestion> generateLanguageSkillsQuestion({
     int difficulty = 1,
-  }) {
-    final categories = {
-      1: {'category': 'animals', 'prompt': 'Name as many animals as you can'},
-      2: {'category': 'foods', 'prompt': 'Name as many foods as you can'},
-      3: {'category': 'countries', 'prompt': 'Name as many countries as you can'},
-      4: {'category': 'words_f', 'prompt': 'Name words starting with the letter F'},
-      5: {'category': 'professions', 'prompt': 'Name as many professions/jobs as you can'},
-    };
+  }) async {
+    final data = await _assetLoader.getLanguageSkillsData();
+    final categories = (data['categories'] as Map).map((key, value) => 
+        MapEntry(int.parse(key), value as Map<String, dynamic>));
 
     final categoryData = categories[difficulty] ?? categories[3]!;
     
@@ -144,21 +134,15 @@ class AssessmentGenerator {
   }
 
   /// Generate Visuospatial Skills Assessment - Mental Rotation
-  static VisuospatialQuestion generateVisuospatialQuestion({
+  static Future<VisuospatialQuestion> generateVisuospatialQuestion({
     int difficulty = 1,
-  }) {
-    // Simple geometric shapes for mental rotation
-    final shapes = ['L_shape', 'F_shape', 'T_shape', 'plus_shape', 'arrow_shape'];
+  }) async {
+    final data = await _assetLoader.getVisuospatialData();
+    final shapes = (data['shapes'] as List).cast<String>();
     final targetShape = shapes[_random.nextInt(shapes.length)];
     
-    // Rotation angles based on difficulty
-    final rotationAngles = {
-      1: [90, 180, 270], // Easy angles
-      2: [60, 120, 180, 240, 300], // Moderate angles
-      3: [45, 90, 135, 180, 225, 270, 315], // More angles
-      4: [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330], // Many angles
-      5: List.generate(12, (i) => i * 30.0), // Every 30 degrees
-    };
+    final rotationAngles = (data['rotation_angles'] as Map).map((key, value) =>
+        MapEntry(int.parse(key), (value as List).cast<num>()));
     
     final angles = rotationAngles[difficulty] ?? rotationAngles[3]!;
     final rotationDegrees = angles[_random.nextInt(angles.length)].toDouble();
@@ -201,12 +185,12 @@ class AssessmentGenerator {
   }
 
   /// Generate Processing Speed Assessment - Symbol Digit Modalities
-  static ProcessingSpeedQuestion generateProcessingSpeedQuestion({
+  static Future<ProcessingSpeedQuestion> generateProcessingSpeedQuestion({
     int difficulty = 1,
-  }) {
-    // Create symbol-to-number mapping
-    final symbols = ['○', '□', '△', '◇', '☆', '♦', '♠', '♣', '♥'];
-    final numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  }) async {
+    final data = await _assetLoader.getProcessingSpeedData();
+    final symbols = (data['symbols'] as List).cast<String>();
+    final numbers = (data['numbers'] as List).cast<int>();
     
     final symbolCount = 4 + difficulty; // 5-9 symbols
     final selectedSymbols = symbols.take(symbolCount).toList();
@@ -239,23 +223,23 @@ class AssessmentGenerator {
   }
 
   /// Generate a complete assessment battery
-  static List<AssessmentQuestion> generateAssessmentBattery({
+  static Future<List<AssessmentQuestion>> generateAssessmentBattery({
     AssessmentType type = AssessmentType.memoryRecall,
     int difficulty = 1,
-  }) {
+  }) async {
     switch (type) {
       case AssessmentType.memoryRecall:
-        return [generateMemoryRecallQuestion(difficulty: difficulty)];
+        return [await generateMemoryRecallQuestion(difficulty: difficulty)];
       case AssessmentType.attentionFocus:
         return [generateAttentionFocusQuestion(difficulty: difficulty)];
       case AssessmentType.executiveFunction:
         return [generateExecutiveFunctionQuestion(difficulty: difficulty)];
       case AssessmentType.languageSkills:
-        return [generateLanguageSkillsQuestion(difficulty: difficulty)];
+        return [await generateLanguageSkillsQuestion(difficulty: difficulty)];
       case AssessmentType.visuospatialSkills:
-        return [generateVisuospatialQuestion(difficulty: difficulty)];
+        return [await generateVisuospatialQuestion(difficulty: difficulty)];
       case AssessmentType.processingSpeed:
-        return [generateProcessingSpeedQuestion(difficulty: difficulty)];
+        return [await generateProcessingSpeedQuestion(difficulty: difficulty)];
     }
   }
 
@@ -304,57 +288,38 @@ class AssessmentGenerator {
   
   static int getOptimalMoves(ExecutiveFunctionResponse response) {
     // For Tower of Hanoi, optimal moves = 2^n - 1 where n is number of disks
-    // This is a simplified calculation - in practice you'd analyze the actual moves
-    return 7; // Assuming 3 disks for simplicity
+    if (response.numberOfDisks <= 0) return 0;
+    return pow(2, response.numberOfDisks).toInt() - 1;
   }
 }
 
 /// Word validation service for language assessments
 class WordValidator {
-  // Common valid words for different categories
-  static final _validWords = {
-    'animals': {
-      'cat', 'dog', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'goat', 'chicken',
-      'lion', 'tiger', 'bear', 'elephant', 'giraffe', 'zebra', 'monkey', 'rabbit',
-      'mouse', 'rat', 'hamster', 'guinea pig', 'snake', 'lizard', 'turtle', 'frog',
-      'butterfly', 'bee', 'ant', 'spider', 'fly', 'mosquito', 'whale', 'dolphin',
-      'shark', 'octopus', 'crab', 'lobster', 'deer', 'moose', 'wolf', 'fox'
-    },
-    'foods': {
-      'apple', 'banana', 'orange', 'grape', 'strawberry', 'blueberry', 'peach', 'pear',
-      'bread', 'rice', 'pasta', 'potato', 'carrot', 'broccoli', 'spinach', 'tomato',
-      'chicken', 'beef', 'pork', 'fish', 'egg', 'milk', 'cheese', 'butter',
-      'pizza', 'hamburger', 'sandwich', 'salad', 'soup', 'cake', 'cookie', 'ice cream'
-    },
-    'countries': {
-      'usa', 'canada', 'mexico', 'brazil', 'argentina', 'chile', 'colombia', 'peru',
-      'uk', 'france', 'germany', 'italy', 'spain', 'russia', 'china', 'japan',
-      'india', 'australia', 'new zealand', 'south africa', 'egypt', 'nigeria',
-      'turkey', 'saudi arabia', 'iran', 'iraq', 'israel', 'jordan', 'lebanon'
-    }
-  };
+  static Future<bool> isValidWord(String category, String word) async {
+    final data = await AssessmentGenerator._assetLoader.getLanguageSkillsData();
+    final validWords = (data['valid_words'] as Map).map((key, value) => 
+        MapEntry(key, (value as List).cast<String>().toSet()));
 
-  static bool isValidWord(String category, String word) {
     final normalizedWord = word.toLowerCase().trim();
     
     if (category.startsWith('words_')) {
-      // Letter fluency - check if word starts with the letter
       final letter = category.split('_')[1].toLowerCase();
       return normalizedWord.startsWith(letter) && normalizedWord.length > 1;
     }
     
-    return _validWords[category]?.contains(normalizedWord) ?? false;
+    return validWords[category]?.contains(normalizedWord) ?? false;
   }
 
-  static List<String> categorizeWords(List<String> words) {
-    // Simple semantic categorization
+  static Future<List<String>> categorizeWords(List<String> words) async {
+    final data = await AssessmentGenerator._assetLoader.getLanguageSkillsData();
+    final validWords = (data['valid_words'] as Map).map((key, value) => 
+        MapEntry(key, (value as List).cast<String>().toSet()));
+
     final categories = <String>[];
-    // This would be more sophisticated in a real implementation
-    // For now, just return basic categories
-    if (words.any((w) => _validWords['animals']!.contains(w.toLowerCase()))) {
+    if (words.any((w) => validWords['animals']!.contains(w.toLowerCase()))) {
       categories.add('animals');
     }
-    if (words.any((w) => _validWords['foods']!.contains(w.toLowerCase()))) {
+    if (words.any((w) => validWords['foods']!.contains(w.toLowerCase()))) {
       categories.add('foods');
     }
     return categories;

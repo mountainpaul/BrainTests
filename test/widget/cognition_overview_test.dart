@@ -1,5 +1,7 @@
 import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/cognitive_activity.dart';
 import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/presentation/providers/cognitive_activity_provider.dart';
 import 'package:brain_tests/presentation/providers/cognitive_exercise_provider.dart';
 import 'package:brain_tests/presentation/screens/cognition_screen.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,8 @@ import 'package:mockito/annotations.dart';
 
 @GenerateMocks([])
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('CognitionOverviewTab - Start Your First Test Button', () {
     testWidgets('should show "Start Your First Test" button when no exercises completed',
         (WidgetTester tester) async {
@@ -16,7 +20,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recentExercisesProvider.overrideWith((ref) async => []),
+            recentCognitiveActivityProvider.overrideWith((ref) async => []),
             completedExercisesProvider.overrideWith((ref) async => []),
           ],
           child: MaterialApp(
@@ -48,7 +52,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recentExercisesProvider.overrideWith((ref) async => []),
+            recentCognitiveActivityProvider.overrideWith((ref) async => []),
             completedExercisesProvider.overrideWith((ref) async => []),
           ],
           child: MaterialApp(
@@ -98,7 +102,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recentExercisesProvider.overrideWith((ref) async => mockExercises),
+            recentCognitiveActivityProvider.overrideWith((ref) async => 
+              mockExercises.map((e) => CognitiveActivity.fromExercise(e)).toList()),
             completedExercisesProvider.overrideWith((ref) async => mockExercises),
           ],
           child: MaterialApp(
@@ -115,7 +120,7 @@ void main() {
       );
 
       // Wait for async data to load
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
 
       // Assert - Button should NOT be visible
       expect(find.text('Start Your First Test'), findsNothing);

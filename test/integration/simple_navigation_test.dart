@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Simple Navigation Tests', () {
     testWidgets('App can be instantiated', (WidgetTester tester) async {
       // Test that the BrainPlanApp can be created without errors
@@ -58,7 +60,7 @@ void main() {
 
       // Test that BrainPlanApp extends ConsumerWidget
       const app = BrainPlanApp();
-      expect(app, isA<ConsumerWidget>());
+      expect(app, isA<ConsumerStatefulWidget>());
     });
   });
 }

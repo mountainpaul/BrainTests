@@ -6,8 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/test_database.dart';
 
 void main() {
-  group('AssessmentRepositoryImpl Integration Tests', () {
-    late AppDatabase database;
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
+  late AppDatabase database;
     late AssessmentRepositoryImpl repository;
 
     setUp(() async {

@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import '../../../helpers/test_asset_bundle.dart';
 
 import 'exports_screen_test.mocks.dart';
 
@@ -45,8 +46,11 @@ void main() {
             cognitiveExerciseRepositoryProvider
                 .overrideWithValue(mockExerciseRepo),
           ],
-          child: const MaterialApp(
-            home: ExportsScreen(),
+          child: DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: ExportsScreen(),
+            ),
           ),
         ),
       );
@@ -72,8 +76,11 @@ void main() {
             cognitiveExerciseRepositoryProvider
                 .overrideWithValue(mockExerciseRepo),
           ],
-          child: const MaterialApp(
-            home: ExportsScreen(),
+          child: DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: ExportsScreen(),
+            ),
           ),
         ),
       );
@@ -81,10 +88,10 @@ void main() {
       // Assert
       expect(find.text('Export Information'), findsOneWidget);
       expect(
-          find.textContaining('PDF format is best for sharing'), findsOneWidget);
-      expect(find.textContaining('CSV format is ideal for personal analysis'),
+          find.textContaining('PDF format: Best for sharing'), findsOneWidget);
+      expect(find.textContaining('CSV format: Ideal for personal analysis'),
           findsOneWidget);
-      expect(find.textContaining('JSON format is for advanced users'),
+      expect(find.textContaining('JSON format: Structured data'),
           findsOneWidget);
       expect(find.textContaining('All your data remains private'),
           findsOneWidget);
@@ -124,13 +131,6 @@ void main() {
         createdAt: DateTime.now(),
       );
 
-      when(mockAssessmentRepo.getAllAssessments())
-          .thenAnswer((_) async => [assessment]);
-      when(mockMoodRepo.getAllMoodEntries())
-          .thenAnswer((_) async => [moodEntry]);
-      when(mockExerciseRepo.getAllExercises())
-          .thenAnswer((_) async => [exercise]);
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -139,8 +139,11 @@ void main() {
             cognitiveExerciseRepositoryProvider
                 .overrideWithValue(mockExerciseRepo),
           ],
-          child: const MaterialApp(
-            home: ExportsScreen(),
+          child: DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: ExportsScreen(),
+            ),
           ),
         ),
       );
@@ -171,8 +174,11 @@ void main() {
             cognitiveExerciseRepositoryProvider
                 .overrideWithValue(mockExerciseRepo),
           ],
-          child: const MaterialApp(
-            home: ExportsScreen(),
+          child: DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: ExportsScreen(),
+            ),
           ),
         ),
       );
@@ -196,8 +202,11 @@ void main() {
             cognitiveExerciseRepositoryProvider
                 .overrideWithValue(mockExerciseRepo),
           ],
-          child: const MaterialApp(
-            home: ExportsScreen(),
+          child: DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: ExportsScreen(),
+            ),
           ),
         ),
       );

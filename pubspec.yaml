@@ -87,3 +87,4 @@ flutter:
   assets:
     - assets/google_cloud_credentials.json
     - assets/patterns/
+    - assets/assessment_data/

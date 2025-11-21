@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:alzheimers/data/datasources/database.dart';
-import 'package:alzheimers/domain/entities/assessment.dart';
-import 'package:alzheimers/domain/entities/cognitive_activity.dart';
-import 'package:alzheimers/domain/entities/cognitive_exercise.dart';
+import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/domain/entities/assessment.dart';
+import 'package:brain_tests/domain/entities/cognitive_activity.dart';
+import 'package:brain_tests/domain/entities/cognitive_exercise.dart';
 
 void main() {
   group('CognitiveActivity', () {

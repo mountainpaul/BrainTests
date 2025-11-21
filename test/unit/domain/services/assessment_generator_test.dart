@@ -4,10 +4,12 @@ import 'package:brain_tests/domain/services/assessment_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('AssessmentGenerator', () {
     group('Memory Recall Assessment', () {
-      test('should generate memory recall question with default difficulty', () {
-        final question = AssessmentGenerator.generateMemoryRecallQuestion();
+      test('should generate memory recall question with default difficulty', () async {
+        final question = await AssessmentGenerator.generateMemoryRecallQuestion();
 
         expect(question, isA<MemoryRecallQuestion>());
         expect(question.id, contains('memory_recall_'));
@@ -23,17 +25,17 @@ void main() {
         }
       });
 
-      test('should generate harder questions with increased difficulty', () {
-        final easyQuestion = AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 1);
-        final hardQuestion = AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 5);
+      test('should generate harder questions with increased difficulty', () async {
+        final easyQuestion = await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 1);
+        final hardQuestion = await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 5);
 
         expect(hardQuestion.wordsToMemorize.length, greaterThan(easyQuestion.wordsToMemorize.length));
         expect(hardQuestion.studyTimeSeconds, greaterThan(easyQuestion.studyTimeSeconds));
         expect(hardQuestion.recognitionOptions.length, greaterThan(easyQuestion.recognitionOptions.length));
       });
 
-      test('should handle extreme difficulty values gracefully', () {
-        final extremeQuestion = AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 10);
+      test('should handle extreme difficulty values gracefully', () async {
+        final extremeQuestion = await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 10);
 
         expect(extremeQuestion, isA<MemoryRecallQuestion>());
         expect(extremeQuestion.wordsToMemorize, isNotEmpty);
@@ -41,9 +43,9 @@ void main() {
       });
 
       test('should create unique question IDs', () async {
-        final question1 = AssessmentGenerator.generateMemoryRecallQuestion();
+        final question1 = await AssessmentGenerator.generateMemoryRecallQuestion();
         await Future.delayed(const Duration(milliseconds: 1)); // Ensure different timestamps
-        final question2 = AssessmentGenerator.generateMemoryRecallQuestion();
+        final question2 = await AssessmentGenerator.generateMemoryRecallQuestion();
 
         expect(question1.id, isNot(equals(question2.id)));
       });
@@ -137,8 +139,8 @@ void main() {
     });
 
     group('Language Skills Assessment', () {
-      test('should generate language skills question with valid category', () {
-        final question = AssessmentGenerator.generateLanguageSkillsQuestion();
+      test('should generate language skills question with valid category', () async {
+        final question = await AssessmentGenerator.generateLanguageSkillsQuestion();
 
         expect(question, isA<LanguageSkillsQuestion>());
         expect(question.id, contains('language_skills_'));
@@ -148,10 +150,10 @@ void main() {
         expect(question.timeLimit, equals(60));
       });
 
-      test('should provide different categories for different difficulties', () {
+      test('should provide different categories for different difficulties', () async {
         final categories = <String>{};
         for (int difficulty = 1; difficulty <= 5; difficulty++) {
-          final question = AssessmentGenerator.generateLanguageSkillsQuestion(difficulty: difficulty);
+          final question = await AssessmentGenerator.generateLanguageSkillsQuestion(difficulty: difficulty);
           categories.add(question.category);
         }
 
@@ -160,8 +162,8 @@ void main() {
         expect(categories, anyOf([contains('foods'), contains('countries'), contains('professions')]));
       });
 
-      test('should handle letter fluency categories', () {
-        final question = AssessmentGenerator.generateLanguageSkillsQuestion(difficulty: 4);
+      test('should handle letter fluency categories', () async {
+        final question = await AssessmentGenerator.generateLanguageSkillsQuestion(difficulty: 4);
         if (question.category.startsWith('words_')) {
           expect(question.category, equals('words_f'));
           expect(question.prompt, contains('letter F'));
@@ -170,8 +172,8 @@ void main() {
     });
 
     group('Visuospatial Skills Assessment', () {
-      test('should generate visuospatial question with rotation parameters', () {
-        final question = AssessmentGenerator.generateVisuospatialQuestion();
+      test('should generate visuospatial question with rotation parameters', () async {
+        final question = await AssessmentGenerator.generateVisuospatialQuestion();
 
         expect(question, isA<VisuospatialQuestion>());
         expect(question.id, contains('visuospatial_'));
@@ -190,19 +192,18 @@ void main() {
         expect(correctOption, contains('${question.rotationDegrees}deg'));
       });
 
-      test('should provide more rotation angles for higher difficulty', () {
-        final easyQuestion = AssessmentGenerator.generateVisuospatialQuestion(difficulty: 1);
-        final hardQuestion = AssessmentGenerator.generateVisuospatialQuestion(difficulty: 5);
+      test('should provide more rotation angles for higher difficulty', () async {
+        final easyQuestion = await AssessmentGenerator.generateVisuospatialQuestion(difficulty: 1);
+        final hardQuestion = await AssessmentGenerator.generateVisuospatialQuestion(difficulty: 5);
 
         expect(hardQuestion.timeLimit, greaterThan(easyQuestion.timeLimit));
-        // Harder questions should have more precise angles (tested implicitly through generation)
       });
 
-      test('should use valid shape types', () {
+      test('should use valid shape types', () async {
         final validShapes = {'L_shape', 'F_shape', 'T_shape', 'plus_shape', 'arrow_shape'};
 
         for (int i = 0; i < 10; i++) {
-          final question = AssessmentGenerator.generateVisuospatialQuestion();
+          final question = await AssessmentGenerator.generateVisuospatialQuestion();
           final shapeType = question.targetShape;
           expect(validShapes, contains(shapeType));
         }
@@ -210,8 +211,8 @@ void main() {
     });
 
     group('Processing Speed Assessment', () {
-      test('should generate processing speed question with symbol mapping', () {
-        final question = AssessmentGenerator.generateProcessingSpeedQuestion();
+      test('should generate processing speed question with symbol mapping', () async {
+        final question = await AssessmentGenerator.generateProcessingSpeedQuestion();
 
         expect(question, isA<ProcessingSpeedQuestion>());
         expect(question.id, contains('processing_speed_'));
@@ -235,16 +236,16 @@ void main() {
         expect(numbers.length, equals(question.symbolToNumberMap.length)); // No duplicate numbers
       });
 
-      test('should scale complexity with difficulty', () {
-        final easyQuestion = AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 1);
-        final hardQuestion = AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 5);
+      test('should scale complexity with difficulty', () async {
+        final easyQuestion = await AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 1);
+        final hardQuestion = await AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 5);
 
         expect(hardQuestion.symbolToNumberMap.length, greaterThan(easyQuestion.symbolToNumberMap.length));
         expect(hardQuestion.symbolSequence.length, greaterThan(easyQuestion.symbolSequence.length));
       });
 
-      test('should use distinct symbols from predefined set', () {
-        final question = AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 3);
+      test('should use distinct symbols from predefined set', () async {
+        final question = await AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 3);
         final validSymbols = {'○', '□', '△', '◇', '☆', '♦', '♠', '♣', '♥'};
 
         for (final symbol in question.symbolToNumberMap.keys) {
@@ -254,9 +255,9 @@ void main() {
     });
 
     group('Assessment Battery Generation', () {
-      test('should generate battery for each assessment type', () {
+      test('should generate battery for each assessment type', () async {
         for (final type in AssessmentType.values) {
-          final battery = AssessmentGenerator.generateAssessmentBattery(type: type);
+          final battery = await AssessmentGenerator.generateAssessmentBattery(type: type);
           expect(battery, isNotEmpty);
           expect(battery.length, equals(1)); // Single question per type currently
 
@@ -283,12 +284,12 @@ void main() {
         }
       });
 
-      test('should respect difficulty parameter in battery generation', () {
-        final easyBattery = AssessmentGenerator.generateAssessmentBattery(
+      test('should respect difficulty parameter in battery generation', () async {
+        final easyBattery = await AssessmentGenerator.generateAssessmentBattery(
           type: AssessmentType.memoryRecall,
           difficulty: 1,
         );
-        final hardBattery = AssessmentGenerator.generateAssessmentBattery(
+        final hardBattery = await AssessmentGenerator.generateAssessmentBattery(
           type: AssessmentType.memoryRecall,
           difficulty: 5,
         );
@@ -324,7 +325,6 @@ void main() {
           [response],
         );
 
-        // 60 * 0.7 + 100 * 0.3 = 42 + 30 = 72
         expect(score, equals(72.0));
       });
 
@@ -361,6 +361,7 @@ void main() {
           totalMoves: 10,
           solved: true,
           planningTime: 30000,
+          numberOfDisks: 3,
         );
 
         final score = AssessmentGenerator.calculateAssessmentScore(
@@ -382,6 +383,7 @@ void main() {
           totalMoves: 20,
           solved: false,
           planningTime: 60000,
+          numberOfDisks: 3,
         );
 
         final score = AssessmentGenerator.calculateAssessmentScore(
@@ -410,7 +412,6 @@ void main() {
           [response],
         );
 
-        // 12/15 * 100 = 80, clamped to 80
         expect(score, equals(80.0));
       });
 
@@ -430,7 +431,7 @@ void main() {
           [response],
         );
 
-        expect(score, greaterThan(75.0)); // Base score + time bonus
+        expect(score, greaterThan(75.0));
         expect(score, lessThanOrEqualTo(100.0));
       });
 
@@ -471,7 +472,7 @@ void main() {
           [response],
         );
 
-        expect(score, greaterThan(60)); // High accuracy should give good score
+        expect(score, greaterThan(60));
         expect(score, lessThanOrEqualTo(100));
       });
 
@@ -486,15 +487,15 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      test('should handle invalid difficulty values', () {
-        expect(() => AssessmentGenerator.generateMemoryRecallQuestion(difficulty: -1), returnsNormally);
-        expect(() => AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 0), returnsNormally);
-        expect(() => AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 1000), returnsNormally);
+      test('should handle invalid difficulty values', () async {
+        await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: -1);
+        await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 0);
+        await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: 1000);
       });
 
-      test('should generate valid questions for all difficulty levels', () {
+      test('should generate valid questions for all difficulty levels', () async {
         for (int difficulty = 1; difficulty <= 10; difficulty++) {
-          final question = AssessmentGenerator.generateMemoryRecallQuestion(difficulty: difficulty);
+          final question = await AssessmentGenerator.generateMemoryRecallQuestion(difficulty: difficulty);
           expect(question.wordsToMemorize, isNotEmpty);
           expect(question.studyTimeSeconds, greaterThan(0));
           expect(question.recognitionOptions.length, greaterThanOrEqualTo(question.wordsToMemorize.length));
@@ -503,31 +504,29 @@ void main() {
 
       test('should handle extreme executive function parameters', () {
         final question = AssessmentGenerator.generateExecutiveFunctionQuestion(difficulty: 10);
-        expect(question.numberOfDisks, lessThanOrEqualTo(12)); // 2 + min(10, 5) = 7
+        expect(question.numberOfDisks, lessThanOrEqualTo(12));
         expect(question.maxMoves, greaterThan(0));
         expect(question.timeLimit, greaterThan(0));
       });
 
       test('should generate unique question IDs consistently', () async {
         final ids = <String>{};
-        for (int i = 0; i < 10; i++) { // Reduced iterations to avoid timing issues
-          final question = AssessmentGenerator.generateMemoryRecallQuestion();
+        for (int i = 0; i < 10; i++) { 
+          final question = await AssessmentGenerator.generateMemoryRecallQuestion();
           expect(ids, isNot(contains(question.id)));
           ids.add(question.id);
-          await Future.delayed(const Duration(milliseconds: 1)); // Small delay
+          await Future.delayed(const Duration(milliseconds: 1)); 
         }
       });
 
-      test('should maintain data consistency across generation calls', () {
+      test('should maintain data consistency across generation calls', () async {
         for (int i = 0; i < 10; i++) {
-          final question = AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 3);
+          final question = await AssessmentGenerator.generateProcessingSpeedQuestion(difficulty: 3);
 
-          // Verify all symbols in sequence exist in mapping
           for (final symbol in question.symbolSequence) {
             expect(question.symbolToNumberMap.containsKey(symbol), isTrue);
           }
 
-          // Verify correct answers match mapping
           for (int j = 0; j < question.symbolSequence.length; j++) {
             final symbol = question.symbolSequence[j];
             final expectedAnswer = question.symbolToNumberMap[symbol]!;
@@ -540,93 +539,89 @@ void main() {
 
   group('WordValidator', () {
     group('Word Validation', () {
-      test('should validate animal words correctly', () {
-        expect(WordValidator.isValidWord('animals', 'cat'), isTrue);
-        expect(WordValidator.isValidWord('animals', 'dog'), isTrue);
-        expect(WordValidator.isValidWord('animals', 'elephant'), isTrue);
-        expect(WordValidator.isValidWord('animals', 'xyzabc'), isFalse);
-        expect(WordValidator.isValidWord('animals', ''), isFalse);
+      test('should validate animal words correctly', () async {
+        expect(await WordValidator.isValidWord('animals', 'cat'), isTrue);
+        expect(await WordValidator.isValidWord('animals', 'dog'), isTrue);
+        expect(await WordValidator.isValidWord('animals', 'elephant'), isTrue);
+        expect(await WordValidator.isValidWord('animals', 'xyzabc'), isFalse);
+        expect(await WordValidator.isValidWord('animals', ''), isFalse);
       });
 
-      test('should validate food words correctly', () {
-        expect(WordValidator.isValidWord('foods', 'apple'), isTrue);
-        expect(WordValidator.isValidWord('foods', 'bread'), isTrue);
-        expect(WordValidator.isValidWord('foods', 'chicken'), isTrue);
-        expect(WordValidator.isValidWord('foods', 'car'), isFalse);
+      test('should validate food words correctly', () async {
+        expect(await WordValidator.isValidWord('foods', 'apple'), isTrue);
+        expect(await WordValidator.isValidWord('foods', 'bread'), isTrue);
+        expect(await WordValidator.isValidWord('foods', 'chicken'), isTrue);
+        expect(await WordValidator.isValidWord('foods', 'car'), isFalse);
       });
 
-      test('should validate country words correctly', () {
-        expect(WordValidator.isValidWord('countries', 'usa'), isTrue);
-        expect(WordValidator.isValidWord('countries', 'canada'), isTrue);
-        expect(WordValidator.isValidWord('countries', 'france'), isTrue);
-        expect(WordValidator.isValidWord('countries', 'atlantis'), isFalse);
+      test('should validate country words correctly', () async {
+        expect(await WordValidator.isValidWord('countries', 'usa'), isTrue);
+        expect(await WordValidator.isValidWord('countries', 'canada'), isTrue);
+        expect(await WordValidator.isValidWord('countries', 'france'), isTrue);
+        expect(await WordValidator.isValidWord('countries', 'atlantis'), isFalse);
       });
 
-      test('should handle letter fluency correctly', () {
-        expect(WordValidator.isValidWord('words_f', 'fish'), isTrue);
-        expect(WordValidator.isValidWord('words_f', 'forest'), isTrue);
-        expect(WordValidator.isValidWord('words_f', 'fantastic'), isTrue);
-        expect(WordValidator.isValidWord('words_f', 'cat'), isFalse);
-        expect(WordValidator.isValidWord('words_f', 'f'), isFalse); // Too short
+      test('should handle letter fluency correctly', () async {
+        expect(await WordValidator.isValidWord('words_f', 'fish'), isTrue);
+        expect(await WordValidator.isValidWord('words_f', 'forest'), isTrue);
+        expect(await WordValidator.isValidWord('words_f', 'fantastic'), isTrue);
+        expect(await WordValidator.isValidWord('words_f', 'cat'), isFalse);
+        expect(await WordValidator.isValidWord('words_f', 'f'), isFalse);
       });
 
-      test('should handle case insensitivity', () {
-        expect(WordValidator.isValidWord('animals', 'CAT'), isTrue);
-        expect(WordValidator.isValidWord('animals', 'Dog'), isTrue);
-        expect(WordValidator.isValidWord('foods', 'APPLE'), isTrue);
+      test('should handle case insensitivity', () async {
+        expect(await WordValidator.isValidWord('animals', 'CAT'), isTrue);
+        expect(await WordValidator.isValidWord('animals', 'Dog'), isTrue);
+        expect(await WordValidator.isValidWord('foods', 'APPLE'), isTrue);
       });
 
-      test('should handle whitespace', () {
-        expect(WordValidator.isValidWord('animals', ' cat '), isTrue);
-        expect(WordValidator.isValidWord('animals', '  dog  '), isTrue);
-        expect(WordValidator.isValidWord('foods', '\tapple\n'), isTrue);
+      test('should handle whitespace', () async {
+        expect(await WordValidator.isValidWord('animals', ' cat '),
+ isTrue);
+        expect(await WordValidator.isValidWord('animals', '  dog  '), isTrue);
+        expect(await WordValidator.isValidWord('foods', '\tapple\n'), isTrue);
       });
 
-      test('should return false for unknown categories', () {
-        expect(WordValidator.isValidWord('unknown_category', 'word'), isFalse);
-        expect(WordValidator.isValidWord('', 'word'), isFalse);
+      test('should return false for unknown categories', () async {
+        expect(await WordValidator.isValidWord('unknown_category', 'word'), isFalse);
+        expect(await WordValidator.isValidWord('', 'word'), isFalse);
       });
     });
 
     group('Word Categorization', () {
-      test('should identify animal words in mixed list', () {
+      test('should identify animal words in mixed list', () async {
         final words = ['cat', 'apple', 'dog', 'car', 'elephant'];
-        final categories = WordValidator.categorizeWords(words);
-
+        final categories = await WordValidator.categorizeWords(words);
         expect(categories, contains('animals'));
       });
 
-      test('should identify food words in mixed list', () {
+      test('should identify food words in mixed list', () async {
         final words = ['house', 'apple', 'banana', 'computer', 'bread'];
-        final categories = WordValidator.categorizeWords(words);
-
+        final categories = await WordValidator.categorizeWords(words);
         expect(categories, contains('foods'));
       });
 
-      test('should identify multiple categories', () {
+      test('should identify multiple categories', () async {
         final words = ['cat', 'apple', 'dog', 'bread', 'elephant'];
-        final categories = WordValidator.categorizeWords(words);
-
+        final categories = await WordValidator.categorizeWords(words);
         expect(categories, contains('animals'));
         expect(categories, contains('foods'));
       });
 
-      test('should return empty list for no recognized words', () {
+      test('should return empty list for no recognized words', () async {
         final words = ['xyz', 'abc', 'nonsense', 'invalid'];
-        final categories = WordValidator.categorizeWords(words);
-
+        final categories = await WordValidator.categorizeWords(words);
         expect(categories, isEmpty);
       });
 
-      test('should handle empty word list', () {
-        final categories = WordValidator.categorizeWords([]);
+      test('should handle empty word list', () async {
+        final categories = await WordValidator.categorizeWords([]);
         expect(categories, isEmpty);
       });
 
-      test('should handle case-insensitive categorization', () {
+      test('should handle case-insensitive categorization', () async {
         final words = ['CAT', 'APPLE', 'DOG'];
-        final categories = WordValidator.categorizeWords(words);
-
+        final categories = await WordValidator.categorizeWords(words);
         expect(categories, contains('animals'));
         expect(categories, contains('foods'));
       });

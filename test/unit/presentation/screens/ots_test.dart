@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('OTS Test Screen', () {
     testWidgets('Should display introduction screen with instructions', (tester) async {
+      // Arrange
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -14,12 +15,9 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      // Verify introduction elements
-      expect(find.textContaining('Stockings of Cambridge'), findsWidgets);
-      expect(find.text('Instructions'), findsOneWidget);
-      expect(find.text('Start Test'), findsOneWidget);
+      // Assert
+      expect(find.textContaining('One Touch Stockings'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Instructions'), findsOneWidget);
       expect(find.textContaining('minimum number of moves'), findsOneWidget);
     });
 

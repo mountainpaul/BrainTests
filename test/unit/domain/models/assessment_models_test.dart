@@ -427,6 +427,7 @@ void main() {
           totalMoves: 7,
           solved: true,
           planningTime: 5000, // 5 seconds planning
+          numberOfDisks: 3,
         );
 
         expect(response.moves.length, equals(2));
@@ -445,6 +446,7 @@ void main() {
           totalMoves: 20, // Too many moves
           solved: false,
           planningTime: 10000,
+          numberOfDisks: 3,
         );
 
         expect(response.solved, isFalse);
@@ -732,6 +734,7 @@ void main() {
         totalMoves: 0,
         solved: false,
         planningTime: 300000, // Spent all time planning
+        numberOfDisks: 3,
       );
 
       expect(response.moves, isEmpty);

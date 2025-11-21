@@ -1,4 +1,4 @@
-import 'package:brain_tests/presentation/screens/cambridge/pal_test_screen.dart';
+import 'package:brain_tests/presentation/screens/cambridge/cantab_pal_test_screen.dart';
 import 'package:brain_tests/presentation/screens/cambridge_assessments_screen.dart';
 import 'package:brain_tests/presentation/screens/cognition_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ void main() {
           ),
           GoRoute(
             path: '/cambridge/pal',
-            builder: (context, state) => const PALTestScreen(),
+            builder: (context, state) => const CantabPalTestScreen(),
           ),
         ],
       );
@@ -78,7 +78,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: PALTestScreen(),
+            home: CantabPalTestScreen(),
           ),
         ),
       );
@@ -96,7 +96,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: PALTestScreen(),
+            home: CantabPalTestScreen(),
           ),
         ),
       );

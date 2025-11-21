@@ -249,14 +249,16 @@ class ExecutiveFunctionResponse extends AssessmentResponse { // time before firs
     required this.totalMoves,
     required this.solved,
     required this.planningTime,
+    required this.numberOfDisks,
   });
   final List<Move> moves;
   final int totalMoves;
   final bool solved;
   final int planningTime;
+  final int numberOfDisks;
 
   @override
-  List<Object?> get props => [...super.props, moves, totalMoves, solved, planningTime];
+  List<Object?> get props => [...super.props, moves, totalMoves, solved, planningTime, numberOfDisks];
 }
 
 class Move extends Equatable {

@@ -1,4 +1,4 @@
-import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/data/datasources/database.dart' hide CambridgeTestType;
 import 'package:brain_tests/data/repositories/cambridge_assessment_repository_impl.dart';
 import 'package:brain_tests/domain/entities/cambridge_assessment.dart';
 import 'package:brain_tests/presentation/providers/cambridge_assessment_provider.dart';

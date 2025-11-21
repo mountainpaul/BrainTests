@@ -11,10 +11,10 @@ import '../../domain/entities/assessment.dart';
 import '../../domain/models/assessment_models.dart';
 import '../../domain/services/assessment_generator.dart';
 import '../providers/assessment_provider.dart';
+import '../providers/timer_provider.dart';
 import '../widgets/custom_card.dart';
 
 class AssessmentTestScreen extends ConsumerStatefulWidget {
-
   const AssessmentTestScreen({
     super.key,
     required this.assessmentType,
@@ -28,11 +28,10 @@ class AssessmentTestScreen extends ConsumerStatefulWidget {
 }
 
 class _AssessmentTestScreenState extends ConsumerState<AssessmentTestScreen> {
-  late AssessmentQuestion question;
+  AssessmentQuestion? question;
   late DateTime testStartTime;
-  Timer? countdownTimer;
-  int remainingTimeSeconds = 0;
   bool testCompleted = false;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -40,67 +39,94 @@ class _AssessmentTestScreenState extends ConsumerState<AssessmentTestScreen> {
     _initializeAssessment();
   }
 
-  void _initializeAssessment() {
-    final questions = AssessmentGenerator.generateAssessmentBattery(
+  Future<void> _initializeAssessment() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final questions = await AssessmentGenerator.generateAssessmentBattery(
       type: widget.assessmentType,
       difficulty: widget.difficulty,
     );
-    question = questions.first;
-    testStartTime = DateTime.now();
     
-    if (question.timeLimit > 0) {
-      remainingTimeSeconds = question.timeLimit;
-      _startTimer();
-    }
-  }
+    if (mounted) {
+      setState(() {
+        question = questions.first;
+        testStartTime = DateTime.now();
+        isLoading = false;
+      });
 
-  void _startTimer() {
-    countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (remainingTimeSeconds <= 0) {
-        _completeAssessment();
-        timer.cancel();
-      } else {
-        setState(() {
-          remainingTimeSeconds--;
-        });
+      if (question!.timeLimit > 0) {
+        ref.read(countdownTimerProvider(question!.timeLimit).notifier).start();
       }
-    });
+    }
   }
 
   @override
   void dispose() {
-    countdownTimer?.cancel();
+    // Stop the timer when the widget is disposed
+    // Note: We cannot safely read the provider here if we don't know the exact question/timeLimit
+    // However, since countdownTimerProvider is likely autoDispose, it will clean itself up.
+    // If it's not autoDispose, we should ideally stop it.
+    // Given the complexity of accessing the family provider in dispose without the question being guaranteed non-null,
+    // we rely on Riverpod's cleanup or the fact that the timer is part of the state.
+    // If we really need to stop it, we should have stored the subscription or the provider reference.
     super.dispose();
   }
 
   void _completeAssessment() {
+    if (question != null && question!.timeLimit > 0) {
+      ref.read(countdownTimerProvider(question!.timeLimit).notifier).pause();
+    }
     setState(() {
       testCompleted = true;
     });
-    countdownTimer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen to the timer provider for time-out completion
+    if (question != null && question!.timeLimit > 0) {
+      ref.listen(countdownTimerProvider(question!.timeLimit), (previous, next) {
+        if (next.isCompleted && !testCompleted) {
+           _completeAssessment();
+        }
+      });
+    }
+
+    if (isLoading || question == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(_getAssessmentTitle())),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_getAssessmentTitle()),
         actions: [
-          if (question.timeLimit > 0 && !testCompleted)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: remainingTimeSeconds <= 30 ? Colors.red : Colors.orange,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                '${remainingTimeSeconds ~/ 60}:${(remainingTimeSeconds % 60).toString().padLeft(2, '0')}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          if (question!.timeLimit > 0 && !testCompleted)
+            Consumer(
+              builder: (context, ref, child) {
+                final timerState = ref.watch(countdownTimerProvider(question!.timeLimit));
+                final remainingTimeSeconds = timerState.remainingSeconds;
+                
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: remainingTimeSeconds <= 30 ? Colors.red : Colors.orange,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${remainingTimeSeconds ~/ 60}:${(remainingTimeSeconds % 60).toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -111,17 +137,17 @@ class _AssessmentTestScreenState extends ConsumerState<AssessmentTestScreen> {
   Widget _buildTestContent() {
     switch (widget.assessmentType) {
       case AssessmentType.memoryRecall:
-        return _buildMemoryRecallTest(question as MemoryRecallQuestion);
+        return _buildMemoryRecallTest(question! as MemoryRecallQuestion);
       case AssessmentType.attentionFocus:
-        return _buildAttentionFocusTest(question as AttentionFocusQuestion);
+        return _buildAttentionFocusTest(question! as AttentionFocusQuestion);
       case AssessmentType.executiveFunction:
-        return _buildExecutiveFunctionTest(question as ExecutiveFunctionQuestion);
+        return _buildExecutiveFunctionTest(question! as ExecutiveFunctionQuestion);
       case AssessmentType.languageSkills:
-        return _buildLanguageSkillsTest(question as LanguageSkillsQuestion);
+        return _buildLanguageSkillsTest(question! as LanguageSkillsQuestion);
       case AssessmentType.visuospatialSkills:
-        return _buildVisuospatialTest(question as VisuospatialQuestion);
+        return _buildVisuospatialTest(question! as VisuospatialQuestion);
       case AssessmentType.processingSpeed:
-        return _buildProcessingSpeedTest(question as ProcessingSpeedQuestion);
+        return _buildProcessingSpeedTest(question! as ProcessingSpeedQuestion);
     }
   }
 
@@ -256,6 +282,14 @@ class _AssessmentTestScreenState extends ConsumerState<AssessmentTestScreen> {
       print('Assessment saved successfully with score: ${score.toStringAsFixed(1)}');
     } catch (e) {
       print('Error saving assessment result: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving assessment: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
@@ -1230,6 +1264,7 @@ class _ExecutiveFunctionWidgetState extends State<ExecutiveFunctionWidget> {
       totalMoves: moves.length,
       solved: _isComplete(),
       planningTime: planningTime,
+      numberOfDisks: widget.question.numberOfDisks,
     );
     
     widget.onCompleted(response);
@@ -1696,7 +1731,7 @@ class _LanguageSkillsWidgetState extends State<LanguageSkillsWidget> {
     });
   }
 
-  void _completeTest() {
+  void _completeTest() async {
     countdownTimer?.cancel();
     _stopListening(); // Stop speech recognition
     setState(() {
@@ -1704,10 +1739,15 @@ class _LanguageSkillsWidgetState extends State<LanguageSkillsWidget> {
     });
     
     // Validate words
-    final validWords = enteredWords.where((word) {
-      return WordValidator.isValidWord(widget.question.category, word);
-    }).length;
+    int validWords = 0;
+    for (final word in enteredWords) {
+      if (await WordValidator.isValidWord(widget.question.category, word)) {
+        validWords++;
+      }
+    }
     
+    final categories = await WordValidator.categorizeWords(enteredWords);
+
     final response = LanguageSkillsResponse(
       questionId: widget.question.id,
       startTime: testStartTime,
@@ -1717,7 +1757,7 @@ class _LanguageSkillsWidgetState extends State<LanguageSkillsWidget> {
       validWords: validWords,
       invalidWords: enteredWords.length - validWords,
       repetitions: 0, // Already handled by not allowing duplicates
-      categories: WordValidator.categorizeWords(enteredWords),
+      categories: categories,
     );
     
     // Delay before completing to show results

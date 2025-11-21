@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Direct test of repository to verify exercises are saved
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late AppDatabase database;
   late CognitiveExerciseRepositoryImpl repository;
 

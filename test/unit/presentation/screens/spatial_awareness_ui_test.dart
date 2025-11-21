@@ -38,9 +38,12 @@ void main() {
         final optionLengths = puzzle.options.map((o) => o.length).toSet();
 
         // Options should be concise visual symbols (1-3 chars max)
-        for (final option in puzzle.options) {
-          expect(option.length, lessThanOrEqualTo(3),
-            reason: 'Option "$option" should be a concise visual symbol');
+        // Navigation puzzles use coordinates like "(2,1)" which are longer
+        if (puzzle.type != SpatialType.navigation) {
+          for (final option in puzzle.options) {
+            expect(option.length, lessThanOrEqualTo(3),
+              reason: 'Option "$option" should be a concise visual symbol');
+          }
         }
 
         // All options should be unique

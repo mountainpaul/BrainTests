@@ -34,7 +34,7 @@ final class PDFGeneratorNotifierProvider
 }
 
 String _$pDFGeneratorNotifierHash() =>
-    r'2aa228950e3ab599ccb93cbee5f8446b140aa7c0';
+    r'e9d16fd0d53b75f406c51e0f0a05a889083f4614';
 
 abstract class _$PDFGeneratorNotifier extends $AsyncNotifier<void> {
   FutureOr<void> build();

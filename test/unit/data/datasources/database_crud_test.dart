@@ -162,40 +162,6 @@ void main() {
       expect(companion.notes.value, 'Great performance!');
     });
 
-    test('should create ReminderTableCompanion correctly', () {
-      final now = DateTime.now();
-
-      final companion = ReminderTableCompanion.insert(
-        title: 'Take medication',
-        type: ReminderType.medication,
-        frequency: ReminderFrequency.daily,
-        scheduledAt: now,
-      );
-
-      expect(companion.title.present, isTrue);
-      expect(companion.type.present, isTrue);
-      expect(companion.frequency.present, isTrue);
-      expect(companion.scheduledAt.present, isTrue);
-    });
-
-    test('should create ReminderTableCompanion with optional fields', () {
-      final now = DateTime.now();
-
-      final companion = ReminderTableCompanion.insert(
-        title: 'Daily exercise',
-        type: ReminderType.exercise,
-        frequency: ReminderFrequency.daily,
-        scheduledAt: now,
-        description: const Value('30 minutes of cardio'),
-        isActive: const Value(true),
-      );
-
-      expect(companion.description.present, isTrue);
-      expect(companion.description.value, '30 minutes of cardio');
-      expect(companion.isActive.present, isTrue);
-      expect(companion.isActive.value, isTrue);
-    });
-
     test('should create CognitiveExerciseTableCompanion correctly', () {
       final companion = CognitiveExerciseTableCompanion.insert(
         name: 'Memory Match Game',
@@ -224,44 +190,6 @@ void main() {
       expect(companion.score.value, 420);
       expect(companion.timeSpentSeconds.present, isTrue);
       expect(companion.timeSpentSeconds.value, 180);
-    });
-
-    test('should create MoodEntryTableCompanion correctly', () {
-      final today = DateTime.now();
-
-      final companion = MoodEntryTableCompanion.insert(
-        entryDate: today,
-        mood: MoodLevel.good,
-        energyLevel: 8,
-        stressLevel: 3,
-        sleepQuality: 7,
-      );
-
-      expect(companion.entryDate.present, isTrue);
-      expect(companion.mood.present, isTrue);
-      expect(companion.energyLevel.present, isTrue);
-      expect(companion.stressLevel.present, isTrue);
-      expect(companion.sleepQuality.present, isTrue);
-    });
-
-    test('should create MoodEntryTableCompanion with optional notes', () {
-      final today = DateTime.now();
-
-      final companion = MoodEntryTableCompanion.insert(
-        entryDate: today,
-        mood: MoodLevel.good,
-        energyLevel: 8,
-        stressLevel: 3,
-        sleepQuality: 7,
-        notes: const Value('Feeling productive'),
-      );
-
-      expect(companion.stressLevel.present, isTrue);
-      expect(companion.stressLevel.value, 3);
-      expect(companion.energyLevel.present, isTrue);
-      expect(companion.energyLevel.value, 8);
-      expect(companion.notes.present, isTrue);
-      expect(companion.notes.value, 'Feeling productive');
     });
 
     test('should create WordDictionaryTableCompanion correctly', () {
@@ -312,16 +240,6 @@ void main() {
 
       // Verify the type field stores enum correctly
       expect(assessmentCompanion.type.value, AssessmentType.languageSkills);
-
-      final reminderCompanion = ReminderTableCompanion.insert(
-        title: 'Weekly Assessment',
-        type: ReminderType.assessment,
-        frequency: ReminderFrequency.weekly,
-        scheduledAt: DateTime.now(),
-      );
-
-      expect(reminderCompanion.type.value, ReminderType.assessment);
-      expect(reminderCompanion.frequency.value, ReminderFrequency.weekly);
     });
 
     test('should handle nullable fields correctly', () {
@@ -410,17 +328,6 @@ void main() {
       expect(yesterday.isBefore(now), isTrue);
       expect(tomorrow.isAfter(now), isTrue);
       expect(now.isAtSameMomentAs(now), isTrue);
-
-      // Test datetime companions
-      final moodEntry = MoodEntryTableCompanion.insert(
-        entryDate: yesterday,
-        mood: MoodLevel.good,
-        energyLevel: 5,
-        stressLevel: 4,
-        sleepQuality: 6,
-      );
-
-      expect(moodEntry.entryDate.value.isBefore(now), isTrue);
     });
 
     test('should validate score calculations', () {
@@ -440,21 +347,6 @@ void main() {
         final percentage = (score / maxScore) * 100.0;
         expect(percentage, closeTo(expected, 0.01));
       }
-    });
-
-    test('should validate boolean defaults', () {
-      // Test default values for boolean fields
-      final reminder = ReminderTableCompanion.insert(
-        title: 'Test Reminder',
-        type: ReminderType.medication,
-        frequency: ReminderFrequency.daily,
-        scheduledAt: DateTime.now(),
-      );
-
-      // isActive should default to true, isCompleted to false
-      // These defaults are defined in the table schema
-      expect(reminder.isActive.present, isFalse); // Uses default value
-      expect(reminder.isCompleted.present, isFalse); // Uses default value
     });
   });
 
@@ -491,23 +383,6 @@ void main() {
       expect(ExerciseDifficulty.easy.index < ExerciseDifficulty.medium.index, isTrue);
       expect(ExerciseDifficulty.medium.index < ExerciseDifficulty.hard.index, isTrue);
       expect(ExerciseDifficulty.hard.index < ExerciseDifficulty.expert.index, isTrue);
-    });
-
-    test('should validate mood level progression', () {
-      // Test mood level enum ordering
-      const moods = MoodLevel.values;
-
-      expect(moods[0], MoodLevel.veryLow);
-      expect(moods[1], MoodLevel.low);
-      expect(moods[2], MoodLevel.neutral);
-      expect(moods[3], MoodLevel.good);
-      expect(moods[4], MoodLevel.excellent);
-
-      // Test mood progression
-      expect(MoodLevel.veryLow.index < MoodLevel.low.index, isTrue);
-      expect(MoodLevel.low.index < MoodLevel.neutral.index, isTrue);
-      expect(MoodLevel.neutral.index < MoodLevel.good.index, isTrue);
-      expect(MoodLevel.good.index < MoodLevel.excellent.index, isTrue);
     });
 
     test('should validate time-based data', () {

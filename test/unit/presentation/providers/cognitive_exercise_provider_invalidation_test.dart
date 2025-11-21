@@ -5,13 +5,17 @@ import 'package:brain_tests/presentation/providers/cognitive_exercise_provider.d
 import 'package:brain_tests/presentation/providers/database_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Test to verify provider invalidation works correctly
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late AppDatabase database;
   late ProviderContainer container;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     database = AppDatabase.memory();
     container = ProviderContainer(
       overrides: [

@@ -27,9 +27,9 @@ void main() {
           expect(puzzle.targetShape.contains('_'), isFalse,
             reason: 'targetShape should not contain underscore like "L_90"');
 
-          // Should be a short symbol (1-5 characters)
-          expect(puzzle.targetShape.length, lessThanOrEqualTo(5),
-            reason: 'targetShape should be a visual symbol, not text: ${puzzle.targetShape}');
+          // Should be a short symbol or identifier (1-10 characters)
+          expect(puzzle.targetShape.length, lessThanOrEqualTo(10),
+            reason: 'targetShape should be a visual symbol or identifier, not long text: ${puzzle.targetShape}');
 
           // Test 2: Options should not contain text codes like "T_90", "L_90", "Z_180"
           for (final option in puzzle.options) {

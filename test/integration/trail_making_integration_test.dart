@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Integration tests for Trail Making Test end-to-end workflow
 /// Tests the complete user journey from starting test to data persistence
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase database;
 
   setUp(() {
@@ -22,6 +23,11 @@ void main() {
 
   group('Trail Making Test Integration', () {
     testWidgets('should save Test A results to database via repository', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // Arrange
       await tester.pumpWidget(
         ProviderScope(
@@ -46,7 +52,7 @@ void main() {
         final finder = find.text(i.toString()).first;
         await tester.ensureVisible(finder);
         await tester.tap(finder);
-        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -60,6 +66,11 @@ void main() {
     });
 
     testWidgets('should save Test B results to database via repository', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // Arrange
       await tester.pumpWidget(
         ProviderScope(
@@ -79,8 +90,10 @@ void main() {
       await tester.pumpAndSettle();
 
       for (int i = 1; i <= 25; i++) {
-        await tester.tap(find.text(i.toString()).first);
-        await tester.pump(const Duration(milliseconds: 50));
+        final finder = find.text(i.toString()).first;
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -100,7 +113,7 @@ void main() {
         final finder = find.text(item).first;
         await tester.ensureVisible(finder);
         await tester.tap(finder);
-        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -118,6 +131,11 @@ void main() {
     });
 
     testWidgets('should persist results across app restart', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // Arrange - Complete test and save
       await tester.pumpWidget(
         ProviderScope(
@@ -136,8 +154,10 @@ void main() {
       await tester.pumpAndSettle();
 
       for (int i = 1; i <= 25; i++) {
-        await tester.tap(find.text(i.toString()).first);
-        await tester.pump(const Duration(milliseconds: 50));
+        final finder = find.text(i.toString()).first;
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -161,6 +181,11 @@ void main() {
     });
 
     testWidgets('should record completion time accurately', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // Arrange
       await tester.pumpWidget(
         ProviderScope(
@@ -182,8 +207,10 @@ void main() {
 
       // Complete test quickly
       for (int i = 1; i <= 25; i++) {
-        await tester.tap(find.text(i.toString()).first);
-        await tester.pump(const Duration(milliseconds: 10));
+        final finder = find.text(i.toString()).first;
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -200,6 +227,11 @@ void main() {
     });
 
     testWidgets('should record errors when incorrect sequence tapped', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // Arrange
       await tester.pumpWidget(
         ProviderScope(
@@ -227,8 +259,10 @@ void main() {
 
       // Complete rest correctly
       for (int i = 3; i <= 25; i++) {
-        await tester.tap(find.text(i.toString()).first);
-        await tester.pump(const Duration(milliseconds: 10));
+        final finder = find.text(i.toString()).first;
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 
@@ -241,6 +275,11 @@ void main() {
     });
 
     testWidgets('should use repository layer not direct database access', (tester) async {
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       // This test verifies the fix for the bug
       // If this fails, it means we're back to direct DB access
 
@@ -266,8 +305,10 @@ void main() {
       await tester.pumpAndSettle();
 
       for (int i = 1; i <= 25; i++) {
-        await tester.tap(find.text(i.toString()).first);
-        await tester.pump(const Duration(milliseconds: 10));
+        final finder = find.text(i.toString()).first;
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
       }
       await tester.pumpAndSettle();
 

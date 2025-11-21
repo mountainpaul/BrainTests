@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/test_database.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('CognitiveExerciseRepositoryImpl Integration Tests', () {
     late AppDatabase database;
     late CognitiveExerciseRepositoryImpl repository;

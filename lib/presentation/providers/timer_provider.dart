@@ -1,26 +1,24 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'timer_provider.g.dart';
 
-/// Immutable timer state
+/// State class for timers
 class TimerState {
   final int remainingSeconds;
   final bool isRunning;
   final bool isCompleted;
+  final int elapsedSeconds; // For stopwatch
 
   const TimerState({
-    required this.remainingSeconds,
-    required this.isRunning,
-    required this.isCompleted,
+    this.remainingSeconds = 0,
+    this.isRunning = false,
+    this.isCompleted = false,
+    this.elapsedSeconds = 0,
   });
 
-  /// Format time as M:SS
   String get formattedTime {
-    final minutes = remainingSeconds ~/ 60;
+    final minutes = (remainingSeconds / 60).floor();
     final seconds = remainingSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
@@ -29,197 +27,114 @@ class TimerState {
     int? remainingSeconds,
     bool? isRunning,
     bool? isCompleted,
+    int? elapsedSeconds,
   }) {
     return TimerState(
       remainingSeconds: remainingSeconds ?? this.remainingSeconds,
       isRunning: isRunning ?? this.isRunning,
       isCompleted: isCompleted ?? this.isCompleted,
+      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
     );
   }
 }
 
-/// Safe timer notifier using Riverpod
-///
-/// Replaces unsafe Timer + setState patterns:
-/// - Automatic cleanup on dispose
-/// - Thread-safe state updates
-/// - No setState() after dispose errors
-/// - Memory leak prevention
 @riverpod
 class CountdownTimer extends _$CountdownTimer {
-  VoidCallback? _onComplete;
-  void Function(int)? _onTick;
-
   Timer? _timer;
 
-  void initialize({
-    VoidCallback? onComplete,
-    void Function(int)? onTick,
-  }) {
-    _onComplete = onComplete;
-    _onTick = onTick;
-  }
-
   @override
-  TimerState build(int durationSeconds) {
-    // Cleanup timer when provider is disposed
+  TimerState build(int initialSeconds) {
     ref.onDispose(() {
       _timer?.cancel();
     });
+    return TimerState(remainingSeconds: initialSeconds);
+  }
 
-    return TimerState(
-      remainingSeconds: durationSeconds,
-      isRunning: false,
+  void start() {
+    if (state.isRunning || state.isCompleted) return;
+
+    state = state.copyWith(isRunning: true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.remainingSeconds > 1) {
+        state = state.copyWith(remainingSeconds: state.remainingSeconds - 1);
+      } else {
+        _timer?.cancel();
+        state = state.copyWith(
+          remainingSeconds: 0,
+          isRunning: false,
+          isCompleted: true,
+        );
+      }
+    });
+  }
+
+  void pause() {
+    _timer?.cancel();
+    state = state.copyWith(isRunning: false);
+  }
+
+  void reset() {
+    _timer?.cancel();
+    // initialSeconds is available as 'arg' in Riverpod 2.x family notifiers
+    // but generated code handles it. For now, we'll just reset to what we started with if possible,
+    // or 0 if we don't track initial.
+    // Actually, the build arg is 'initialSeconds', so we can reuse it if we tracked it?
+    // Riverpod family providers rebuild when parameters change.
+    // But 'reset' usually means go back to start.
+    // Let's reset to the initial value passed to build.
+    state = TimerState(remainingSeconds: initialSeconds);
+  }
+
+  void addTime(int seconds) {
+    state = state.copyWith(
+      remainingSeconds: state.remainingSeconds + seconds,
       isCompleted: false,
     );
   }
 
-  int get _initialDurationSeconds => durationSeconds;
-
-  /// Start or resume timer
-  void start() {
-    if (state.isCompleted) return;
-
-    _timer?.cancel();
-    state = state.copyWith(isRunning: true);
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!ref.mounted) {
-        timer.cancel();
-        return;
-      }
-
-      if (state.remainingSeconds > 0) {
-        state = state.copyWith(remainingSeconds: state.remainingSeconds - 1);
-        _onTick?.call(state.remainingSeconds);
-
-        if (state.remainingSeconds == 0) {
-          _complete();
-        }
-      }
-    });
-  }
-
-  /// Pause timer
-  void pause() {
-    _timer?.cancel();
-    if (ref.mounted) {
-      state = state.copyWith(isRunning: false);
-    }
-  }
-
-  /// Reset timer to initial duration
-  void reset() {
-    _timer?.cancel();
-    if (ref.mounted) {
-      state = TimerState(
-        remainingSeconds: _initialDurationSeconds,
-        isRunning: false,
-        isCompleted: false,
-      );
-    }
-  }
-
-  /// Add time to timer
-  void addTime(int seconds) {
-    state = state.copyWith(remainingSeconds: state.remainingSeconds + seconds);
-  }
-
-  /// Subtract time from timer
   void subtractTime(int seconds) {
     final newTime = state.remainingSeconds - seconds;
     if (newTime <= 0) {
-      state = state.copyWith(remainingSeconds: 0, isCompleted: true);
-      _complete();
+      _timer?.cancel();
+      state = state.copyWith(
+        remainingSeconds: 0,
+        isCompleted: true,
+        isRunning: false,
+      );
     } else {
       state = state.copyWith(remainingSeconds: newTime);
     }
   }
-
-  void _complete() {
-    _timer?.cancel();
-    state = state.copyWith(
-      isRunning: false,
-      isCompleted: true,
-      remainingSeconds: 0,
-    );
-    _onComplete?.call();
-  }
 }
 
-// Provider is auto-generated by riverpod_generator
-
-/// Stopwatch state (counts up instead of down)
-class StopwatchState {
-  final int elapsedSeconds;
-  final bool isRunning;
-
-  const StopwatchState({
-    required this.elapsedSeconds,
-    required this.isRunning,
-  });
-
-  String get formattedTime {
-    final minutes = elapsedSeconds ~/ 60;
-    final seconds = elapsedSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  StopwatchState copyWith({
-    int? elapsedSeconds,
-    bool? isRunning,
-  }) {
-    return StopwatchState(
-      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
-      isRunning: isRunning ?? this.isRunning,
-    );
-  }
-}
-
-/// Stopwatch notifier (counts up)
 @riverpod
 class Stopwatch extends _$Stopwatch {
   Timer? _timer;
 
   @override
-  StopwatchState build() {
-    // Cleanup timer when provider is disposed
+  TimerState build() {
     ref.onDispose(() {
       _timer?.cancel();
     });
-
-    return const StopwatchState(
-      elapsedSeconds: 0,
-      isRunning: false,
-    );
+    return const TimerState();
   }
 
   void start() {
-    _timer?.cancel();
-    state = state.copyWith(isRunning: true);
+    if (state.isRunning) return;
 
+    state = state.copyWith(isRunning: true);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!ref.mounted) {
-        timer.cancel();
-        return;
-      }
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
   }
 
   void pause() {
     _timer?.cancel();
-    if (ref.mounted) {
-      state = state.copyWith(isRunning: false);
-    }
+    state = state.copyWith(isRunning: false);
   }
 
   void reset() {
     _timer?.cancel();
-    if (ref.mounted) {
-      state = const StopwatchState(elapsedSeconds: 0, isRunning: false);
-    }
+    state = const TimerState();
   }
 }
-
-// Provider is auto-generated by riverpod_generator

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../data/datasources/database.dart';
+import 'enums.dart';
 
 class CognitiveExercise extends Equatable {
 

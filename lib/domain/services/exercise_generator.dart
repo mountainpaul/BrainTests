@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../../core/services/word_dictionary_service.dart';
 import '../../data/datasources/database.dart';
+import '../entities/enums.dart';
 
 /// Service that generates real cognitive exercises
 class ExerciseGenerator {

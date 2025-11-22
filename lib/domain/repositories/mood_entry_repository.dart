@@ -1,4 +1,4 @@
-import '../../data/datasources/database.dart';
+import '../entities/enums.dart';
 import '../entities/mood_entry.dart';
 
 abstract class MoodEntryRepository {

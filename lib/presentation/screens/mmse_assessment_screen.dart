@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/assessment.dart';
 import '../../domain/entities/validated_assessments.dart';
 import '../providers/assessment_provider.dart';

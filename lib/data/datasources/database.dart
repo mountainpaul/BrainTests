@@ -9,69 +9,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../../core/services/encryption_key_manager.dart';
+import '../../domain/entities/enums.dart';
+export '../../domain/entities/enums.dart';
 
 part 'database.g.dart';
-
-enum AssessmentType {
-  memoryRecall,
-  attentionFocus,
-  executiveFunction,
-  languageSkills,
-  visuospatialSkills,
-  processingSpeed
-}
-
-enum ReminderType {
-  medication,
-  exercise,
-  assessment,
-  appointment,
-  custom
-}
-
-enum ReminderFrequency {
-  once,
-  daily,
-  weekly,
-  monthly
-}
-
-enum ExerciseType {
-  memoryGame,
-  wordPuzzle,
-  wordSearch,
-  spanishAnagram,
-  mathProblem,
-  patternRecognition,
-  sequenceRecall,
-  spatialAwareness
-}
-
-enum WordLanguage {
-  english,
-  spanish
-}
-
-enum WordType {
-  anagram,
-  wordSearch,
-  validationOnly  // For validating user answers without using in puzzle generation
-}
-
-enum ExerciseDifficulty {
-  easy,
-  medium,
-  hard,
-  expert
-}
-
-enum MoodLevel {
-  veryLow,
-  low,
-  neutral,
-  good,
-  excellent
-}
 
 enum ActivityType {
   cycling,

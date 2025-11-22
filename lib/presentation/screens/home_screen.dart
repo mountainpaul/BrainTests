@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/services/user_profile_service.dart';
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../providers/assessment_provider.dart';
 import '../providers/mood_entry_provider.dart';
 import '../providers/reminder_provider.dart';

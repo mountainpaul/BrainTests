@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/native_speech_recognition_service.dart';
 import '../../core/services/google_cloud_speech_service.dart';
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/assessment.dart';
 import '../providers/assessment_provider.dart';
 import '../widgets/custom_card.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../widgets/custom_card.dart';
 import 'exercise_test_screen.dart';
 

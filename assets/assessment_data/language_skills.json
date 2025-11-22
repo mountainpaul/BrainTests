@@ -1,0 +1,30 @@
+{
+  "categories": {
+    "1": {"category": "animals", "prompt": "Name as many animals as you can"},
+    "2": {"category": "foods", "prompt": "Name as many foods as you can"},
+    "3": {"category": "countries", "prompt": "Name as many countries as you can"},
+    "4": {"category": "words_f", "prompt": "Name words starting with the letter F"},
+    "5": {"category": "professions", "prompt": "Name as many professions/jobs as you can"}
+  },
+  "valid_words": {
+    "animals": [
+      "cat", "dog", "bird", "fish", "horse", "cow", "pig", "sheep", "goat", "chicken",
+      "lion", "tiger", "bear", "elephant", "giraffe", "zebra", "monkey", "rabbit",
+      "mouse", "rat", "hamster", "guinea pig", "snake", "lizard", "turtle", "frog",
+      "butterfly", "bee", "ant", "spider", "fly", "mosquito", "whale", "dolphin",
+      "shark", "octopus", "crab", "lobster", "deer", "moose", "wolf", "fox"
+    ],
+    "foods": [
+      "apple", "banana", "orange", "grape", "strawberry", "blueberry", "peach", "pear",
+      "bread", "rice", "pasta", "potato", "carrot", "broccoli", "spinach", "tomato",
+      "chicken", "beef", "pork", "fish", "egg", "milk", "cheese", "butter",
+      "pizza", "hamburger", "sandwich", "salad", "soup", "cake", "cookie", "ice cream"
+    ],
+    "countries": [
+      "usa", "canada", "mexico", "brazil", "argentina", "chile", "colombia", "peru",
+      "uk", "france", "germany", "italy", "spain", "russia", "china", "japan",
+      "india", "australia", "new zealand", "south africa", "egypt", "nigeria",
+      "turkey", "saudi arabia", "iran", "iraq", "israel", "jordan", "lebanon"
+    ]
+  }
+}

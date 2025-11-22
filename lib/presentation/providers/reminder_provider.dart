@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/reminder.dart';
 import 'repository_providers.dart';
 

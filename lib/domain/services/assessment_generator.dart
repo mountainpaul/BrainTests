@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import '../../data/datasources/database.dart';
+import '../entities/enums.dart';
 import '../models/assessment_models.dart';
 import 'assessment_asset_loader.dart';
 

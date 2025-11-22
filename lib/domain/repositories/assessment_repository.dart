@@ -1,5 +1,5 @@
-import '../../data/datasources/database.dart';
 import '../entities/assessment.dart';
+import '../entities/enums.dart';
 
 abstract class AssessmentRepository {
   Future<List<Assessment>> getAllAssessments();

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/assessment.dart';
 import 'cambridge_assessment_provider.dart';
 import 'cognitive_activity_provider.dart';

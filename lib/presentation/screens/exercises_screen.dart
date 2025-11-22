@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../providers/cognitive_exercise_provider.dart';
 import '../widgets/bottom_navigation_bar.dart';

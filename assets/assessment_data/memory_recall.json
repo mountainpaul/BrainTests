@@ -1,0 +1,13 @@
+{
+  "word_lists": {
+    "1": ["cat", "dog", "sun", "car", "book"],
+    "2": ["apple", "chair", "phone", "water", "happy", "green"],
+    "3": ["elephant", "bicycle", "kitchen", "purple", "doctor", "mountain", "ocean"],
+    "4": ["telephone", "butterfly", "newspaper", "hospital", "vacation", "chocolate", "umbrella", "calendar"],
+    "5": ["refrigerator", "gymnasium", "photograph", "restaurant", "dictionary", "calculator", "basketball", "television", "helicopter"]
+  },
+  "distractors": [
+    "table", "window", "flower", "pencil", "music", "orange", "castle", "rabbit",
+    "guitar", "planet", "diamond", "forest", "thunder", "sandwich", "volcano"
+  ]
+}

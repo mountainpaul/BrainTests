@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/user_profile_service.dart';
 import '../../core/services/word_definition_service.dart';
 import '../../core/services/word_dictionary_service.dart';
-import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/services/exercise_generator.dart';
 import '../providers/cognitive_exercise_provider.dart';

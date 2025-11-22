@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import '../../data/datasources/database.dart';
+import '../../domain/entities/enums.dart';
 import '../data/comprehensive_word_lists.dart';
 import '../data/validation_word_list.dart';
 

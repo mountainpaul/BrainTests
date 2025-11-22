@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/datasources/database.dart' hide ActivityType;
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/cognitive_activity.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/services/streak_calculator.dart';

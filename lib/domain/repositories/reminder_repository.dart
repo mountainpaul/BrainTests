@@ -1,4 +1,4 @@
-import '../../data/datasources/database.dart';
+import '../entities/enums.dart';
 import '../entities/reminder.dart';
 
 abstract class ReminderRepository {

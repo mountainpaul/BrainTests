@@ -1,4 +1,4 @@
-import '../../data/datasources/database.dart' show AssessmentType;
+import 'enums.dart' show AssessmentType;
 import 'assessment.dart';
 import 'cognitive_exercise.dart';
 

@@ -1,5 +1,5 @@
-import '../../data/datasources/database.dart';
 import '../entities/cognitive_exercise.dart';
+import '../entities/enums.dart';
 
 abstract class CognitiveExerciseRepository {
   Future<List<CognitiveExercise>> getAllExercises();

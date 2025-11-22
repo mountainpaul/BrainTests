@@ -19,7 +19,7 @@ import record_macos
 import share_plus
 import shared_preferences_foundation
 import speech_to_text
-import sqlite3_flutter_libs
+import sqlcipher_flutter_libs
 import wakelock_plus
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

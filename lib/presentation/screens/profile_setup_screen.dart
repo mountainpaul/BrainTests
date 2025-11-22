@@ -72,7 +72,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true); // Return true to indicate success
+        // Navigator.of(context).pop(true); // Removed: causing black screen when accessed via bottom nav
       }
     } catch (e) {
       if (mounted) {

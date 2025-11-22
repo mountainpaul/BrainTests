@@ -57,7 +57,7 @@ final class CountdownTimerProvider
   }
 }
 
-String _$countdownTimerHash() => r'c37aa33fb4ff1b64300c8afd20ddec752983567f';
+String _$countdownTimerHash() => r'88170415060d68376b13d6c4108c0eb960810603';
 
 final class CountdownTimerFamily extends $Family
     with

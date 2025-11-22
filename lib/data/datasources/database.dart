@@ -4,8 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-// Encryption temporarily disabled due to library conflicts
-// import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../../core/services/encryption_key_manager.dart';
@@ -13,58 +12,6 @@ import '../../domain/entities/enums.dart';
 export '../../domain/entities/enums.dart';
 
 part 'database.g.dart';
-
-enum ActivityType {
-  cycling,
-  resistance,
-  meditation,
-  dive,
-  hike,
-  social,
-  yoga
-}
-
-enum MealType {
-  lunch,
-  snack,
-  dinner
-}
-
-enum FastType {
-  intermittent16_8,
-  extended30Hour
-}
-
-enum SupplementTiming {
-  morning,
-  afternoon,
-  evening,
-  beforeBed
-}
-
-enum PlanType {
-  daily,
-  weekly
-}
-
-enum JournalType {
-  daily,
-  weekly
-}
-
-enum SleepQuality {
-  poor,
-  fair,
-  good,
-  excellent
-}
-
-enum RestlessnessLevel {
-  poor,
-  fair,
-  good,
-  excellent
-}
 
 enum CambridgeTestType {
   pal,  // Paired Associates Learning - visual episodic memory
@@ -89,24 +36,6 @@ class AssessmentTable extends Table {
   String get tableName => 'assessments';
 }
 
-@DataClassName('ReminderEntry')
-class ReminderTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text()();
-  TextColumn get description => text().nullable()();
-  TextColumn get type => textEnum<ReminderType>()();
-  TextColumn get frequency => textEnum<ReminderFrequency>()();
-  DateTimeColumn get scheduledAt => dateTime()();
-  DateTimeColumn get nextScheduled => dateTime().nullable()();
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'reminders';
-}
-
 @DataClassName('CognitiveExerciseEntry')
 class CognitiveExerciseTable extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -123,195 +52,6 @@ class CognitiveExerciseTable extends Table {
   
   @override
   String get tableName => 'cognitive_exercises';
-}
-
-// Daily tracking entry - the main "Today" card data
-@DataClassName('DailyEntry')
-class DailyTrackingTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get entryDate => dateTime()(); // The day this entry is for
-  IntColumn get cycleDay => integer()(); // 1-10 cycle day
-  RealColumn get sleepHours => real().nullable()(); // Sleep hours
-  RealColumn get weight => real().nullable()(); // Weight in lbs
-  IntColumn get mood => integer().nullable()(); // 1-5 scale
-  BoolColumn get cycling => boolean().withDefault(const Constant(false))();
-  BoolColumn get resistance => boolean().withDefault(const Constant(false))();
-  BoolColumn get meditation => boolean().withDefault(const Constant(false))();
-  BoolColumn get dive => boolean().withDefault(const Constant(false))();
-  BoolColumn get hike => boolean().withDefault(const Constant(false))();
-  BoolColumn get social => boolean().withDefault(const Constant(false))();
-  BoolColumn get yoga => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'daily_tracking';
-}
-
-// 10-day meal plan
-@DataClassName('MealPlan')
-class MealPlanTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get dayNumber => integer()(); // 1-10
-  TextColumn get mealType => textEnum<MealType>()();
-  TextColumn get mealName => text()();
-  TextColumn get description => text().nullable()();
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'meal_plans';
-}
-
-// Feeding window settings
-@DataClassName('FeedingWindow')
-class FeedingWindowTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get startHour => integer()(); // 0-23
-  IntColumn get startMinute => integer()(); // 0-59
-  IntColumn get endHour => integer()(); // 0-23
-  IntColumn get endMinute => integer()(); // 0-59
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'feeding_windows';
-}
-
-// Fasting logs
-@DataClassName('FastingEntry')
-class FastingTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get fastType => textEnum<FastType>()();
-  DateTimeColumn get startTime => dateTime()();
-  DateTimeColumn get endTime => dateTime().nullable()();
-  IntColumn get durationHours => integer().nullable()(); // Calculated duration
-  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
-  TextColumn get notes => text().nullable()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'fasting_entries';
-}
-
-// Supplements tracking
-@DataClassName('Supplement')
-class SupplementsTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-  TextColumn get dosage => text()();
-  TextColumn get timing => textEnum<SupplementTiming>()();
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'supplements';
-}
-
-// Daily supplement completion tracking
-@DataClassName('SupplementLog')
-class SupplementLogsTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get supplementId => integer().references(SupplementsTable, #id)();
-  DateTimeColumn get logDate => dateTime()();
-  BoolColumn get taken => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get takenAt => dateTime().nullable()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'supplement_logs';
-}
-
-// Planning entries (daily and weekly)
-@DataClassName('PlanEntry')
-class PlanningTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get planType => textEnum<PlanType>()();
-  DateTimeColumn get planDate => dateTime()(); // For daily plans, the specific date; for weekly, the Monday of that week
-  TextColumn get title => text()();
-  TextColumn get description => text().nullable()();
-  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
-  IntColumn get priority => integer().nullable()(); // 1-5 scale
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'planning';
-}
-
-// Journal entries (daily and weekly)
-@DataClassName('JournalEntry')
-class JournalTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get journalType => textEnum<JournalType>()();
-  DateTimeColumn get entryDate => dateTime()();
-  TextColumn get reflections => text().nullable()();
-  TextColumn get gratitude => text().nullable()();
-  TextColumn get notes => text().nullable()();
-  TextColumn get wins => text().nullable()(); // For weekly entries
-  TextColumn get lessons => text().nullable()(); // For weekly entries
-  TextColumn get nextWeekPlan => text().nullable()(); // For weekly entries
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'journal';
-}
-
-@DataClassName('MoodEntryData')
-class MoodEntryTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get mood => textEnum<MoodLevel>()();
-  IntColumn get energyLevel => integer()(); // 1-10 scale
-  IntColumn get stressLevel => integer()(); // 1-10 scale
-  IntColumn get sleepQuality => integer()(); // 1-10 scale
-  TextColumn get notes => text().nullable()();
-  DateTimeColumn get entryDate => dateTime()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'mood_entries';
-}
-
-@DataClassName('SleepEntry')
-class SleepTrackingTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get sleepDate => dateTime()(); // The date of this sleep entry
-  IntColumn get score => integer().nullable()(); // 0-100 sleep score
-  TextColumn get quality => textEnum<SleepQuality>().nullable()(); // Poor, Fair, Good, Excellent
-  IntColumn get durationMinutes => integer().nullable()(); // Total sleep duration in minutes
-  IntColumn get stress => integer().nullable()(); // 0-100 stress level
-  IntColumn get deepSleepMinutes => integer().nullable()(); // Deep sleep duration in minutes
-  IntColumn get lightSleepMinutes => integer().nullable()(); // Light sleep duration in minutes
-  IntColumn get remSleepMinutes => integer().nullable()(); // REM sleep duration in minutes
-  TextColumn get restlessness => textEnum<RestlessnessLevel>().nullable()(); // Awake/Restlessness level
-  TextColumn get notes => text().nullable()(); // Additional notes
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  
-  @override
-  String get tableName => 'sleep_tracking';
-}
-
-// Garmin Cycling Tracking Table
-@DataClassName('CyclingTrackingEntry')
-class CyclingTrackingTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get rideDate => dateTime()(); // The date of this cycling session
-  RealColumn get distanceKm => real().nullable()(); // Distance in kilometers
-  IntColumn get totalTimeSeconds => integer().nullable()(); // Total time in seconds
-  RealColumn get avgMovingSpeedKmh => real().nullable()(); // Average moving speed in km/h
-  IntColumn get avgHeartRate => integer().nullable()(); // Average heart rate in bpm
-  IntColumn get maxHeartRate => integer().nullable()(); // Maximum heart rate in bpm
-  TextColumn get notes => text().nullable()(); // Additional notes
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  String get tableName => 'cycling_tracking';
 }
 
 @DataClassName('WordDictionary')
@@ -438,9 +178,18 @@ class AppDatabase extends _$AppDatabase {
       final dbFolder = await getApplicationDocumentsDirectory();
       final file = File(p.join(dbFolder.path, 'brain_plan.db'));
 
-      // Open database with regular SQLite (encryption disabled)
-      // TODO: Re-enable encryption with SQLCipher after resolving library conflicts
-      return NativeDatabase.createInBackground(file);
+      // Get encryption key securely
+      final encryptionKey = await EncryptionKeyManager.getOrCreateKey();
+
+      // Open database with SQLCipher encryption enabled
+      // Using NativeDatabase (main isolate) instead of createInBackground because
+      // the background isolate wouldn't have the SQLCipher override applied.
+      return NativeDatabase(
+        file,
+        setup: (database) {
+          database.execute("PRAGMA key = '$encryptionKey';");
+        },
+      );
     });
   }
 

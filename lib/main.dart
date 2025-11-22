@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sqlite3/open.dart';
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 
 import 'core/services/analytics_service.dart';
 import 'core/services/auto_backup_service.dart';
@@ -16,6 +18,9 @@ import 'presentation/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Enable SQLCipher on Android
+  open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
 
   // Initialize services
   await NotificationService.initialize();

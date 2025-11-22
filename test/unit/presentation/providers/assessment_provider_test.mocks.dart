@@ -5,8 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:brain_tests/data/datasources/database.dart' as _i5;
 import 'package:brain_tests/domain/entities/assessment.dart' as _i4;
+import 'package:brain_tests/domain/entities/enums.dart' as _i5;
 import 'package:brain_tests/domain/repositories/assessment_repository.dart'
     as _i2;
 import 'package:mockito/mockito.dart' as _i1;

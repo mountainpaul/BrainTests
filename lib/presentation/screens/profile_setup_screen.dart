@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/user_profile_service.dart';
-import '../providers/database_provider.dart';
+import '../../core/providers/database_provider.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 

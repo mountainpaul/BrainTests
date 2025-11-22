@@ -2,7 +2,7 @@ import 'package:brain_tests/data/datasources/database.dart';
 import 'package:brain_tests/data/repositories/assessment_repository_impl.dart';
 import 'package:brain_tests/domain/entities/assessment.dart';
 import 'package:brain_tests/presentation/providers/assessment_provider.dart';
-import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/core/providers/database_provider.dart';
 import 'package:brain_tests/presentation/providers/repository_providers.dart';
 import 'package:brain_tests/presentation/screens/language_skills_test_screen.dart';
 import 'package:flutter/material.dart';

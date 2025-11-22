@@ -1,5 +1,5 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/core/providers/database_provider.dart';
 import 'package:brain_tests/presentation/screens/cambridge/cantab_pal_test_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

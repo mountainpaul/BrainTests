@@ -1,10 +1,10 @@
 import 'package:brain_tests/core/services/word_dictionary_service.dart';
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Critical user journey integration tests
 ///
 /// As a senior engineer, I want to ensure:
@@ -34,7 +34,7 @@ void main() {
       // Step 1: User selects anagram exercise
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -66,7 +66,7 @@ void main() {
       // User starts exercise
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -79,7 +79,7 @@ void main() {
       // Verify: Starting new exercise works
       final newPuzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -92,7 +92,7 @@ void main() {
     test('should handle user requesting hints during exercise', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.hard,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -127,7 +127,7 @@ void main() {
         // Generate and complete exercise
         final puzzleData = await ExerciseGenerator.generateWordPuzzle(
           difficulty: difficulty,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
 
@@ -150,7 +150,7 @@ void main() {
       for (int session = 0; session < 10; session++) {
         final puzzleData = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.medium,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
 
@@ -239,7 +239,7 @@ void main() {
       // Step 1: Generate word search puzzle
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -271,7 +271,7 @@ void main() {
     test('should handle selecting invalid cells in word search', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -330,7 +330,7 @@ void main() {
       try {
         final puzzleData = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.expert,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
 
@@ -339,7 +339,7 @@ void main() {
         // If fails, should be able to retry
         final retryPuzzle = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.easy, // Fallback to easier
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
 
@@ -351,7 +351,7 @@ void main() {
       // User starts exercise
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -365,7 +365,7 @@ void main() {
       // Generate new exercise after restart
       final newPuzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -379,13 +379,13 @@ void main() {
       // Create exercises using same database
       final exercise1 = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
       final exercise2 = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -399,7 +399,7 @@ void main() {
       for (int i = 0; i < 5; i++) {
         final puzzleData = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.medium,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
 

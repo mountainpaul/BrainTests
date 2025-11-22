@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/daily_goals_repository_impl.dart';
 import '../../domain/entities/daily_goal.dart';
-import 'database_provider.dart';
+import '../../core/providers/database_provider.dart';
 
 final dailyGoalsRepositoryProvider = Provider<DailyGoalsRepository>((ref) {
   final database = ref.watch(databaseProvider);

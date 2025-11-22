@@ -4,7 +4,7 @@ import 'package:brain_tests/data/repositories/cognitive_exercise_repository_impl
 import 'package:brain_tests/domain/entities/assessment.dart';
 import 'package:brain_tests/presentation/providers/assessment_provider.dart';
 import 'package:brain_tests/presentation/providers/cognitive_exercise_provider.dart';
-import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/core/providers/database_provider.dart';
 import 'package:brain_tests/presentation/providers/repository_providers.dart';
 import 'package:brain_tests/presentation/screens/cognition_screen.dart';
 import 'package:flutter/material.dart';

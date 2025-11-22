@@ -1,9 +1,9 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Comprehensive edge case tests for exercise generation
 ///
 /// Tests cover:
@@ -111,7 +111,7 @@ void main() {
     test('should generate anagram with empty database', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -127,7 +127,7 @@ void main() {
     test('should generate word search with empty database', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -142,7 +142,7 @@ void main() {
       for (final difficulty in ExerciseDifficulty.values) {
         final puzzleData = await ExerciseGenerator.generateWordPuzzle(
           difficulty: difficulty,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.wordSearch,
         );
 
@@ -155,7 +155,7 @@ void main() {
     test('should ensure all target words fit in grid', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -169,7 +169,7 @@ void main() {
     test('should fill empty grid cells with letters', () async {
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -359,7 +359,7 @@ void main() {
     test('should generate Spanish anagram with empty database', () async {
       final puzzleData = await ExerciseGenerator.generateSpanishAnagram(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
       );
 
       expect(puzzleData, isNotNull);
@@ -372,7 +372,7 @@ void main() {
       for (final difficulty in ExerciseDifficulty.values) {
         final puzzleData = await ExerciseGenerator.generateSpanishAnagram(
           difficulty: difficulty,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
         );
 
         expect(puzzleData.targetWord, isNotNull);

@@ -1,10 +1,10 @@
 import 'package:brain_tests/core/services/word_dictionary_service.dart';
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Test to reproduce the crash when there are fewer than 5 anagram words in database
 ///
 /// Issue: When the database has fewer than 5 words for a given difficulty level,
@@ -81,7 +81,7 @@ void main() {
       // Act: Generate word puzzle (internally requests multiple words)
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 

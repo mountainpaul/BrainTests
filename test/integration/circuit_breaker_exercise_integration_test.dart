@@ -1,10 +1,10 @@
 import 'package:brain_tests/core/services/circuit_breaker.dart';
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Integration test for Circuit Breaker with Exercise Generation
 ///
 /// This test demonstrates how the circuit breaker prevents cascading failures
@@ -49,7 +49,7 @@ void main() {
       final result = await breaker.execute<WordPuzzleData>(() async {
         return await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.medium,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
       });
@@ -144,7 +144,7 @@ void main() {
       final result = await breaker.execute<WordPuzzleData>(() async {
         return await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.medium,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
         );
       });
 
@@ -178,7 +178,7 @@ void main() {
           breaker.execute<WordPuzzleData>(() async {
             return await ExerciseGenerator.generateWordPuzzle(
               difficulty: ExerciseDifficulty.medium,
-              database: database,
+              wordRepository: WordRepositoryImpl(database),
               wordType: WordType.anagram,
             );
           }),
@@ -227,7 +227,7 @@ void main() {
           final result = await breaker.execute<WordPuzzleData>(() async {
             return await ExerciseGenerator.generateWordPuzzle(
               difficulty: ExerciseDifficulty.medium,
-              database: database,
+              wordRepository: WordRepositoryImpl(database),
               wordType: WordType.anagram,
             );
           });

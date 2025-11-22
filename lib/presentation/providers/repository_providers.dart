@@ -11,11 +11,18 @@ import '../../domain/repositories/cambridge_assessment_repository.dart';
 import '../../domain/repositories/cognitive_exercise_repository.dart';
 import '../../domain/repositories/mood_entry_repository.dart';
 import '../../domain/repositories/reminder_repository.dart';
-import 'database_provider.dart';
+import '../../domain/repositories/word_repository.dart';
+import '../../data/repositories/word_repository_impl.dart';
+import '../../core/providers/database_provider.dart';
 
 final assessmentRepositoryProvider = Provider<AssessmentRepository>((ref) {
   final database = ref.read(databaseProvider);
   return AssessmentRepositoryImpl(database);
+});
+
+final wordRepositoryProvider = Provider<WordRepository>((ref) {
+  final database = ref.read(databaseProvider);
+  return WordRepositoryImpl(database);
 });
 
 final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {

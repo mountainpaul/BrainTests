@@ -1,9 +1,9 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Test to verify word search handles edge cases properly
 ///
 /// Issues to test:
@@ -37,7 +37,7 @@ void main() {
       // Act: Generate word search (expects 3 words)
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -74,7 +74,7 @@ void main() {
       // Act: Generate word search
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -125,7 +125,7 @@ void main() {
       // Act: Generate word search
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -148,7 +148,7 @@ void main() {
       // Act: Generate word search with empty database
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -184,7 +184,7 @@ void main() {
       // Act: Generate word search for medium (expects 4 words)
       final puzzleData = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 

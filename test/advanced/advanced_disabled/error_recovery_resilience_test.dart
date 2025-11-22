@@ -1,9 +1,9 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Error recovery and resilience tests
 ///
 /// As a senior engineer, I've seen production failures from:
@@ -154,7 +154,7 @@ void main() {
       // Empty database - should use fallback words
       final puzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.easy,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -182,7 +182,7 @@ void main() {
       // 2. Using available words from other difficulties
       final puzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.expert,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 
@@ -214,7 +214,7 @@ void main() {
       // Should work with available data
       final puzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.medium,
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.anagram,
       );
 

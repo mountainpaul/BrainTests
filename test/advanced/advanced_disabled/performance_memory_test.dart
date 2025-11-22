@@ -1,9 +1,9 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/domain/services/exercise_generator.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/domain/services/exercise_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Performance and memory tests
 ///
 /// As a senior engineer, performance issues often don't show up
@@ -154,7 +154,7 @@ void main() {
       for (int i = 0; i < 100; i++) {
         final puzzle = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.medium,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
         exercises.add(puzzle);
@@ -187,7 +187,7 @@ void main() {
       for (int i = 0; i < 50; i++) {
         final puzzle = await ExerciseGenerator.generateWordPuzzle(
           difficulty: ExerciseDifficulty.easy,
-          database: database,
+          wordRepository: WordRepositoryImpl(database),
           wordType: WordType.anagram,
         );
         expect(puzzle, isNotNull);
@@ -218,7 +218,7 @@ void main() {
       // Generate word search (computationally expensive)
       final puzzle = await ExerciseGenerator.generateWordPuzzle(
         difficulty: ExerciseDifficulty.hard, // Large grid
-        database: database,
+        wordRepository: WordRepositoryImpl(database),
         wordType: WordType.wordSearch,
       );
 
@@ -371,7 +371,7 @@ void main() {
         for (int i = 0; i < 10; i++) {
           await ExerciseGenerator.generateWordPuzzle(
             difficulty: ExerciseDifficulty.medium,
-            database: database,
+            wordRepository: WordRepositoryImpl(database),
             wordType: WordType.anagram,
           );
         }

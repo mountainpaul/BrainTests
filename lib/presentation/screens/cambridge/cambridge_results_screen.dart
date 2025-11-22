@@ -1,5 +1,5 @@
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/core/providers/database_provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';

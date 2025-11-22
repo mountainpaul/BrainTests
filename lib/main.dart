@@ -10,7 +10,7 @@ import 'core/services/performance_monitoring_service.dart';
 import 'core/services/user_profile_service.dart';
 import 'core/services/word_dictionary_service.dart';
 import 'data/datasources/database.dart';
-import 'presentation/providers/database_provider.dart';
+import 'core/providers/database_provider.dart';
 import 'presentation/providers/router_provider.dart';
 import 'presentation/theme/app_theme.dart';
 

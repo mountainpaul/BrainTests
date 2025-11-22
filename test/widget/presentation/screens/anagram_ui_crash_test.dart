@@ -1,13 +1,13 @@
 import 'package:brain_tests/core/services/word_dictionary_service.dart';
 import 'package:brain_tests/data/datasources/database.dart';
-import 'package:brain_tests/presentation/providers/database_provider.dart';
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';import 'package:brain_tests/core/providers/database_provider.dart';
 import 'package:brain_tests/presentation/screens/exercise_test_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/test_database.dart';
-
+import 'package:brain_tests/data/repositories/word_repository_impl.dart';
 /// Test to verify the UI properly handles databases with fewer than 5 words
 ///
 /// This test ensures the fixes prevent crashes when navigating through exercises

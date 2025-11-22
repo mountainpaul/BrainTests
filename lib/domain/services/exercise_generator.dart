@@ -1,8 +1,7 @@
 import 'dart:math';
 
-import '../../core/services/word_dictionary_service.dart';
-import '../../data/datasources/database.dart';
 import '../entities/enums.dart';
+import '../repositories/word_repository.dart';
 
 /// Service that generates real cognitive exercises
 class ExerciseGenerator {
@@ -81,22 +80,22 @@ class ExerciseGenerator {
   /// Generate Word Puzzle Exercise - Anagram or Word Search
   static Future<WordPuzzleData> generateWordPuzzle({
     ExerciseDifficulty difficulty = ExerciseDifficulty.medium,
-    required AppDatabase database,
+    required WordRepository wordRepository,
     WordType wordType = WordType.anagram,
   }) async {
     if (wordType == WordType.anagram) {
-      return await _generateAnagramPuzzle(difficulty, database);
+      return await _generateAnagramPuzzle(difficulty, wordRepository);
     } else {
-      return await _generateWordSearchPuzzle(difficulty, database);
+      return await _generateWordSearchPuzzle(difficulty, wordRepository);
     }
   }
 
   /// Generate Spanish Anagram Exercise
   static Future<WordPuzzleData> generateSpanishAnagram({
     ExerciseDifficulty difficulty = ExerciseDifficulty.medium,
-    required AppDatabase database,
+    required WordRepository wordRepository,
   }) async {
-    return await _generateSpanishAnagramPuzzle(difficulty, database);
+    return await _generateSpanishAnagramPuzzle(difficulty, wordRepository);
   }
 
   /// Generate Math Problem Exercise - Arithmetic Challenges
@@ -229,9 +228,8 @@ class ExerciseGenerator {
   }
 
   // Helper methods for Word Puzzles
-  static Future<WordPuzzleData> _generateAnagramPuzzle(ExerciseDifficulty difficulty, AppDatabase database) async {
-    final words = await WordDictionaryService.getRandomAnagramWords(
-      database,
+  static Future<WordPuzzleData> _generateAnagramPuzzle(ExerciseDifficulty difficulty, WordRepository wordRepository) async {
+    final words = await wordRepository.getAnagramWords(
       WordLanguage.english,
       difficulty,
       1, // Get one word
@@ -260,9 +258,8 @@ class ExerciseGenerator {
     );
   }
 
-  static Future<WordPuzzleData> _generateSpanishAnagramPuzzle(ExerciseDifficulty difficulty, AppDatabase database) async {
-    final words = await WordDictionaryService.getRandomAnagramWords(
-      database,
+  static Future<WordPuzzleData> _generateSpanishAnagramPuzzle(ExerciseDifficulty difficulty, WordRepository wordRepository) async {
+    final words = await wordRepository.getAnagramWords(
       WordLanguage.spanish,
       difficulty,
       1, // Get one word
@@ -291,12 +288,11 @@ class ExerciseGenerator {
     );
   }
 
-  static Future<WordPuzzleData> _generateWordSearchPuzzle(ExerciseDifficulty difficulty, AppDatabase database) async {
+  static Future<WordPuzzleData> _generateWordSearchPuzzle(ExerciseDifficulty difficulty, WordRepository wordRepository) async {
     final wordCount = _getWordSearchCount(difficulty);
     final gridSize = _getWordSearchGridSize(difficulty);
 
-    final words = await WordDictionaryService.getRandomWordSearchWords(
-      database,
+    final words = await wordRepository.getWordSearchWords(
       difficulty,
       wordCount,
     );

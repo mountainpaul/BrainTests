@@ -174,4 +174,37 @@ class WordDictionaryService {
     words.shuffle();
     return words.take(count).map((w) => w.word).toList();
   }
+
+  // Check if a word is valid (exists in dictionary)
+  static Future<bool> isValidWord(
+    AppDatabase database,
+    String word,
+    WordLanguage language,
+  ) async {
+    final results = await (database.select(database.wordDictionaryTable)
+          ..where((tbl) => tbl.word.equals(word.toUpperCase()))
+          // Ideally check language too, but original code didn't. 
+          // Adding language check is safer.
+          // ..where((tbl) => tbl.language.equals(language.name)) 
+          // Wait, validation words are marked as WordType.validationOnly or others?
+          // If I check language, I must ensure validation words have correct language set.
+          // They do (lines 115, 128).
+          // But the widget logic didn't pass language.
+          // I'll stick to simple check for now or try to match widget behavior?
+          // Widget behavior: `_isValidWordInDatabase` checks ONLY word and isActive.
+          // But I added `WordLanguage` to `WordRepository.isValidWord`.
+          // So I SHOULD check language if provided.
+          // I'll check language if it matches logic.
+          // If I don't check language, "HOLA" (Spanish) might validate in English game if DB has it?
+          // Yes. Ideally validation should be language specific.
+          // I will add language check.
+          ..where((tbl) => tbl.isActive.equals(true)))
+        .get();
+    
+    // Filter by language in memory or add where clause?
+    // Drift enums are stored as Strings (name).
+    // ..where((tbl) => tbl.language.equals(language.name))
+    
+    return results.any((w) => w.language == language); 
+  }
 }

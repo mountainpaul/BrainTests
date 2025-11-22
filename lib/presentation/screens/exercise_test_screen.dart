@@ -10,7 +10,8 @@ import '../../domain/entities/enums.dart';
 import '../../domain/entities/cognitive_exercise.dart';
 import '../../domain/services/exercise_generator.dart';
 import '../providers/cognitive_exercise_provider.dart';
-import '../providers/database_provider.dart';
+import '../providers/repository_providers.dart';
+import '../../domain/repositories/word_repository.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/shape_painter.dart';
 
@@ -787,18 +788,17 @@ class _WordPuzzleWidgetState extends ConsumerState<WordPuzzleWidget> {
   }
 
   Future<void> _loadPuzzleData() async {
-    final database = ref.read(databaseProvider);
+    final wordRepository = ref.read(wordRepositoryProvider);
     final data = await ExerciseGenerator.generateWordPuzzle(
       difficulty: widget.difficulty,
-      database: database,
+      wordRepository: wordRepository,
       wordType: widget.wordType,
     );
 
     // If it's an anagram puzzle, generate 5 unique words
     if (data.type == WordPuzzleType.anagram) {
       // Get up to 5 unique anagram words from database
-      final words = await WordDictionaryService.getRandomAnagramWords(
-        database,
+      final words = await wordRepository.getAnagramWords(
         WordLanguage.english,
         widget.difficulty,
         5, // Request 5 unique words
@@ -1527,12 +1527,8 @@ class _WordPuzzleWidgetState extends ConsumerState<WordPuzzleWidget> {
   }
 
   Future<bool> _isValidWordInDatabase(String word) async {
-    final database = ref.read(databaseProvider);
-    final results = await (database.select(database.wordDictionaryTable)
-          ..where((tbl) => tbl.word.equals(word.toUpperCase()))
-          ..where((tbl) => tbl.isActive.equals(true)))
-        .get();
-    return results.isNotEmpty;
+    final wordRepository = ref.read(wordRepositoryProvider);
+    return await wordRepository.isValidWord(word, WordLanguage.english);
   }
 
   Future<bool> _isValidAnagram(String userInput, List<String> scrambledLetters) async {
@@ -1914,11 +1910,10 @@ class _SpanishAnagramWidgetState extends ConsumerState<SpanishAnagramWidget> {
   }
 
   Future<void> _loadPuzzleData() async {
-    final database = ref.read(databaseProvider);
+    final wordRepository = ref.read(wordRepositoryProvider);
 
     // Get up to 5 unique Spanish anagram words from database
-    final words = await WordDictionaryService.getRandomAnagramWords(
-      database,
+    final words = await wordRepository.getAnagramWords(
       WordLanguage.spanish,
       widget.difficulty,
       5, // Request 5 unique words
@@ -1929,7 +1924,7 @@ class _SpanishAnagramWidgetState extends ConsumerState<SpanishAnagramWidget> {
       // Fallback to generating a single word
       final anagramData = await ExerciseGenerator.generateSpanishAnagram(
         difficulty: widget.difficulty,
-        database: database,
+        wordRepository: wordRepository,
       );
       if (anagramData.targetWord != null && anagramData.scrambledLetters != null) {
         anagramWords.add(anagramData.targetWord!);
@@ -1948,7 +1943,7 @@ class _SpanishAnagramWidgetState extends ConsumerState<SpanishAnagramWidget> {
 
     final data = await ExerciseGenerator.generateSpanishAnagram(
       difficulty: widget.difficulty,
-      database: database,
+      wordRepository: wordRepository,
     );
     setState(() {
       puzzleData = data;
@@ -2261,12 +2256,8 @@ class _SpanishAnagramWidgetState extends ConsumerState<SpanishAnagramWidget> {
   }
 
   Future<bool> _isValidWordInDatabase(String word) async {
-    final database = ref.read(databaseProvider);
-    final results = await (database.select(database.wordDictionaryTable)
-          ..where((tbl) => tbl.word.equals(word.toUpperCase()))
-          ..where((tbl) => tbl.isActive.equals(true)))
-        .get();
-    return results.isNotEmpty;
+    final wordRepository = ref.read(wordRepositoryProvider);
+    return await wordRepository.isValidWord(word, WordLanguage.spanish);
   }
 
   bool _isValidWord(String word) {

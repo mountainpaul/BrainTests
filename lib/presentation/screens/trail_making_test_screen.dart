@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/entities/assessment.dart';
 import '../providers/assessment_provider.dart';
-import '../providers/database_provider.dart';
+import '../../core/providers/database_provider.dart';
 import '../providers/repository_providers.dart';
 import '../widgets/custom_card.dart';
 

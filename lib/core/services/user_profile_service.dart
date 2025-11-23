@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/datasources/database.dart';
+import 'auto_backup_service.dart';
 
 /// Service to manage user profile information including age for age-adjusted performance
 class UserProfileService {
@@ -192,6 +193,8 @@ class UserProfileService {
           age: age != null ? Value(age) : const Value.absent(),
           dateOfBirth: dateOfBirth != null ? Value(dateOfBirth) : const Value.absent(),
           programStartDate: programStartDate != null ? Value(programStartDate) : const Value.absent(),
+          syncStatus: Value(SyncStatus.pendingInsert),
+          lastUpdatedAt: Value(DateTime.now()),
         ),
       );
     } else {
@@ -206,9 +209,14 @@ class UserProfileService {
           dateOfBirth: dateOfBirth != null ? Value(dateOfBirth) : const Value.absent(),
           programStartDate: programStartDate != null ? Value(programStartDate) : const Value.absent(),
           updatedAt: Value(DateTime.now()),
+          syncStatus: Value(SyncStatus.pendingUpdate),
+          lastUpdatedAt: Value(DateTime.now()),
         ),
       );
     }
+    
+    // Trigger backup/sync
+    AutoBackupService.triggerBackupAfterChange(changeType: 'user_profile_update');
   }
 
   /// Load profile from database to SharedPreferences on app start

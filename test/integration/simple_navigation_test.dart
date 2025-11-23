@@ -1,3 +1,6 @@
+import 'package:brain_tests/core/services/supabase_service.dart';
+import 'package:brain_tests/core/services/sync_manager.dart';
+import 'package:brain_tests/data/datasources/database.dart';
 import 'package:brain_tests/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,18 +8,22 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  
+  // Create a dummy/mock sync manager for testing UI instantiation
+  final database = AppDatabase.memory();
+  final syncManager = SyncManager(SupabaseService(database));
 
   group('Simple Navigation Tests', () {
     testWidgets('App can be instantiated', (WidgetTester tester) async {
       // Test that the BrainPlanApp can be created without errors
-      const app = BrainPlanApp();
+      final app = BrainPlanApp(syncManager: syncManager);
       expect(app, isA<BrainPlanApp>());
     });
 
     testWidgets('ProviderScope wraps app correctly', (WidgetTester tester) async {
       // Test that ProviderScope can wrap BrainPlanApp
-      const scopedApp = ProviderScope(
-        child: BrainPlanApp(),
+      final scopedApp = ProviderScope(
+        child: BrainPlanApp(syncManager: syncManager),
       );
       expect(scopedApp, isA<ProviderScope>());
       expect(scopedApp.child, isA<BrainPlanApp>());
@@ -28,7 +35,7 @@ void main() {
       expect(ProviderScope, isNotNull);
 
       // Test widget creation
-      const widget = BrainPlanApp();
+      final widget = BrainPlanApp(syncManager: syncManager);
       expect(widget.runtimeType.toString(), contains('BrainPlanApp'));
     });
   });
@@ -59,7 +66,7 @@ void main() {
       expect(ConsumerWidget, isNotNull);
 
       // Test that BrainPlanApp extends ConsumerWidget
-      const app = BrainPlanApp();
+      final app = BrainPlanApp(syncManager: syncManager);
       expect(app, isA<ConsumerStatefulWidget>());
     });
   });

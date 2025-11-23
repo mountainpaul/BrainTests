@@ -87,9 +87,10 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
     final random = math.Random();
     final List<CircleData> circles = [];
     const double circleRadius = 20.2;
-    const double margin = 40.0; // Margin for spacing from edges
+    const double margin = 20.0; // Margin for spacing from edges
 
     // Use larger grid for increased spacing
+    // Increased dimensions by ~20% to provide more empty space between nodes
     final gridSize = (items.length <= 12) ? 4 :  // Reduced items per grid for more space
                     (items.length <= 20) ? 5 : 6; // More conservative spacing
 
@@ -119,7 +120,7 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
       final centerY = margin + (row * cellHeight) + (cellHeight / 2);
 
       // Add small random offset within the cell (but ensure no overlap)
-      final maxOffset = math.min(cellWidth, cellHeight) * 0.25; // 25% of cell size
+      final maxOffset = math.min(cellWidth, cellHeight) * 0.15; // Reduced jitter
       final offsetX = (random.nextDouble() - 0.5) * maxOffset;
       final offsetY = (random.nextDouble() - 0.5) * maxOffset;
 
@@ -734,7 +735,7 @@ class _TrailMakingTestScreenState extends ConsumerState<TrailMakingTestScreen> {
             children: circles.map((circle) {
               final double scaledX = circle.x * scaleFactor;
               final double scaledY = circle.y * scaleFactor;
-              final double circleSize = 93.5 * scaleFactor; // 15% smaller (110 * 0.85)
+              final double circleSize = 75.0 * scaleFactor; // Reduced from 93.5 to increase spacing
 
               return Positioned(
                 left: scaledX - (circleSize / 2),

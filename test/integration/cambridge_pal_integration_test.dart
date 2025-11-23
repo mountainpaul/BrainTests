@@ -24,7 +24,7 @@ void main() {
           ),
           GoRoute(
             path: '/cambridge/pal',
-            builder: (context, state) => const CantabPalTestScreen(),
+            builder: (context, state) => const CANTABPALTestScreen(),
           ),
         ],
       );
@@ -78,7 +78,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: CantabPalTestScreen(),
+            home: CANTABPALTestScreen(),
           ),
         ),
       );
@@ -96,7 +96,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: CantabPalTestScreen(),
+            home: CANTABPALTestScreen(),
           ),
         ),
       );

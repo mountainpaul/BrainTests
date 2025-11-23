@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/daily_goal.dart';
 import '../datasources/database.dart';
 
@@ -19,12 +20,15 @@ class DailyGoalsRepository {
     // Create new goal
     final newGoal = DailyGoalEntry(
       id: 0, // Will be auto-incremented
+      uuid: const Uuid().v4(),
       date: normalized,
       targetGames: 5,
       completedGames: 0,
       isCompleted: false,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
+      syncStatus: SyncStatus.pendingInsert,
+      lastUpdatedAt: DateTime.now(),
     );
 
     await database.insertDailyGoal(newGoal);
@@ -45,6 +49,8 @@ class DailyGoalsRepository {
       completedGames: newCompleted,
       isCompleted: isCompleted,
       updatedAt: DateTime.now(),
+      syncStatus: SyncStatus.pendingUpdate,
+      lastUpdatedAt: DateTime.now(),
     );
 
     await database.updateDailyGoal(updated);
@@ -78,6 +84,8 @@ class DailyGoalsRepository {
       completedGames: 0,
       isCompleted: false,
       updatedAt: DateTime.now(),
+      syncStatus: SyncStatus.pendingUpdate,
+      lastUpdatedAt: DateTime.now(),
     );
 
     await database.updateDailyGoal(reset);

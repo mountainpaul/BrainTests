@@ -6,8 +6,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'google_drive_backup_service.dart';
-
 /// Service to handle data backup and migration between app updates
 class DataMigrationService {
   static const String _lastBackupKey = 'last_backup_timestamp';
@@ -27,7 +25,7 @@ class DataMigrationService {
     }
   }
 
-  /// Backs up the database to both Google Drive and local storage
+  /// Backs up the database to local storage
   /// Should be called periodically or before updates
   static Future<void> backupDatabase() async {
     try {
@@ -41,34 +39,7 @@ class DataMigrationService {
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      bool driveBackupSuccess = false;
       bool localBackupSuccess = false;
-
-      // PRIMARY: Try Google Drive backup if network available
-      final hasNetwork = await hasNetworkConnection();
-
-      if (hasNetwork) {
-        // Initialize Google Drive if not already done
-        await GoogleDriveBackupService.initialize();
-
-        // Note: Don't prompt for sign-in during backup - user can sign in manually later
-        // This prevents blocking the app startup with authentication dialogs
-
-        // Attempt backup if already signed in
-        if (GoogleDriveBackupService.isSignedIn) {
-          print('Attempting Google Drive backup...');
-          driveBackupSuccess = await GoogleDriveBackupService.uploadBackup();
-          if (driveBackupSuccess) {
-            print('✓ Google Drive backup completed successfully');
-          } else {
-            print('✗ Google Drive backup failed, falling back to local backup');
-          }
-        } else {
-          print('Not signed in to Google Drive, using local backup only');
-        }
-      } else {
-        print('No network connection, skipping Google Drive backup');
-      }
 
       // SECONDARY: Always do local backup as fallback
       final externalDir = await getExternalStorageDirectory();
@@ -98,14 +69,10 @@ class DataMigrationService {
       await prefs.setInt(_lastBackupKey, timestamp);
 
       // Summary
-      if (driveBackupSuccess && localBackupSuccess) {
-        print('=== BACKUP SUCCESS: Both Google Drive and local backups completed ===');
-      } else if (driveBackupSuccess) {
-        print('=== BACKUP SUCCESS: Google Drive backup completed (local backup unavailable) ===');
-      } else if (localBackupSuccess) {
-        print('=== BACKUP SUCCESS: Local backup completed (Google Drive unavailable) ===');
+      if (localBackupSuccess) {
+        print('=== BACKUP SUCCESS: Local backup completed ===');
       } else {
-        print('=== BACKUP FAILURE: All backup methods failed ===');
+        print('=== BACKUP FAILURE: Local backup failed ===');
       }
     } catch (e) {
       print('Error backing up database: $e');
@@ -169,33 +136,9 @@ class DataMigrationService {
   }
 
   /// Internal method to restore database from backup
-  /// Tries Google Drive first, then local backup
+  /// Tries local backup only
   static Future<bool> _restoreFromBackup() async {
     try {
-      bool restored = false;
-
-      // PRIMARY: Try Google Drive restore if signed in
-      if (GoogleDriveBackupService.isSignedIn) {
-        print('Checking for Google Drive backup...');
-        final hasCloudBackup = await GoogleDriveBackupService.hasBackup();
-
-        if (hasCloudBackup) {
-          print('Found backup in Google Drive, attempting restore...');
-          restored = await GoogleDriveBackupService.downloadBackup();
-
-          if (restored) {
-            print('✓ Database restored from Google Drive');
-            return true;
-          } else {
-            print('✗ Google Drive restore failed, trying local backup...');
-          }
-        } else {
-          print('No backup found in Google Drive, trying local backup...');
-        }
-      } else {
-        print('Not signed in to Google Drive, trying local backup...');
-      }
-
       // SECONDARY: Try local backup
       final externalDir = await getExternalStorageDirectory();
       File? backupFile;

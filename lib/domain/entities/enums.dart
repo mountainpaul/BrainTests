@@ -58,3 +58,10 @@ enum MoodLevel {
   good,
   excellent
 }
+
+enum SyncStatus {
+  synced,
+  pendingInsert,
+  pendingUpdate,
+  pendingDelete
+}

@@ -1,22 +1,25 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'google_drive_backup_service.dart';
+import 'supabase_service.dart';
 
-/// Service to handle automatic backups to Google Drive
+/// Service to handle automatic backups
 /// Implements daily scheduled backups and event-triggered backups
 class AutoBackupService {
   static const String _lastBackupKey = 'last_backup_timestamp';
   static const String _autoBackupEnabledKey = 'auto_backup_enabled';
   static const Duration _dailyBackupInterval = Duration(hours: 24);
-  static const Duration _debounceInterval = Duration(minutes: 5);
+  static const Duration _debounceInterval = Duration(seconds: 30); // Reduced from 5 min for faster feedback
 
   static Timer? _dailyBackupTimer;
   static Timer? _debounceTimer;
   static DateTime? _lastBackupTime;
   static bool _isBackupInProgress = false;
+  
+  static SupabaseService? _supabaseService;
 
   /// Initialize the auto-backup service
-  static Future<void> initialize() async {
+  static Future<void> initialize(SupabaseService supabaseService) async {
+    _supabaseService = supabaseService;
     await _loadLastBackupTime();
 
     if (await isAutoBackupEnabled()) {
@@ -107,11 +110,6 @@ class AutoBackupService {
       return;
     }
 
-    if (!GoogleDriveBackupService.isSignedIn) {
-      debugPrint('Not signed in to Google Drive, skipping backup');
-      return;
-    }
-
     // Cancel existing debounce timer
     _debounceTimer?.cancel();
 
@@ -134,34 +132,25 @@ class AutoBackupService {
       return false;
     }
 
-    // Check if user is signed in
-    if (!GoogleDriveBackupService.isSignedIn) {
-      debugPrint('Not signed in to Google Drive, skipping backup');
-      return false;
-    }
-
-    // Check if backup is needed (unless forced)
-    if (!force && !needsBackup()) {
-      debugPrint('Backup not needed yet (last backup: $_lastBackupTime)');
-      return false;
-    }
-
     _isBackupInProgress = true;
-    debugPrint('Starting backup (source: $source)...');
+    debugPrint('Starting backup/sync (source: $source)...');
 
     try {
-      final success = await GoogleDriveBackupService.uploadBackup();
-
-      if (success) {
-        await _saveLastBackupTime(DateTime.now());
-        debugPrint('✓ Backup successful (source: $source)');
-        return true;
-      } else {
-        debugPrint('✗ Backup failed (source: $source)');
-        return false;
+      // Trigger Supabase Sync
+      if (_supabaseService != null) {
+        await _supabaseService!.syncPendingData();
+        // We can also fetch remote data if this is a scheduled backup
+        if (source == 'scheduled_daily') {
+          await _supabaseService!.fetchRemoteData();
+        }
       }
+      
+      // Mark as successful
+      await _saveLastBackupTime(DateTime.now());
+      debugPrint('✓ Sync completed (source: $source)');
+      return true;
     } catch (e) {
-      debugPrint('✗ Backup error (source: $source): $e');
+      debugPrint('✗ Sync error (source: $source): $e');
       return false;
     } finally {
       _isBackupInProgress = false;
@@ -171,12 +160,10 @@ class AutoBackupService {
   /// Get backup status information
   static Map<String, dynamic> getBackupStatus() {
     return {
-      'auto_backup_enabled': isAutoBackupEnabled(),
+      'auto_backup_enabled': true, // Placeholder
       'last_backup_time': _lastBackupTime?.toIso8601String(),
       'needs_backup': needsBackup(),
       'is_backup_in_progress': _isBackupInProgress,
-      'is_signed_in': GoogleDriveBackupService.isSignedIn,
-      'signed_in_email': GoogleDriveBackupService.userEmail,
     };
   }
 

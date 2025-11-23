@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/services/encryption_key_manager.dart';
 import '../../domain/entities/enums.dart';
@@ -32,6 +33,11 @@ class AssessmentTable extends Table {
   DateTimeColumn get completedAt => dateTime()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   
+  // Sync columns
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(Constant(SyncStatus.pendingInsert.index))();
+  DateTimeColumn get lastUpdatedAt => dateTime().withDefault(currentDateAndTime)();
+
   @override
   String get tableName => 'assessments';
 }
@@ -50,6 +56,11 @@ class CognitiveExerciseTable extends Table {
   DateTimeColumn get completedAt => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   
+  // Sync columns
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(Constant(SyncStatus.pendingInsert.index))();
+  DateTimeColumn get lastUpdatedAt => dateTime().withDefault(currentDateAndTime)();
+
   @override
   String get tableName => 'cognitive_exercises';
 }
@@ -81,6 +92,11 @@ class UserProfileTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
+  // Sync columns
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(Constant(SyncStatus.pendingInsert.index))();
+  DateTimeColumn get lastUpdatedAt => dateTime().withDefault(currentDateAndTime)();
+
   @override
   String get tableName => 'user_profile';
 }
@@ -102,6 +118,11 @@ class CambridgeAssessmentTable extends Table {
   DateTimeColumn get completedAt => dateTime()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
+  // Sync columns
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(Constant(SyncStatus.pendingInsert.index))();
+  DateTimeColumn get lastUpdatedAt => dateTime().withDefault(currentDateAndTime)();
+
   @override
   String get tableName => 'cambridge_assessments';
 }
@@ -115,6 +136,11 @@ class DailyGoalsTable extends Table {
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  // Sync columns
+  TextColumn get uuid => text().clientDefault(() => const Uuid().v4())();
+  IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(Constant(SyncStatus.pendingInsert.index))();
+  DateTimeColumn get lastUpdatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   String get tableName => 'daily_goals';
@@ -133,7 +159,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -169,8 +195,67 @@ class AppDatabase extends _$AppDatabase {
       }
       // Version 10: Removed unused tables (reminders, mood, fasting, meal plans, etc.)
       // Tables are automatically dropped when removed from @DriftDatabase annotation
+
+      if (from < 11) {
+        // Add sync columns (uuid, syncStatus, lastUpdatedAt) to all syncable tables
+        // and backfill UUIDs for existing rows
+
+        // 1. AssessmentTable
+        await m.addColumn(assessmentTable, assessmentTable.uuid);
+        await m.addColumn(assessmentTable, assessmentTable.syncStatus);
+        await m.addColumn(assessmentTable, assessmentTable.lastUpdatedAt);
+        await _backfillUuids(assessmentTable.tableName, 'id');
+
+        // 2. CognitiveExerciseTable
+        await m.addColumn(cognitiveExerciseTable, cognitiveExerciseTable.uuid);
+        await m.addColumn(cognitiveExerciseTable, cognitiveExerciseTable.syncStatus);
+        await m.addColumn(cognitiveExerciseTable, cognitiveExerciseTable.lastUpdatedAt);
+        await _backfillUuids(cognitiveExerciseTable.tableName, 'id');
+
+        // 3. UserProfileTable
+        await m.addColumn(userProfileTable, userProfileTable.uuid);
+        await m.addColumn(userProfileTable, userProfileTable.syncStatus);
+        await m.addColumn(userProfileTable, userProfileTable.lastUpdatedAt);
+        await _backfillUuids(userProfileTable.tableName, 'id');
+
+        // 4. CambridgeAssessmentTable
+        await m.addColumn(cambridgeAssessmentTable, cambridgeAssessmentTable.uuid);
+        await m.addColumn(cambridgeAssessmentTable, cambridgeAssessmentTable.syncStatus);
+        await m.addColumn(cambridgeAssessmentTable, cambridgeAssessmentTable.lastUpdatedAt);
+        await _backfillUuids(cambridgeAssessmentTable.tableName, 'id');
+
+        // 5. DailyGoalsTable
+        await m.addColumn(dailyGoalsTable, dailyGoalsTable.uuid);
+        await m.addColumn(dailyGoalsTable, dailyGoalsTable.syncStatus);
+        await m.addColumn(dailyGoalsTable, dailyGoalsTable.lastUpdatedAt);
+        await _backfillUuids(dailyGoalsTable.tableName, 'id');
+      }
     },
   );
+
+  /// Helper to backfill UUIDs for existing rows
+  Future<void> _backfillUuids(String tableName, String idColumn) async {
+    // Select all rows that have null UUIDs (which is all of them after addColumn)
+    // Note: addColumn sets defaults for NEW rows, but for existing rows in SQLite,
+    // adding a NOT NULL column with a default value is supported in newer SQLite versions.
+    // Drift's addColumn might add it as nullable first or use the default.
+    // However, `clientDefault` is generated at Dart level, not SQL level default usually.
+    // So we likely need to iterate and update.
+
+    // Actually, let's query rows and update them one by one to ensure they get unique UUIDs.
+    // We use raw SQL since we are in a migration callback context where high-level APIs
+    // might be slightly tricky with the 'm' context, but we can use the attached database.
+    
+    final result = await customSelect('SELECT $idColumn FROM $tableName').get();
+    for (final row in result) {
+      final id = row.read<int>(idColumn);
+      final newUuid = const Uuid().v4();
+      await customUpdate(
+        'UPDATE $tableName SET uuid = ? WHERE $idColumn = ?',
+        variables: [Variable.withString(newUuid), Variable.withInt(id)],
+      );
+    }
+  }
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {

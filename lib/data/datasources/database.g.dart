@@ -53,9 +53,42 @@ class $AssessmentTableTable extends AssessmentTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, type, score, maxScore, notes, completedAt, createdAt];
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
+      GeneratedColumn<int>('sync_status', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: Constant(SyncStatus.pendingInsert.index))
+          .withConverter<SyncStatus>(
+              $AssessmentTableTable.$convertersyncStatus);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        type,
+        score,
+        maxScore,
+        notes,
+        completedAt,
+        createdAt,
+        uuid,
+        syncStatus,
+        lastUpdatedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -97,6 +130,16 @@ class $AssessmentTableTable extends AssessmentTable
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    }
     return context;
   }
 
@@ -121,6 +164,13 @@ class $AssessmentTableTable extends AssessmentTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      syncStatus: $AssessmentTableTable.$convertersyncStatus.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}sync_status'])!),
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
     );
   }
 
@@ -131,6 +181,8 @@ class $AssessmentTableTable extends AssessmentTable
 
   static JsonTypeConverter2<AssessmentType, String, String> $convertertype =
       const EnumNameConverter<AssessmentType>(AssessmentType.values);
+  static JsonTypeConverter2<SyncStatus, int, int> $convertersyncStatus =
+      const EnumIndexConverter<SyncStatus>(SyncStatus.values);
 }
 
 class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
@@ -141,6 +193,9 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
   final String? notes;
   final DateTime completedAt;
   final DateTime createdAt;
+  final String uuid;
+  final SyncStatus syncStatus;
+  final DateTime lastUpdatedAt;
   const AssessmentEntry(
       {required this.id,
       required this.type,
@@ -148,7 +203,10 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
       required this.maxScore,
       this.notes,
       required this.completedAt,
-      required this.createdAt});
+      required this.createdAt,
+      required this.uuid,
+      required this.syncStatus,
+      required this.lastUpdatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -164,6 +222,12 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
     }
     map['completed_at'] = Variable<DateTime>(completedAt);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['uuid'] = Variable<String>(uuid);
+    {
+      map['sync_status'] = Variable<int>(
+          $AssessmentTableTable.$convertersyncStatus.toSql(syncStatus));
+    }
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
@@ -177,6 +241,9 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       completedAt: Value(completedAt),
       createdAt: Value(createdAt),
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
@@ -192,6 +259,10 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
       notes: serializer.fromJson<String?>(json['notes']),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      syncStatus: $AssessmentTableTable.$convertersyncStatus
+          .fromJson(serializer.fromJson<int>(json['syncStatus'])),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -206,6 +277,10 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
       'notes': serializer.toJson<String?>(notes),
       'completedAt': serializer.toJson<DateTime>(completedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'uuid': serializer.toJson<String>(uuid),
+      'syncStatus': serializer.toJson<int>(
+          $AssessmentTableTable.$convertersyncStatus.toJson(syncStatus)),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
@@ -216,7 +291,10 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
           int? maxScore,
           Value<String?> notes = const Value.absent(),
           DateTime? completedAt,
-          DateTime? createdAt}) =>
+          DateTime? createdAt,
+          String? uuid,
+          SyncStatus? syncStatus,
+          DateTime? lastUpdatedAt}) =>
       AssessmentEntry(
         id: id ?? this.id,
         type: type ?? this.type,
@@ -225,6 +303,9 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
         notes: notes.present ? notes.value : this.notes,
         completedAt: completedAt ?? this.completedAt,
         createdAt: createdAt ?? this.createdAt,
+        uuid: uuid ?? this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       );
   AssessmentEntry copyWithCompanion(AssessmentTableCompanion data) {
     return AssessmentEntry(
@@ -236,6 +317,12 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
@@ -248,14 +335,17 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
           ..write('maxScore: $maxScore, ')
           ..write('notes: $notes, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, type, score, maxScore, notes, completedAt, createdAt);
+  int get hashCode => Object.hash(id, type, score, maxScore, notes, completedAt,
+      createdAt, uuid, syncStatus, lastUpdatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -266,7 +356,10 @@ class AssessmentEntry extends DataClass implements Insertable<AssessmentEntry> {
           other.maxScore == this.maxScore &&
           other.notes == this.notes &&
           other.completedAt == this.completedAt &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
 class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
@@ -277,6 +370,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
   final Value<String?> notes;
   final Value<DateTime> completedAt;
   final Value<DateTime> createdAt;
+  final Value<String> uuid;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime> lastUpdatedAt;
   const AssessmentTableCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
@@ -285,6 +381,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
     this.notes = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   AssessmentTableCompanion.insert({
     this.id = const Value.absent(),
@@ -294,6 +393,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
     this.notes = const Value.absent(),
     required DateTime completedAt,
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   })  : type = Value(type),
         score = Value(score),
         maxScore = Value(maxScore),
@@ -306,6 +408,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
     Expression<String>? notes,
     Expression<DateTime>? completedAt,
     Expression<DateTime>? createdAt,
+    Expression<String>? uuid,
+    Expression<int>? syncStatus,
+    Expression<DateTime>? lastUpdatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -315,6 +420,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
       if (notes != null) 'notes': notes,
       if (completedAt != null) 'completed_at': completedAt,
       if (createdAt != null) 'created_at': createdAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
     });
   }
 
@@ -325,7 +433,10 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
       Value<int>? maxScore,
       Value<String?>? notes,
       Value<DateTime>? completedAt,
-      Value<DateTime>? createdAt}) {
+      Value<DateTime>? createdAt,
+      Value<String>? uuid,
+      Value<SyncStatus>? syncStatus,
+      Value<DateTime>? lastUpdatedAt}) {
     return AssessmentTableCompanion(
       id: id ?? this.id,
       type: type ?? this.type,
@@ -334,6 +445,9 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
       notes: notes ?? this.notes,
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
@@ -362,6 +476,16 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<int>(
+          $AssessmentTableTable.$convertersyncStatus.toSql(syncStatus.value));
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
     return map;
   }
 
@@ -374,7 +498,10 @@ class AssessmentTableCompanion extends UpdateCompanion<AssessmentEntry> {
           ..write('maxScore: $maxScore, ')
           ..write('notes: $notes, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -459,6 +586,29 @@ class $CognitiveExerciseTableTable extends CognitiveExerciseTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
+      GeneratedColumn<int>('sync_status', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: Constant(SyncStatus.pendingInsert.index))
+          .withConverter<SyncStatus>(
+              $CognitiveExerciseTableTable.$convertersyncStatus);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -471,7 +621,10 @@ class $CognitiveExerciseTableTable extends CognitiveExerciseTable
         isCompleted,
         exerciseData,
         completedAt,
-        createdAt
+        createdAt,
+        uuid,
+        syncStatus,
+        lastUpdatedAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -531,6 +684,16 @@ class $CognitiveExerciseTableTable extends CognitiveExerciseTable
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    }
     return context;
   }
 
@@ -564,6 +727,13 @@ class $CognitiveExerciseTableTable extends CognitiveExerciseTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      syncStatus: $CognitiveExerciseTableTable.$convertersyncStatus.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}sync_status'])!),
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
     );
   }
 
@@ -577,6 +747,8 @@ class $CognitiveExerciseTableTable extends CognitiveExerciseTable
   static JsonTypeConverter2<ExerciseDifficulty, String, String>
       $converterdifficulty =
       const EnumNameConverter<ExerciseDifficulty>(ExerciseDifficulty.values);
+  static JsonTypeConverter2<SyncStatus, int, int> $convertersyncStatus =
+      const EnumIndexConverter<SyncStatus>(SyncStatus.values);
 }
 
 class CognitiveExerciseEntry extends DataClass
@@ -592,6 +764,9 @@ class CognitiveExerciseEntry extends DataClass
   final String? exerciseData;
   final DateTime? completedAt;
   final DateTime createdAt;
+  final String uuid;
+  final SyncStatus syncStatus;
+  final DateTime lastUpdatedAt;
   const CognitiveExerciseEntry(
       {required this.id,
       required this.name,
@@ -603,7 +778,10 @@ class CognitiveExerciseEntry extends DataClass
       required this.isCompleted,
       this.exerciseData,
       this.completedAt,
-      required this.createdAt});
+      required this.createdAt,
+      required this.uuid,
+      required this.syncStatus,
+      required this.lastUpdatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -632,6 +810,12 @@ class CognitiveExerciseEntry extends DataClass
       map['completed_at'] = Variable<DateTime>(completedAt);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['uuid'] = Variable<String>(uuid);
+    {
+      map['sync_status'] = Variable<int>(
+          $CognitiveExerciseTableTable.$convertersyncStatus.toSql(syncStatus));
+    }
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
@@ -655,6 +839,9 @@ class CognitiveExerciseEntry extends DataClass
           ? const Value.absent()
           : Value(completedAt),
       createdAt: Value(createdAt),
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
@@ -675,6 +862,10 @@ class CognitiveExerciseEntry extends DataClass
       exerciseData: serializer.fromJson<String?>(json['exerciseData']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      syncStatus: $CognitiveExerciseTableTable.$convertersyncStatus
+          .fromJson(serializer.fromJson<int>(json['syncStatus'])),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -694,6 +885,10 @@ class CognitiveExerciseEntry extends DataClass
       'exerciseData': serializer.toJson<String?>(exerciseData),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'uuid': serializer.toJson<String>(uuid),
+      'syncStatus': serializer.toJson<int>(
+          $CognitiveExerciseTableTable.$convertersyncStatus.toJson(syncStatus)),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
@@ -708,7 +903,10 @@ class CognitiveExerciseEntry extends DataClass
           bool? isCompleted,
           Value<String?> exerciseData = const Value.absent(),
           Value<DateTime?> completedAt = const Value.absent(),
-          DateTime? createdAt}) =>
+          DateTime? createdAt,
+          String? uuid,
+          SyncStatus? syncStatus,
+          DateTime? lastUpdatedAt}) =>
       CognitiveExerciseEntry(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -724,6 +922,9 @@ class CognitiveExerciseEntry extends DataClass
             exerciseData.present ? exerciseData.value : this.exerciseData,
         completedAt: completedAt.present ? completedAt.value : this.completedAt,
         createdAt: createdAt ?? this.createdAt,
+        uuid: uuid ?? this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       );
   CognitiveExerciseEntry copyWithCompanion(
       CognitiveExerciseTableCompanion data) {
@@ -746,6 +947,12 @@ class CognitiveExerciseEntry extends DataClass
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
@@ -762,14 +969,30 @@ class CognitiveExerciseEntry extends DataClass
           ..write('isCompleted: $isCompleted, ')
           ..write('exerciseData: $exerciseData, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, type, difficulty, score, maxScore,
-      timeSpentSeconds, isCompleted, exerciseData, completedAt, createdAt);
+  int get hashCode => Object.hash(
+      id,
+      name,
+      type,
+      difficulty,
+      score,
+      maxScore,
+      timeSpentSeconds,
+      isCompleted,
+      exerciseData,
+      completedAt,
+      createdAt,
+      uuid,
+      syncStatus,
+      lastUpdatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -784,7 +1007,10 @@ class CognitiveExerciseEntry extends DataClass
           other.isCompleted == this.isCompleted &&
           other.exerciseData == this.exerciseData &&
           other.completedAt == this.completedAt &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
 class CognitiveExerciseTableCompanion
@@ -800,6 +1026,9 @@ class CognitiveExerciseTableCompanion
   final Value<String?> exerciseData;
   final Value<DateTime?> completedAt;
   final Value<DateTime> createdAt;
+  final Value<String> uuid;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime> lastUpdatedAt;
   const CognitiveExerciseTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -812,6 +1041,9 @@ class CognitiveExerciseTableCompanion
     this.exerciseData = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   CognitiveExerciseTableCompanion.insert({
     this.id = const Value.absent(),
@@ -825,6 +1057,9 @@ class CognitiveExerciseTableCompanion
     this.exerciseData = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   })  : name = Value(name),
         type = Value(type),
         difficulty = Value(difficulty),
@@ -841,6 +1076,9 @@ class CognitiveExerciseTableCompanion
     Expression<String>? exerciseData,
     Expression<DateTime>? completedAt,
     Expression<DateTime>? createdAt,
+    Expression<String>? uuid,
+    Expression<int>? syncStatus,
+    Expression<DateTime>? lastUpdatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -854,6 +1092,9 @@ class CognitiveExerciseTableCompanion
       if (exerciseData != null) 'exercise_data': exerciseData,
       if (completedAt != null) 'completed_at': completedAt,
       if (createdAt != null) 'created_at': createdAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
     });
   }
 
@@ -868,7 +1109,10 @@ class CognitiveExerciseTableCompanion
       Value<bool>? isCompleted,
       Value<String?>? exerciseData,
       Value<DateTime?>? completedAt,
-      Value<DateTime>? createdAt}) {
+      Value<DateTime>? createdAt,
+      Value<String>? uuid,
+      Value<SyncStatus>? syncStatus,
+      Value<DateTime>? lastUpdatedAt}) {
     return CognitiveExerciseTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -881,6 +1125,9 @@ class CognitiveExerciseTableCompanion
       exerciseData: exerciseData ?? this.exerciseData,
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
@@ -923,6 +1170,17 @@ class CognitiveExerciseTableCompanion
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<int>($CognitiveExerciseTableTable
+          .$convertersyncStatus
+          .toSql(syncStatus.value));
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
     return map;
   }
 
@@ -939,7 +1197,10 @@ class CognitiveExerciseTableCompanion
           ..write('isCompleted: $isCompleted, ')
           ..write('exerciseData: $exerciseData, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -1469,6 +1730,29 @@ class $UserProfileTableTable extends UserProfileTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
+      GeneratedColumn<int>('sync_status', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: Constant(SyncStatus.pendingInsert.index))
+          .withConverter<SyncStatus>(
+              $UserProfileTableTable.$convertersyncStatus);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1478,7 +1762,10 @@ class $UserProfileTableTable extends UserProfileTable
         gender,
         programStartDate,
         createdAt,
-        updatedAt
+        updatedAt,
+        uuid,
+        syncStatus,
+        lastUpdatedAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1525,6 +1812,16 @@ class $UserProfileTableTable extends UserProfileTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    }
     return context;
   }
 
@@ -1550,6 +1847,13 @@ class $UserProfileTableTable extends UserProfileTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      syncStatus: $UserProfileTableTable.$convertersyncStatus.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}sync_status'])!),
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
     );
   }
 
@@ -1557,6 +1861,9 @@ class $UserProfileTableTable extends UserProfileTable
   $UserProfileTableTable createAlias(String alias) {
     return $UserProfileTableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<SyncStatus, int, int> $convertersyncStatus =
+      const EnumIndexConverter<SyncStatus>(SyncStatus.values);
 }
 
 class UserProfile extends DataClass implements Insertable<UserProfile> {
@@ -1568,6 +1875,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   final DateTime? programStartDate;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String uuid;
+  final SyncStatus syncStatus;
+  final DateTime lastUpdatedAt;
   const UserProfile(
       {required this.id,
       this.name,
@@ -1576,7 +1886,10 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       this.gender,
       this.programStartDate,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      required this.uuid,
+      required this.syncStatus,
+      required this.lastUpdatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1598,6 +1911,12 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['uuid'] = Variable<String>(uuid);
+    {
+      map['sync_status'] = Variable<int>(
+          $UserProfileTableTable.$convertersyncStatus.toSql(syncStatus));
+    }
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
@@ -1616,6 +1935,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           : Value(programStartDate),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
@@ -1632,6 +1954,10 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           serializer.fromJson<DateTime?>(json['programStartDate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      syncStatus: $UserProfileTableTable.$convertersyncStatus
+          .fromJson(serializer.fromJson<int>(json['syncStatus'])),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -1646,6 +1972,10 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       'programStartDate': serializer.toJson<DateTime?>(programStartDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'uuid': serializer.toJson<String>(uuid),
+      'syncStatus': serializer.toJson<int>(
+          $UserProfileTableTable.$convertersyncStatus.toJson(syncStatus)),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
@@ -1657,7 +1987,10 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           Value<String?> gender = const Value.absent(),
           Value<DateTime?> programStartDate = const Value.absent(),
           DateTime? createdAt,
-          DateTime? updatedAt}) =>
+          DateTime? updatedAt,
+          String? uuid,
+          SyncStatus? syncStatus,
+          DateTime? lastUpdatedAt}) =>
       UserProfile(
         id: id ?? this.id,
         name: name.present ? name.value : this.name,
@@ -1669,6 +2002,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
             : this.programStartDate,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        uuid: uuid ?? this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       );
   UserProfile copyWithCompanion(UserProfileTableCompanion data) {
     return UserProfile(
@@ -1683,6 +2019,12 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           : this.programStartDate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
@@ -1696,14 +2038,17 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           ..write('gender: $gender, ')
           ..write('programStartDate: $programStartDate, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, name, age, dateOfBirth, gender,
-      programStartDate, createdAt, updatedAt);
+      programStartDate, createdAt, updatedAt, uuid, syncStatus, lastUpdatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1715,7 +2060,10 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           other.gender == this.gender &&
           other.programStartDate == this.programStartDate &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
 class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
@@ -1727,6 +2075,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
   final Value<DateTime?> programStartDate;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String> uuid;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime> lastUpdatedAt;
   const UserProfileTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1736,6 +2087,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
     this.programStartDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   UserProfileTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1746,6 +2100,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
     this.programStartDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   static Insertable<UserProfile> custom({
     Expression<int>? id,
@@ -1756,6 +2113,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
     Expression<DateTime>? programStartDate,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? uuid,
+    Expression<int>? syncStatus,
+    Expression<DateTime>? lastUpdatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1766,6 +2126,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
       if (programStartDate != null) 'program_start_date': programStartDate,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
     });
   }
 
@@ -1777,7 +2140,10 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
       Value<String?>? gender,
       Value<DateTime?>? programStartDate,
       Value<DateTime>? createdAt,
-      Value<DateTime>? updatedAt}) {
+      Value<DateTime>? updatedAt,
+      Value<String>? uuid,
+      Value<SyncStatus>? syncStatus,
+      Value<DateTime>? lastUpdatedAt}) {
     return UserProfileTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -1787,6 +2153,9 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
       programStartDate: programStartDate ?? this.programStartDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
@@ -1817,6 +2186,16 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<int>(
+          $UserProfileTableTable.$convertersyncStatus.toSql(syncStatus.value));
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
     return map;
   }
 
@@ -1830,7 +2209,10 @@ class UserProfileTableCompanion extends UpdateCompanion<UserProfile> {
           ..write('gender: $gender, ')
           ..write('programStartDate: $programStartDate, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -1931,6 +2313,29 @@ class $CambridgeAssessmentTableTable extends CambridgeAssessmentTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
+      GeneratedColumn<int>('sync_status', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: Constant(SyncStatus.pendingInsert.index))
+          .withConverter<SyncStatus>(
+              $CambridgeAssessmentTableTable.$convertersyncStatus);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1946,7 +2351,10 @@ class $CambridgeAssessmentTableTable extends CambridgeAssessmentTable
         interpretation,
         specificMetrics,
         completedAt,
-        createdAt
+        createdAt,
+        uuid,
+        syncStatus,
+        lastUpdatedAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2050,6 +2458,16 @@ class $CambridgeAssessmentTableTable extends CambridgeAssessmentTable
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    }
     return context;
   }
 
@@ -2089,6 +2507,13 @@ class $CambridgeAssessmentTableTable extends CambridgeAssessmentTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      syncStatus: $CambridgeAssessmentTableTable.$convertersyncStatus.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}sync_status'])!),
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
     );
   }
 
@@ -2100,6 +2525,8 @@ class $CambridgeAssessmentTableTable extends CambridgeAssessmentTable
   static JsonTypeConverter2<CambridgeTestType, String, String>
       $convertertestType =
       const EnumNameConverter<CambridgeTestType>(CambridgeTestType.values);
+  static JsonTypeConverter2<SyncStatus, int, int> $convertersyncStatus =
+      const EnumIndexConverter<SyncStatus>(SyncStatus.values);
 }
 
 class CambridgeAssessmentEntry extends DataClass
@@ -2118,6 +2545,9 @@ class CambridgeAssessmentEntry extends DataClass
   final String specificMetrics;
   final DateTime completedAt;
   final DateTime createdAt;
+  final String uuid;
+  final SyncStatus syncStatus;
+  final DateTime lastUpdatedAt;
   const CambridgeAssessmentEntry(
       {required this.id,
       required this.testType,
@@ -2132,7 +2562,10 @@ class CambridgeAssessmentEntry extends DataClass
       required this.interpretation,
       required this.specificMetrics,
       required this.completedAt,
-      required this.createdAt});
+      required this.createdAt,
+      required this.uuid,
+      required this.syncStatus,
+      required this.lastUpdatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2153,6 +2586,13 @@ class CambridgeAssessmentEntry extends DataClass
     map['specific_metrics'] = Variable<String>(specificMetrics);
     map['completed_at'] = Variable<DateTime>(completedAt);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['uuid'] = Variable<String>(uuid);
+    {
+      map['sync_status'] = Variable<int>($CambridgeAssessmentTableTable
+          .$convertersyncStatus
+          .toSql(syncStatus));
+    }
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
@@ -2172,6 +2612,9 @@ class CambridgeAssessmentEntry extends DataClass
       specificMetrics: Value(specificMetrics),
       completedAt: Value(completedAt),
       createdAt: Value(createdAt),
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
@@ -2194,6 +2637,10 @@ class CambridgeAssessmentEntry extends DataClass
       specificMetrics: serializer.fromJson<String>(json['specificMetrics']),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      syncStatus: $CambridgeAssessmentTableTable.$convertersyncStatus
+          .fromJson(serializer.fromJson<int>(json['syncStatus'])),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -2215,6 +2662,11 @@ class CambridgeAssessmentEntry extends DataClass
       'specificMetrics': serializer.toJson<String>(specificMetrics),
       'completedAt': serializer.toJson<DateTime>(completedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'uuid': serializer.toJson<String>(uuid),
+      'syncStatus': serializer.toJson<int>($CambridgeAssessmentTableTable
+          .$convertersyncStatus
+          .toJson(syncStatus)),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
@@ -2232,7 +2684,10 @@ class CambridgeAssessmentEntry extends DataClass
           String? interpretation,
           String? specificMetrics,
           DateTime? completedAt,
-          DateTime? createdAt}) =>
+          DateTime? createdAt,
+          String? uuid,
+          SyncStatus? syncStatus,
+          DateTime? lastUpdatedAt}) =>
       CambridgeAssessmentEntry(
         id: id ?? this.id,
         testType: testType ?? this.testType,
@@ -2248,6 +2703,9 @@ class CambridgeAssessmentEntry extends DataClass
         specificMetrics: specificMetrics ?? this.specificMetrics,
         completedAt: completedAt ?? this.completedAt,
         createdAt: createdAt ?? this.createdAt,
+        uuid: uuid ?? this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       );
   CambridgeAssessmentEntry copyWithCompanion(
       CambridgeAssessmentTableCompanion data) {
@@ -2281,6 +2739,12 @@ class CambridgeAssessmentEntry extends DataClass
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
@@ -2300,7 +2764,10 @@ class CambridgeAssessmentEntry extends DataClass
           ..write('interpretation: $interpretation, ')
           ..write('specificMetrics: $specificMetrics, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -2320,7 +2787,10 @@ class CambridgeAssessmentEntry extends DataClass
       interpretation,
       specificMetrics,
       completedAt,
-      createdAt);
+      createdAt,
+      uuid,
+      syncStatus,
+      lastUpdatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2338,7 +2808,10 @@ class CambridgeAssessmentEntry extends DataClass
           other.interpretation == this.interpretation &&
           other.specificMetrics == this.specificMetrics &&
           other.completedAt == this.completedAt &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
 class CambridgeAssessmentTableCompanion
@@ -2357,6 +2830,9 @@ class CambridgeAssessmentTableCompanion
   final Value<String> specificMetrics;
   final Value<DateTime> completedAt;
   final Value<DateTime> createdAt;
+  final Value<String> uuid;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime> lastUpdatedAt;
   const CambridgeAssessmentTableCompanion({
     this.id = const Value.absent(),
     this.testType = const Value.absent(),
@@ -2372,6 +2848,9 @@ class CambridgeAssessmentTableCompanion
     this.specificMetrics = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   CambridgeAssessmentTableCompanion.insert({
     this.id = const Value.absent(),
@@ -2388,6 +2867,9 @@ class CambridgeAssessmentTableCompanion
     required String specificMetrics,
     required DateTime completedAt,
     this.createdAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   })  : testType = Value(testType),
         durationSeconds = Value(durationSeconds),
         accuracy = Value(accuracy),
@@ -2415,6 +2897,9 @@ class CambridgeAssessmentTableCompanion
     Expression<String>? specificMetrics,
     Expression<DateTime>? completedAt,
     Expression<DateTime>? createdAt,
+    Expression<String>? uuid,
+    Expression<int>? syncStatus,
+    Expression<DateTime>? lastUpdatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2431,6 +2916,9 @@ class CambridgeAssessmentTableCompanion
       if (specificMetrics != null) 'specific_metrics': specificMetrics,
       if (completedAt != null) 'completed_at': completedAt,
       if (createdAt != null) 'created_at': createdAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
     });
   }
 
@@ -2448,7 +2936,10 @@ class CambridgeAssessmentTableCompanion
       Value<String>? interpretation,
       Value<String>? specificMetrics,
       Value<DateTime>? completedAt,
-      Value<DateTime>? createdAt}) {
+      Value<DateTime>? createdAt,
+      Value<String>? uuid,
+      Value<SyncStatus>? syncStatus,
+      Value<DateTime>? lastUpdatedAt}) {
     return CambridgeAssessmentTableCompanion(
       id: id ?? this.id,
       testType: testType ?? this.testType,
@@ -2464,6 +2955,9 @@ class CambridgeAssessmentTableCompanion
       specificMetrics: specificMetrics ?? this.specificMetrics,
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
@@ -2514,6 +3008,17 @@ class CambridgeAssessmentTableCompanion
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<int>($CambridgeAssessmentTableTable
+          .$convertersyncStatus
+          .toSql(syncStatus.value));
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
     return map;
   }
 
@@ -2533,7 +3038,10 @@ class CambridgeAssessmentTableCompanion
           ..write('interpretation: $interpretation, ')
           ..write('specificMetrics: $specificMetrics, ')
           ..write('completedAt: $completedAt, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -2601,6 +3109,29 @@ class $DailyGoalsTableTable extends DailyGoalsTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      clientDefault: () => const Uuid().v4());
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
+      GeneratedColumn<int>('sync_status', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: Constant(SyncStatus.pendingInsert.index))
+          .withConverter<SyncStatus>(
+              $DailyGoalsTableTable.$convertersyncStatus);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2609,7 +3140,10 @@ class $DailyGoalsTableTable extends DailyGoalsTable
         completedGames,
         isCompleted,
         createdAt,
-        updatedAt
+        updatedAt,
+        uuid,
+        syncStatus,
+        lastUpdatedAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2656,6 +3190,16 @@ class $DailyGoalsTableTable extends DailyGoalsTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    }
     return context;
   }
 
@@ -2679,6 +3223,13 @@ class $DailyGoalsTableTable extends DailyGoalsTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      syncStatus: $DailyGoalsTableTable.$convertersyncStatus.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}sync_status'])!),
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
     );
   }
 
@@ -2686,6 +3237,9 @@ class $DailyGoalsTableTable extends DailyGoalsTable
   $DailyGoalsTableTable createAlias(String alias) {
     return $DailyGoalsTableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<SyncStatus, int, int> $convertersyncStatus =
+      const EnumIndexConverter<SyncStatus>(SyncStatus.values);
 }
 
 class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
@@ -2696,6 +3250,9 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String uuid;
+  final SyncStatus syncStatus;
+  final DateTime lastUpdatedAt;
   const DailyGoalEntry(
       {required this.id,
       required this.date,
@@ -2703,7 +3260,10 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
       required this.completedGames,
       required this.isCompleted,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      required this.uuid,
+      required this.syncStatus,
+      required this.lastUpdatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2714,6 +3274,12 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
     map['is_completed'] = Variable<bool>(isCompleted);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['uuid'] = Variable<String>(uuid);
+    {
+      map['sync_status'] = Variable<int>(
+          $DailyGoalsTableTable.$convertersyncStatus.toSql(syncStatus));
+    }
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
@@ -2726,6 +3292,9 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
       isCompleted: Value(isCompleted),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
@@ -2740,6 +3309,10 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      syncStatus: $DailyGoalsTableTable.$convertersyncStatus
+          .fromJson(serializer.fromJson<int>(json['syncStatus'])),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -2753,6 +3326,10 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'uuid': serializer.toJson<String>(uuid),
+      'syncStatus': serializer.toJson<int>(
+          $DailyGoalsTableTable.$convertersyncStatus.toJson(syncStatus)),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
@@ -2763,7 +3340,10 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
           int? completedGames,
           bool? isCompleted,
           DateTime? createdAt,
-          DateTime? updatedAt}) =>
+          DateTime? updatedAt,
+          String? uuid,
+          SyncStatus? syncStatus,
+          DateTime? lastUpdatedAt}) =>
       DailyGoalEntry(
         id: id ?? this.id,
         date: date ?? this.date,
@@ -2772,6 +3352,9 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
         isCompleted: isCompleted ?? this.isCompleted,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        uuid: uuid ?? this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       );
   DailyGoalEntry copyWithCompanion(DailyGoalsTableCompanion data) {
     return DailyGoalEntry(
@@ -2786,6 +3369,12 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
           data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
@@ -2798,14 +3387,17 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
           ..write('completedGames: $completedGames, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, date, targetGames, completedGames, isCompleted, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, date, targetGames, completedGames,
+      isCompleted, createdAt, updatedAt, uuid, syncStatus, lastUpdatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2816,7 +3408,10 @@ class DailyGoalEntry extends DataClass implements Insertable<DailyGoalEntry> {
           other.completedGames == this.completedGames &&
           other.isCompleted == this.isCompleted &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
 class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
@@ -2827,6 +3422,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
   final Value<bool> isCompleted;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String> uuid;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime> lastUpdatedAt;
   const DailyGoalsTableCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
@@ -2835,6 +3433,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
     this.isCompleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   });
   DailyGoalsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -2844,6 +3445,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
     this.isCompleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
   }) : date = Value(date);
   static Insertable<DailyGoalEntry> custom({
     Expression<int>? id,
@@ -2853,6 +3457,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
     Expression<bool>? isCompleted,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? uuid,
+    Expression<int>? syncStatus,
+    Expression<DateTime>? lastUpdatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2862,6 +3469,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
       if (isCompleted != null) 'is_completed': isCompleted,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
     });
   }
 
@@ -2872,7 +3482,10 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
       Value<int>? completedGames,
       Value<bool>? isCompleted,
       Value<DateTime>? createdAt,
-      Value<DateTime>? updatedAt}) {
+      Value<DateTime>? updatedAt,
+      Value<String>? uuid,
+      Value<SyncStatus>? syncStatus,
+      Value<DateTime>? lastUpdatedAt}) {
     return DailyGoalsTableCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
@@ -2881,6 +3494,9 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
@@ -2908,6 +3524,16 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<int>(
+          $DailyGoalsTableTable.$convertersyncStatus.toSql(syncStatus.value));
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
     return map;
   }
 
@@ -2920,7 +3546,10 @@ class DailyGoalsTableCompanion extends UpdateCompanion<DailyGoalEntry> {
           ..write('completedGames: $completedGames, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -2964,6 +3593,9 @@ typedef $$AssessmentTableTableCreateCompanionBuilder = AssessmentTableCompanion
   Value<String?> notes,
   required DateTime completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 typedef $$AssessmentTableTableUpdateCompanionBuilder = AssessmentTableCompanion
     Function({
@@ -2974,6 +3606,9 @@ typedef $$AssessmentTableTableUpdateCompanionBuilder = AssessmentTableCompanion
   Value<String?> notes,
   Value<DateTime> completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 
 class $$AssessmentTableTableFilterComposer
@@ -3007,6 +3642,17 @@ class $$AssessmentTableTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$AssessmentTableTableOrderingComposer
@@ -3038,6 +3684,16 @@ class $$AssessmentTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$AssessmentTableTableAnnotationComposer
@@ -3069,6 +3725,16 @@ class $$AssessmentTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 }
 
 class $$AssessmentTableTableTableManager extends RootTableManager<
@@ -3105,6 +3771,9 @@ class $$AssessmentTableTableTableManager extends RootTableManager<
             Value<String?> notes = const Value.absent(),
             Value<DateTime> completedAt = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               AssessmentTableCompanion(
             id: id,
@@ -3114,6 +3783,9 @@ class $$AssessmentTableTableTableManager extends RootTableManager<
             notes: notes,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3123,6 +3795,9 @@ class $$AssessmentTableTableTableManager extends RootTableManager<
             Value<String?> notes = const Value.absent(),
             required DateTime completedAt,
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               AssessmentTableCompanion.insert(
             id: id,
@@ -3132,6 +3807,9 @@ class $$AssessmentTableTableTableManager extends RootTableManager<
             notes: notes,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -3168,6 +3846,9 @@ typedef $$CognitiveExerciseTableTableCreateCompanionBuilder
   Value<String?> exerciseData,
   Value<DateTime?> completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 typedef $$CognitiveExerciseTableTableUpdateCompanionBuilder
     = CognitiveExerciseTableCompanion Function({
@@ -3182,6 +3863,9 @@ typedef $$CognitiveExerciseTableTableUpdateCompanionBuilder
   Value<String?> exerciseData,
   Value<DateTime?> completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 
 class $$CognitiveExerciseTableTableFilterComposer
@@ -3230,6 +3914,17 @@ class $$CognitiveExerciseTableTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$CognitiveExerciseTableTableOrderingComposer
@@ -3275,6 +3970,16 @@ class $$CognitiveExerciseTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$CognitiveExerciseTableTableAnnotationComposer
@@ -3319,6 +4024,16 @@ class $$CognitiveExerciseTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 }
 
 class $$CognitiveExerciseTableTableTableManager extends RootTableManager<
@@ -3363,6 +4078,9 @@ class $$CognitiveExerciseTableTableTableManager extends RootTableManager<
             Value<String?> exerciseData = const Value.absent(),
             Value<DateTime?> completedAt = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               CognitiveExerciseTableCompanion(
             id: id,
@@ -3376,6 +4094,9 @@ class $$CognitiveExerciseTableTableTableManager extends RootTableManager<
             exerciseData: exerciseData,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3389,6 +4110,9 @@ class $$CognitiveExerciseTableTableTableManager extends RootTableManager<
             Value<String?> exerciseData = const Value.absent(),
             Value<DateTime?> completedAt = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               CognitiveExerciseTableCompanion.insert(
             id: id,
@@ -3402,6 +4126,9 @@ class $$CognitiveExerciseTableTableTableManager extends RootTableManager<
             exerciseData: exerciseData,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -3674,6 +4401,9 @@ typedef $$UserProfileTableTableCreateCompanionBuilder
   Value<DateTime?> programStartDate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 typedef $$UserProfileTableTableUpdateCompanionBuilder
     = UserProfileTableCompanion Function({
@@ -3685,6 +4415,9 @@ typedef $$UserProfileTableTableUpdateCompanionBuilder
   Value<DateTime?> programStartDate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 
 class $$UserProfileTableTableFilterComposer
@@ -3720,6 +4453,17 @@ class $$UserProfileTableTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$UserProfileTableTableOrderingComposer
@@ -3755,6 +4499,16 @@ class $$UserProfileTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$UserProfileTableTableAnnotationComposer
@@ -3789,6 +4543,16 @@ class $$UserProfileTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 }
 
 class $$UserProfileTableTableTableManager extends RootTableManager<
@@ -3826,6 +4590,9 @@ class $$UserProfileTableTableTableManager extends RootTableManager<
             Value<DateTime?> programStartDate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               UserProfileTableCompanion(
             id: id,
@@ -3836,6 +4603,9 @@ class $$UserProfileTableTableTableManager extends RootTableManager<
             programStartDate: programStartDate,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3846,6 +4616,9 @@ class $$UserProfileTableTableTableManager extends RootTableManager<
             Value<DateTime?> programStartDate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               UserProfileTableCompanion.insert(
             id: id,
@@ -3856,6 +4629,9 @@ class $$UserProfileTableTableTableManager extends RootTableManager<
             programStartDate: programStartDate,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -3895,6 +4671,9 @@ typedef $$CambridgeAssessmentTableTableCreateCompanionBuilder
   required String specificMetrics,
   required DateTime completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 typedef $$CambridgeAssessmentTableTableUpdateCompanionBuilder
     = CambridgeAssessmentTableCompanion Function({
@@ -3912,6 +4691,9 @@ typedef $$CambridgeAssessmentTableTableUpdateCompanionBuilder
   Value<String> specificMetrics,
   Value<DateTime> completedAt,
   Value<DateTime> createdAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 
 class $$CambridgeAssessmentTableTableFilterComposer
@@ -3970,6 +4752,17 @@ class $$CambridgeAssessmentTableTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$CambridgeAssessmentTableTableOrderingComposer
@@ -4028,6 +4821,16 @@ class $$CambridgeAssessmentTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$CambridgeAssessmentTableTableAnnotationComposer
@@ -4080,6 +4883,16 @@ class $$CambridgeAssessmentTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 }
 
 class $$CambridgeAssessmentTableTableTableManager extends RootTableManager<
@@ -4127,6 +4940,9 @@ class $$CambridgeAssessmentTableTableTableManager extends RootTableManager<
             Value<String> specificMetrics = const Value.absent(),
             Value<DateTime> completedAt = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               CambridgeAssessmentTableCompanion(
             id: id,
@@ -4143,6 +4959,9 @@ class $$CambridgeAssessmentTableTableTableManager extends RootTableManager<
             specificMetrics: specificMetrics,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -4159,6 +4978,9 @@ class $$CambridgeAssessmentTableTableTableManager extends RootTableManager<
             required String specificMetrics,
             required DateTime completedAt,
             Value<DateTime> createdAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               CambridgeAssessmentTableCompanion.insert(
             id: id,
@@ -4175,6 +4997,9 @@ class $$CambridgeAssessmentTableTableTableManager extends RootTableManager<
             specificMetrics: specificMetrics,
             completedAt: completedAt,
             createdAt: createdAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -4209,6 +5034,9 @@ typedef $$DailyGoalsTableTableCreateCompanionBuilder = DailyGoalsTableCompanion
   Value<bool> isCompleted,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 typedef $$DailyGoalsTableTableUpdateCompanionBuilder = DailyGoalsTableCompanion
     Function({
@@ -4219,6 +5047,9 @@ typedef $$DailyGoalsTableTableUpdateCompanionBuilder = DailyGoalsTableCompanion
   Value<bool> isCompleted,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> uuid,
+  Value<SyncStatus> syncStatus,
+  Value<DateTime> lastUpdatedAt,
 });
 
 class $$DailyGoalsTableTableFilterComposer
@@ -4251,6 +5082,17 @@ class $$DailyGoalsTableTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$DailyGoalsTableTableOrderingComposer
@@ -4283,6 +5125,16 @@ class $$DailyGoalsTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$DailyGoalsTableTableAnnotationComposer
@@ -4314,6 +5166,16 @@ class $$DailyGoalsTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+      $composableBuilder(
+          column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 }
 
 class $$DailyGoalsTableTableTableManager extends RootTableManager<
@@ -4350,6 +5212,9 @@ class $$DailyGoalsTableTableTableManager extends RootTableManager<
             Value<bool> isCompleted = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               DailyGoalsTableCompanion(
             id: id,
@@ -4359,6 +5224,9 @@ class $$DailyGoalsTableTableTableManager extends RootTableManager<
             isCompleted: isCompleted,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -4368,6 +5236,9 @@ class $$DailyGoalsTableTableTableManager extends RootTableManager<
             Value<bool> isCompleted = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<SyncStatus> syncStatus = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
           }) =>
               DailyGoalsTableCompanion.insert(
             id: id,
@@ -4377,6 +5248,9 @@ class $$DailyGoalsTableTableTableManager extends RootTableManager<
             isCompleted: isCompleted,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
+            lastUpdatedAt: lastUpdatedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

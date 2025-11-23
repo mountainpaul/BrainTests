@@ -605,7 +605,16 @@ class CognitionOverviewTab extends ConsumerWidget {
                         label: const Text('Start Your First Test'),
                       ),
                     ] else ...[
-                      ...activities.take(5).map((activity) => Padding(
+                      ...activities.take(5).map((activity) {
+                        String scoreText;
+                        // Check for timed tests
+                        if (activity.name.contains('Trail Making')) {
+                           scoreText = '${activity.score}s';
+                        } else {
+                           scoreText = '${activity.score}%';
+                        }
+
+                        return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           children: [
@@ -619,7 +628,7 @@ class CognitionOverviewTab extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '${activity.name} - ${activity.score}%',
+                                '${activity.name} - $scoreText',
                                 style: TextStyle(color: Colors.grey[700]),
                               ),
                             ),
@@ -632,7 +641,8 @@ class CognitionOverviewTab extends ConsumerWidget {
                             ),
                           ],
                         ),
-                      )),
+                      );
+                      }),
                     ],
                   ],
                 ),

@@ -405,5 +405,4 @@ void main() {
         expect(retrieved.notes!.length, equals(1000));
       });
     });
-  });
 }

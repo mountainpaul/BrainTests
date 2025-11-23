@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/services/auto_backup_service.dart';
-import '../../core/services/data_migration_service.dart';
-import '../../core/services/google_drive_backup_service.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/pdf_service.dart';
 import '../providers/assessment_provider.dart';
 import '../providers/cambridge_assessment_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
-import '../providers/google_drive_provider.dart';
-import '../providers/mood_entry_provider.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 
@@ -35,12 +31,12 @@ class SettingsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Backup & Sync',
+              'Account & Sync',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             _buildSettingsSection(context, [
-              _buildGoogleDriveBackupTile(context, ref),
+              _buildAccountTile(context, ref),
             ]),
 
             const SizedBox(height: 24),
@@ -96,6 +92,13 @@ class SettingsScreen extends ConsumerWidget {
                 Icons.info,
                 () => _showAbout(context),
               ),
+              _buildSettingsTile(
+                context,
+                'Debug Info',
+                'Check Auth Status',
+                Icons.bug_report,
+                () => _showDebugInfo(context, ref),
+              ),
             ]),
           ],
         ),
@@ -113,46 +116,43 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoogleDriveBackupTile(BuildContext context, WidgetRef ref) {
-    // Use provider instead of static getters to enable automatic rebuilds
-    final isSignedIn = ref.watch(isGoogleDriveSignedInProvider);
-    final userEmail = ref.watch(googleDriveUserEmailProvider);
+  Widget _buildAccountTile(BuildContext context, WidgetRef ref) {
+    final userEmailAsync = ref.watch(currentUserEmailProvider);
+    final authService = ref.read(authServiceProvider);
 
-    return Column(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.cloud),
-          title: Text(isSignedIn ? 'Google Drive Backup' : 'Sign in to Google Drive'),
-          subtitle: Text(isSignedIn && userEmail != null
-              ? userEmail
-              : 'Sign in to backup your data to the cloud'),
+    return userEmailAsync.when(
+      data: (email) {
+        final isSignedIn = email != null;
+        return ListTile(
+          leading: const Icon(Icons.cloud_sync),
+          title: Text(isSignedIn ? 'Cloud Sync Active' : 'Sign in to Sync'),
+          subtitle: Text(isSignedIn 
+              ? 'Signed in as $email'
+              : 'Sign in to backup your progress'),
           trailing: IconButton(
             icon: Icon(isSignedIn ? Icons.logout : Icons.login, size: 20),
-            onPressed: () => isSignedIn
-                ? _signOutGoogleDrive(context)
-                : _signInGoogleDrive(context),
+            onPressed: () async {
+              if (isSignedIn) {
+                await authService.signOut();
+                // Force refresh of provider
+                ref.invalidate(currentUserEmailProvider);
+              } else {
+                final success = await authService.signIn();
+                if (success) {
+                  ref.invalidate(currentUserEmailProvider);
+                }
+              }
+            },
             tooltip: isSignedIn ? 'Sign out' : 'Sign in',
           ),
-        ),
-        if (isSignedIn) ...[
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.backup, size: 20),
-            title: const Text('Manual Backup'),
-            subtitle: const Text('Backup now to Google Drive'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _manualBackup(context),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.download, size: 20),
-            title: const Text('Restore from Google Drive'),
-            subtitle: const Text('Download your latest backup'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _restoreFromGoogleDrive(context),
-          ),
-        ],
-      ],
+        );
+      },
+      loading: () => const ListTile(
+        leading: Icon(Icons.cloud_sync),
+        title: Text('Checking status...'),
+        trailing: CircularProgressIndicator(),
+      ),
+      error: (_, __) => const ListTile(title: Text('Error loading account status')),
     );
   }
 
@@ -172,174 +172,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _signInGoogleDrive(BuildContext context) async {
-    try {
-      final email = await GoogleDriveBackupService.signIn();
-      if (email != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Signed in as $email'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Check if backup exists and offer to restore
-        final hasBackup = await GoogleDriveBackupService.hasBackup();
-        if (hasBackup && context.mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Backup Found'),
-              content: const Text(
-                'A backup was found in your Google Drive. Would you like to restore it?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Not Now'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _restoreFromGoogleDrive(context);
-                  },
-                  child: const Text('Restore'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // No backup found, offer to create one
-          await DataMigrationService.backupDatabase();
-        }
-      } else if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sign-in cancelled'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign-in failed: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _signOutGoogleDrive(BuildContext context) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text(
-          'Are you sure you want to sign out? Your data will remain backed up in Google Drive.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await GoogleDriveBackupService.signOut();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Signed out successfully'),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _manualBackup(BuildContext context) async {
-    if (!GoogleDriveBackupService.isSignedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please sign in to Google Drive first'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Backing up to Google Drive...')),
-    );
-
-    final success = await AutoBackupService.performBackup(
-      source: 'manual_user_request',
-      force: true,
-    );
-
-    if (context.mounted) {
-      if (success) {
-        final lastBackup = AutoBackupService.getLastBackupTime();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Backup completed successfully\n${lastBackup?.toString() ?? ""}'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Backup failed. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _restoreFromGoogleDrive(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Restoring from Google Drive...')),
-    );
-
-    final success = await GoogleDriveBackupService.downloadBackup();
-
-    if (context.mounted) {
-      if (success) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Restore Successful'),
-            content: const Text(
-              'Your data has been restored from Google Drive. Please restart the app for changes to take effect.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Restore failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+  // ... (Removed old Google Drive methods)
 
   void _showNotificationSettings(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -525,6 +358,63 @@ class SettingsScreen extends ConsumerWidget {
       children: const [
         Text('A comprehensive app for cognitive health tracking and brain training.'),
       ],
+    );
+  }
+
+  Future<void> _showDebugInfo(BuildContext context, WidgetRef ref) async {
+    final authService = ref.read(authServiceProvider);
+    final supabaseService = ref.read(supabaseServiceProvider);
+    
+    String googleStatus = 'Not signed in';
+    String idTokenStatus = 'N/A';
+    String supabaseStatus = 'Not signed in';
+    
+    try {
+      // Access private _googleSignIn via reflection or just use public API if possible?
+      // AuthService doesn't expose the google sign in instance directly.
+      // But we can assume if userEmail is set, Google is signed in.
+      
+      if (authService.userEmail != null) {
+        googleStatus = 'Signed in as ${authService.userEmail}';
+        // We can't easily get the token here without exposing it in AuthService.
+        // But we can check Supabase.
+      }
+      
+      final sbUser = supabaseService.client?.auth.currentUser;
+      if (sbUser != null) {
+        supabaseStatus = 'Signed in (ID: ${sbUser.id.substring(0, 8)}...)';
+      } else {
+        supabaseStatus = 'Not signed in (Client is ${supabaseService.client == null ? "null" : "ready"})';
+      }
+      
+    } catch (e) {
+      googleStatus = 'Error: $e';
+    }
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Debug Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Google Auth:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(googleStatus),
+            const SizedBox(height: 8),
+            const Text('Supabase Auth:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(supabaseStatus),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 }

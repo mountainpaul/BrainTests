@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqlite3/open.dart';
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
+import 'package:sqlite3/open.dart';
 
+import 'core/providers/database_provider.dart';
 import 'core/services/analytics_service.dart';
+import 'core/services/auth_service.dart';
 import 'core/services/auto_backup_service.dart';
 import 'core/services/data_migration_service.dart';
-import 'core/services/google_drive_backup_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/performance_monitoring_service.dart';
+import 'core/services/supabase_service.dart';
+import 'core/services/sync_manager.dart';
 import 'core/services/user_profile_service.dart';
 import 'core/services/word_dictionary_service.dart';
 import 'data/datasources/database.dart';
-import 'core/providers/database_provider.dart';
 import 'presentation/providers/router_provider.dart';
 import 'presentation/theme/app_theme.dart';
 
@@ -31,18 +33,30 @@ void main() async {
   await AnalyticsService.initialize();
   await PerformanceMonitoringService.initialize();
 
-  // Initialize Google Drive backup service
-  await GoogleDriveBackupService.initialize();
+  // Initialize database (will open existing restored db or create new one)
+  final database = AppDatabase();
 
-  // Initialize automatic backup service
-  await AutoBackupService.initialize();
+  // Initialize Supabase service (Prerequisite for Auth)
+  // We can use the one we create for Auth/SyncManager to ensure single instance if needed, 
+  // but currently SupabaseService is a wrapper around static Supabase.instance + database.
+  // Let's reuse the same instance to be clean.
+  final supabaseService = SupabaseService(database);
+  await SupabaseService.initialize(); // Static init for plugin
+
+  // Initialize Auth Service
+  final authService = AuthService(supabaseService);
+  await authService.initialize();
+
+  // Initialize Sync Manager
+  final syncManager = SyncManager(supabaseService);
+  syncManager.initialize();
+
+  // Initialize automatic backup service (now handles sync triggers)
+  await AutoBackupService.initialize(supabaseService);
 
   // CRITICAL: Restore database backup BEFORE creating AppDatabase instance
   // This ensures the restored database file is in place before Drift opens it
   final wasRestored = await DataMigrationService.restoreFromBackupIfNeeded();
-
-  // Initialize database (will open existing restored db or create new one)
-  final database = AppDatabase();
 
   // Only initialize default data if NOT restored from backup
   if (!wasRestored) {
@@ -63,12 +77,14 @@ void main() async {
     overrides: [
       databaseProvider.overrideWithValue(database),
     ],
-    child: const BrainPlanApp(),
+    child: BrainPlanApp(syncManager: syncManager),
   ));
 }
 
 class BrainPlanApp extends ConsumerStatefulWidget {
-  const BrainPlanApp({super.key});
+  const BrainPlanApp({super.key, required this.syncManager});
+
+  final SyncManager syncManager;
 
   @override
   ConsumerState<BrainPlanApp> createState() => _BrainPlanAppState();
@@ -85,6 +101,7 @@ class _BrainPlanAppState extends ConsumerState<BrainPlanApp> with WidgetsBinding
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     AutoBackupService.dispose();
+    widget.syncManager.dispose();
     super.dispose();
   }
 

@@ -65,9 +65,11 @@ dependencies:
   firebase_performance: ^0.11.1+1
 
   # Google Sign-In & Drive API for cloud backup
-  google_sign_in: ^7.2.0
+  google_sign_in: ^6.2.1
   googleapis: ^15.0.0
   http: ^1.2.0
+  supabase_flutter: ^2.10.3
+  uuid: ^4.5.2
 
 dev_dependencies:
   flutter_test:
@@ -86,5 +88,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/google_cloud_credentials.json
+    - assets/supabase_credentials.json
     - assets/patterns/
     - assets/assessment_data/

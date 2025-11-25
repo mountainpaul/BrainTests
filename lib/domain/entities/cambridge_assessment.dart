@@ -1,9 +1,10 @@
-/// Cambridge-style cognitive assessment types (CANTAB-inspired)
+/// Cambridge-style cognitive assessment types
 enum CambridgeTestType {
   // Memory (Priority 1 - most sensitive for AD)
   pal,  // Paired Associates Learning - visual episodic memory
   prm,  // Pattern Recognition Memory
   swm,  // Spatial Working Memory
+  avlt, // Audio Verbal Learning Test - verbal episodic memory
 
   // Attention & Speed (Priority 2)
   rvp,  // Rapid Visual Processing - sustained attention
@@ -191,4 +192,62 @@ class SWMResult extends CambridgeAssessmentResult {  // 1-46 scale (lower = bett
   final int betweenErrors;  // Errors revisiting boxes
   final int withinErrors;  // Errors within same search
   final double strategy;
+}
+
+/// AVLT (Audio Verbal Learning Test) specific data
+/// Tests verbal episodic memory with 3 immediate trials + 5-minute delayed recall
+class AVLTResult extends CambridgeAssessmentResult {
+
+  AVLTResult({
+    required super.completedAt,
+    required super.durationSeconds,
+    required super.accuracy,
+    required super.totalTrials,
+    required super.correctTrials,
+    required super.errorCount,
+    required super.meanLatencyMs,
+    required super.medianLatencyMs,
+    required super.normScore,
+    required super.interpretation,
+    required this.trial1SerialScore,
+    required this.trial1TotalScore,
+    required this.trial2SerialScore,
+    required this.trial2TotalScore,
+    required this.trial3SerialScore,
+    required this.trial3TotalScore,
+    required this.delayedSerialScore,
+    required this.delayedTotalScore,
+    required this.learningSlope,
+    required this.retentionPercentage,
+  }) : super(
+    testType: CambridgeTestType.avlt,
+    specificMetrics: {
+      'trial1SerialScore': trial1SerialScore,
+      'trial1TotalScore': trial1TotalScore,
+      'trial2SerialScore': trial2SerialScore,
+      'trial2TotalScore': trial2TotalScore,
+      'trial3SerialScore': trial3SerialScore,
+      'trial3TotalScore': trial3TotalScore,
+      'delayedSerialScore': delayedSerialScore,
+      'delayedTotalScore': delayedTotalScore,
+      'learningSlope': learningSlope,
+      'retentionPercentage': retentionPercentage,
+    },
+  );
+
+  // Immediate trial scores (3 trials)
+  final int trial1SerialScore;  // Words in correct position (0-5)
+  final int trial1TotalScore;   // Words recalled regardless of position (0-5)
+  final int trial2SerialScore;
+  final int trial2TotalScore;
+  final int trial3SerialScore;
+  final int trial3TotalScore;
+
+  // Delayed recall scores (after 5 minutes)
+  final int delayedSerialScore;
+  final int delayedTotalScore;
+
+  // Derived metrics
+  final double learningSlope;  // Improvement from trial 1 to trial 3
+  final double retentionPercentage;  // Delayed recall vs trial 3
 }

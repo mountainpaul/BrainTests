@@ -130,6 +130,32 @@ class PDFService {
       );
     }
 
+    // Add trend graphs page if we have more than a week of data
+    final hasEnoughData = _hasMoreThanOneWeekOfData(assessments, cambridgeResults, exercises);
+    if (hasEnoughData) {
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Progress Trends',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+                _buildTrendCharts(assessments, cambridgeResults, exercises),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
     // Save and share the PDF
     final Uint8List bytes = await pdf.save();
     await Printing.sharePdf(
@@ -218,34 +244,52 @@ class PDFService {
     return pw.Table.fromTextArray(
       headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
       data: [
-        ['Date', 'Type', 'Score', 'Percentage'],
+        ['Date', 'Type', 'Score', 'Result'],
         ...assessments.take(10).map((assessment) => [
           '${assessment.completedAt.day}/${assessment.completedAt.month}/${assessment.completedAt.year}',
           _getAssessmentTypeString(assessment.type),
-          '${assessment.score}/${assessment.maxScore}',
-          '${assessment.percentage.toStringAsFixed(1)}%',
+          _formatAssessmentScore(assessment),
+          _formatAssessmentResult(assessment),
         ]),
       ],
     );
   }
 
+  /// Check if an assessment type is a timed test (lower score is better)
+  static bool _isTimedTest(AssessmentType type) {
+    return type == AssessmentType.processingSpeed ||
+           type == AssessmentType.executiveFunction;
+  }
+
+  /// Format score display based on assessment type
+  static String _formatAssessmentScore(Assessment assessment) {
+    if (_isTimedTest(assessment.type)) {
+      return '${assessment.score}s'; // Show as seconds
+    }
+    return '${assessment.score}/${assessment.maxScore}';
+  }
+
+  /// Format result display based on assessment type
+  static String _formatAssessmentResult(Assessment assessment) {
+    if (_isTimedTest(assessment.type)) {
+      // For timed tests, extract errors from notes if available
+      final notes = assessment.notes ?? '';
+      final errorsMatch = RegExp(r'Errors: (\d+)').firstMatch(notes);
+      final errors = errorsMatch != null ? errorsMatch.group(1) : '0';
+      return '$errors errors';
+    }
+    return '${assessment.percentage.toStringAsFixed(1)}%';
+  }
+
   static pw.Widget _buildAssessmentAverages(List<Assessment> assessments) {
     final Map<AssessmentType, List<Assessment>> groupedAssessments = {};
-    
+
     for (final assessment in assessments) {
       if (!groupedAssessments.containsKey(assessment.type)) {
         groupedAssessments[assessment.type] = [];
       }
       groupedAssessments[assessment.type]!.add(assessment);
     }
-
-    final Map<AssessmentType, double> averages = {};
-    groupedAssessments.forEach((type, assessmentList) {
-      final totalPercentage = assessmentList
-          .map((a) => a.percentage)
-          .reduce((a, b) => a + b);
-      averages[type] = totalPercentage / assessmentList.length;
-    });
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -261,11 +305,30 @@ class PDFService {
         pw.Table.fromTextArray(
           headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
           data: [
-            ['Assessment Type', 'Average Score'],
-            ...averages.entries.map((entry) => [
-              _getAssessmentTypeString(entry.key),
-              '${entry.value.toStringAsFixed(1)}%',
-            ]),
+            ['Assessment Type', 'Tests', 'Average'],
+            ...groupedAssessments.entries.map((entry) {
+              final type = entry.key;
+              final list = entry.value;
+              final count = list.length;
+
+              if (_isTimedTest(type)) {
+                // For timed tests, show average time in seconds
+                final avgTime = list.map((a) => a.score).reduce((a, b) => a + b) / count;
+                return [
+                  _getAssessmentTypeString(type),
+                  '$count',
+                  '${avgTime.toStringAsFixed(1)}s',
+                ];
+              } else {
+                // For other tests, show average percentage
+                final avgPercent = list.map((a) => a.percentage).reduce((a, b) => a + b) / count;
+                return [
+                  _getAssessmentTypeString(type),
+                  '$count',
+                  '${avgPercent.toStringAsFixed(1)}%',
+                ];
+              }
+            }),
           ],
         ),
       ],
@@ -365,5 +428,254 @@ class PDFService {
       headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
       cellAlignment: pw.Alignment.centerLeft,
     );
+  }
+
+  /// Check if we have more than one week of data across all sources
+  static bool _hasMoreThanOneWeekOfData(
+    List<Assessment> assessments,
+    List<CambridgeAssessmentResult> cambridgeResults,
+    List<CognitiveExercise> exercises,
+  ) {
+    final allDates = <DateTime>[];
+
+    for (final a in assessments) {
+      allDates.add(a.completedAt);
+    }
+    for (final c in cambridgeResults) {
+      allDates.add(c.completedAt);
+    }
+    for (final e in exercises) {
+      if (e.completedAt != null) {
+        allDates.add(e.completedAt!);
+      }
+    }
+
+    if (allDates.length < 2) return false;
+
+    allDates.sort();
+    final earliest = allDates.first;
+    final latest = allDates.last;
+    final daysDiff = latest.difference(earliest).inDays;
+
+    return daysDiff >= 7;
+  }
+
+  /// Build trend charts for the PDF report
+  static pw.Widget _buildTrendCharts(
+    List<Assessment> assessments,
+    List<CambridgeAssessmentResult> cambridgeResults,
+    List<CognitiveExercise> exercises,
+  ) {
+    final widgets = <pw.Widget>[];
+
+    // Assessment trends by type (non-timed tests)
+    final nonTimedAssessments = assessments
+        .where((a) => !_isTimedTest(a.type))
+        .toList();
+
+    if (nonTimedAssessments.length >= 2) {
+      widgets.add(_buildAssessmentTrendSection(nonTimedAssessments, 'Assessment Scores Over Time'));
+      widgets.add(pw.SizedBox(height: 20));
+    }
+
+    // Timed test trends (Trail Making)
+    final timedAssessments = assessments
+        .where((a) => _isTimedTest(a.type))
+        .toList();
+
+    if (timedAssessments.length >= 2) {
+      widgets.add(_buildTimedTestTrendSection(timedAssessments, 'Timed Test Performance'));
+      widgets.add(pw.SizedBox(height: 20));
+    }
+
+    // Cambridge assessment trends
+    if (cambridgeResults.length >= 2) {
+      widgets.add(_buildCambridgeTrendSection(cambridgeResults, 'Advanced Test Accuracy'));
+      widgets.add(pw.SizedBox(height: 20));
+    }
+
+    // Exercise completion trend
+    final completedExercises = exercises.where((e) => e.isCompleted && e.completedAt != null).toList();
+    if (completedExercises.length >= 2) {
+      widgets.add(_buildExerciseTrendSection(completedExercises, 'Brain Training Activity'));
+    }
+
+    if (widgets.isEmpty) {
+      return pw.Text('Not enough data points to generate trend charts.');
+    }
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  static pw.Widget _buildAssessmentTrendSection(List<Assessment> assessments, String title) {
+    // Group by week and calculate weekly averages
+    final weeklyData = <String, List<double>>{};
+
+    for (final a in assessments) {
+      final weekKey = '${a.completedAt.month}/${_getWeekOfMonth(a.completedAt)}';
+      weeklyData.putIfAbsent(weekKey, () => []);
+      weeklyData[weekKey]!.add(a.percentage);
+    }
+
+    final sortedWeeks = weeklyData.keys.toList()..sort();
+    final dataRows = sortedWeeks.map((week) {
+      final avg = weeklyData[week]!.reduce((a, b) => a + b) / weeklyData[week]!.length;
+      return [week, '${avg.toStringAsFixed(1)}%', _buildProgressBar(avg / 100)];
+    }).toList();
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          data: [
+            ['Week', 'Avg Score', 'Progress'],
+            ...dataRows,
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildTimedTestTrendSection(List<Assessment> assessments, String title) {
+    // Group by type and show trend
+    final byType = <AssessmentType, List<Assessment>>{};
+    for (final a in assessments) {
+      byType.putIfAbsent(a.type, () => []);
+      byType[a.type]!.add(a);
+    }
+
+    final rows = <List<String>>[];
+    for (final entry in byType.entries) {
+      final sorted = entry.value..sort((a, b) => a.completedAt.compareTo(b.completedAt));
+      if (sorted.length >= 2) {
+        final first = sorted.first.score;
+        final last = sorted.last.score;
+        final improvement = first - last; // Lower is better for timed tests
+        final trend = improvement > 0 ? '↓ ${improvement}s faster' : (improvement < 0 ? '↑ ${-improvement}s slower' : '→ same');
+        rows.add([
+          _getAssessmentTypeString(entry.key),
+          '${first}s',
+          '${last}s',
+          trend,
+        ]);
+      }
+    }
+
+    if (rows.isEmpty) {
+      return pw.SizedBox.shrink();
+    }
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          data: [
+            ['Test', 'First', 'Latest', 'Trend'],
+            ...rows,
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildCambridgeTrendSection(List<CambridgeAssessmentResult> results, String title) {
+    // Group by test type and show trend
+    final byType = <String, List<CambridgeAssessmentResult>>{};
+    for (final r in results) {
+      final key = r.testType.name;
+      byType.putIfAbsent(key, () => []);
+      byType[key]!.add(r);
+    }
+
+    final rows = <List<String>>[];
+    for (final entry in byType.entries) {
+      final sorted = entry.value..sort((a, b) => a.completedAt.compareTo(b.completedAt));
+      if (sorted.length >= 2) {
+        final first = sorted.first.accuracy;
+        final last = sorted.last.accuracy;
+        final improvement = last - first;
+        final trend = improvement > 0 ? '↑ +${improvement.toStringAsFixed(1)}%' : (improvement < 0 ? '↓ ${improvement.toStringAsFixed(1)}%' : '→ same');
+        rows.add([
+          entry.key.toUpperCase(),
+          '${first.toStringAsFixed(1)}%',
+          '${last.toStringAsFixed(1)}%',
+          trend,
+        ]);
+      }
+    }
+
+    if (rows.isEmpty) {
+      return pw.SizedBox.shrink();
+    }
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          data: [
+            ['Test', 'First', 'Latest', 'Trend'],
+            ...rows,
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildExerciseTrendSection(List<CognitiveExercise> exercises, String title) {
+    // Group by week and count exercises
+    final weeklyCount = <String, int>{};
+
+    for (final e in exercises) {
+      if (e.completedAt != null) {
+        final weekKey = '${e.completedAt!.month}/${_getWeekOfMonth(e.completedAt!)}';
+        weeklyCount.update(weekKey, (v) => v + 1, ifAbsent: () => 1);
+      }
+    }
+
+    final sortedWeeks = weeklyCount.keys.toList()..sort();
+    final dataRows = sortedWeeks.map((week) {
+      final count = weeklyCount[week]!;
+      return [week, '$count games', _buildProgressBar(count / 35)]; // 35 = 5 games * 7 days
+    }).toList();
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          data: [
+            ['Week', 'Games Played', 'Activity'],
+            ...dataRows,
+          ],
+        ),
+      ],
+    );
+  }
+
+  static int _getWeekOfMonth(DateTime date) {
+    final firstDayOfMonth = DateTime(date.year, date.month, 1);
+    final dayOfMonth = date.day;
+    final firstWeekday = firstDayOfMonth.weekday;
+    return ((dayOfMonth + firstWeekday - 2) ~/ 7) + 1;
+  }
+
+  static String _buildProgressBar(double progress) {
+    final filled = (progress.clamp(0.0, 1.0) * 10).round();
+    final empty = 10 - filled;
+    return '${'█' * filled}${'░' * empty}';
   }
 }

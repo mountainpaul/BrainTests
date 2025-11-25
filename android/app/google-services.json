@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "40070537616",
+    "project_id": "spanishtutorapp",
+    "storage_bucket": "spanishtutorapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:40070537616:android:88475f15a9940f2f111315",
+        "android_client_info": {
+          "package_name": "com.djangozone.SpanishTutorApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-DVlz09MLd4iND0i-Y1UQb08VYZr-nMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

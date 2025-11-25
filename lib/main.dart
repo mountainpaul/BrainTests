@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:sqlite3/open.dart';
 
+import 'core/providers/auth_provider.dart';
 import 'core/providers/database_provider.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/auth_service.dart';
@@ -72,10 +73,14 @@ void main() async {
   // Backup database after initialization (or after restore)
   await DataMigrationService.backupDatabase();
 
-  // Pass the database instance to the provider scope to ensure single instance
+  // Pass initialized instances to provider scope to ensure single instance
+  // This ensures UI components get the same initialized services that main() created
+  // See test/unit/provider_initialization_test.dart for verification
   runApp(ProviderScope(
     overrides: [
       databaseProvider.overrideWithValue(database),
+      supabaseServiceProvider.overrideWithValue(supabaseService),
+      authServiceProvider.overrideWithValue(authService),
     ],
     child: BrainPlanApp(syncManager: syncManager),
   ));

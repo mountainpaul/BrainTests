@@ -1,33 +1,33 @@
-/// Configuration constants for CANTAB PAL (Paired Associates Learning) Test
+/// Configuration constants for PAL (Paired Associates Learning) Test
 ///
-/// This class centralizes all test configuration parameters following the
-/// official Cambridge Cognition CANTAB PAL protocol.
+/// This class centralizes all test configuration parameters for the
+/// visual episodic memory assessment protocol.
 /// Reference: PMC10879687
 import 'pal_box_layout.dart';
 
-class CANTABPALConfig {
+class PALConfig {
   // Prevent instantiation
-  const CANTABPALConfig._();
+  const PALConfig._();
 
   // ============================================================================
   // Test Structure Configuration
   // ============================================================================
 
   /// Number of stages in the test
-  /// CANTAB standard: 7 stages (2, 4, 5, 6, 7, 8 patterns)
-  static const int totalStages = 7;
+  /// 7 stages with 2, 4, 5, 6, 7, 8 patterns
+  static const int totalStages = 8;
 
   /// Pattern counts for each stage: [2, 4, 5, 6, 7, 8]
-  /// Official CANTAB PAL progression
-  static const List<int> stagePatternCounts = [2, 4, 5, 6, 7, 8];
+  /// PAL progression
+  static const List<int> stagePatternCounts = [2, 3, 4, 5, 6, 8, 10, 12];
 
   /// Maximum number of failed attempts before test termination
-  /// CANTAB standard: 3 failed attempts stops test
+  /// 3 failed attempts stops test
   static const int maxFailedAttempts = 3;
 
   /// Total number of boxes available
   /// Must be >= max pattern count (8) to accommodate all patterns
-  static const int totalBoxes = 10;
+  static const int totalBoxes = 12;
 
   /// Box layout type for each stage
   /// Stage 1 (2 patterns): Horizontal
@@ -45,7 +45,7 @@ class CANTABPALConfig {
   // ============================================================================
 
   /// Duration each box is displayed during presentation phase
-  /// CANTAB standard: 3 seconds per box
+  /// 3 seconds per box
   static const Duration boxDisplayDuration = Duration(seconds: 3);
 
   /// Duration to show feedback message after user response
@@ -84,8 +84,8 @@ class CANTABPALConfig {
   // ============================================================================
 
   /// Maximum possible first-attempt memory score (sum of all pattern counts)
-  /// 2 + 3 + 4 + 5 + 6 + 8 + 10 = 38
-  static const int maxFirstAttemptScore = 38;
+  /// 2 + 3 + 4 + 5 + 6 + 8 + 10 + 12 = 50
+  static const int maxFirstAttemptScore = 50;
 
   /// Weight of stage completion in norm score calculation (0-100)
   static const double stageCompletionWeight = 50.0;

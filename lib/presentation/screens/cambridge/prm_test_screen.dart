@@ -420,7 +420,7 @@ class _PRMTestScreenState extends ConsumerState<PRMTestScreen> {
       return const Center(child: Icon(Icons.help_outline, color: Colors.grey));
     }
 
-    // CANTAB-style abstract patterns with color pairs
+    // Abstract patterns with color pairs
     // 20 unique color pair combinations (anti-chunking)
     final List<List<Color>> colorPairs = [
       [const Color(0xFFE91E63), const Color(0xFF00BCD4)],  // Pink + Cyan
@@ -559,8 +559,8 @@ class PRMResult {
   final int responseTimeMs;
 }
 
-/// Custom painter for CANTAB-style abstract patterns
-/// Based on Cambridge Cognition PAL methodology
+/// Custom painter for abstract patterns
+/// Based on PAL methodology
 class PRMPatternPainter extends CustomPainter {  // 0-4 for size/rotation variations
 
   PRMPatternPainter({
@@ -596,7 +596,7 @@ class PRMPatternPainter extends CustomPainter {  // 0-4 for size/rotation variat
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
 
-    // 12 abstract pattern types (similar to CANTAB PAL)
+    // 12 abstract pattern types (similar to PAL)
     switch (patternType % 12) {
       case 0:  // Irregular curved blob with dots
         final path = Path()

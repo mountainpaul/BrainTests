@@ -36,9 +36,22 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
   int _score = 0;
   int _lastProcessedWordCount = 0; // Track how many words we've processed from partial results
 
+  // Random category selection
+  static const List<String> _categories = [
+    'Animals',
+    'Foods',
+    'Countries',
+    'Words starting with F',
+    'Professions',
+  ];
+  late String _selectedCategory;
+
   @override
   void initState() {
     super.initState();
+    // Randomly select a category
+    _selectedCategory = _categories[DateTime.now().millisecondsSinceEpoch % _categories.length];
+    print('=== FLUENCY TEST: Selected category: $_selectedCategory ===');
     _initSpeech();
   }
 
@@ -296,7 +309,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
       type: AssessmentType.languageSkills,
       score: _score,
       maxScore: 20, // Typical max for fluency tests
-      notes: 'Fluency Test (Animals): ${_validWords.length} valid animals',
+      notes: 'Fluency Test ($_selectedCategory): ${_validWords.length} valid words',
       completedAt: DateTime.now(),
       createdAt: DateTime.now(),
     );
@@ -304,8 +317,81 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
     await notifier.addAssessment(assessment);
   }
 
+  // Get category-specific icon
+  IconData _getCategoryIcon() {
+    switch (_selectedCategory) {
+      case 'Animals':
+        return Icons.pets;
+      case 'Foods':
+        return Icons.restaurant;
+      case 'Countries':
+        return Icons.public;
+      case 'Words starting with F':
+        return Icons.abc;
+      case 'Professions':
+        return Icons.work;
+      default:
+        return Icons.psychology;
+    }
+  }
+
+  // Get category-specific instructions
+  String _getCategoryInstructions() {
+    switch (_selectedCategory) {
+      case 'Animals':
+        return 'Name as many animals as you can';
+      case 'Foods':
+        return 'Name as many foods as you can';
+      case 'Countries':
+        return 'Name as many countries as you can';
+      case 'Words starting with F':
+        return 'Name as many words starting with F as you can';
+      case 'Professions':
+        return 'Name as many professions as you can';
+      default:
+        return 'Name as many words as you can';
+    }
+  }
+
+  // Get category-specific examples
+  String _getCategoryExamples() {
+    switch (_selectedCategory) {
+      case 'Animals':
+        return 'Think of different categories: pets, farm animals, wild animals, birds, sea creatures, insects, etc.';
+      case 'Foods':
+        return 'Think of different categories: fruits, vegetables, meats, dairy, grains, desserts, etc.';
+      case 'Countries':
+        return 'Think of different continents: Europe, Asia, Africa, Americas, Oceania, etc.';
+      case 'Words starting with F':
+        return 'Try different categories: animals, foods, objects, actions, adjectives, etc.';
+      case 'Professions':
+        return 'Think of different fields: medical, legal, education, trades, arts, technology, etc.';
+      default:
+        return '';
+    }
+  }
+
+  // Get category-specific prompt during test
+  String _getCategoryPrompt() {
+    switch (_selectedCategory) {
+      case 'Animals':
+        return 'Speak naturally - name animals as they come to mind';
+      case 'Foods':
+        return 'Speak naturally - name foods as they come to mind';
+      case 'Countries':
+        return 'Speak naturally - name countries as they come to mind';
+      case 'Words starting with F':
+        return 'Speak naturally - say words starting with F as they come to mind';
+      case 'Professions':
+        return 'Speak naturally - name professions as they come to mind';
+      default:
+        return 'Speak naturally';
+    }
+  }
+
   void _calculateScore() {
-    // Comprehensive animal list - 500+ animals
+    // For Animals category, we have a comprehensive validation list
+    // For other categories, we accept any word 3+ characters
     final commonAnimals = [
       // Domestic animals
       'cat', 'dog', 'horse', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'goose',
@@ -431,10 +517,23 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
       'snail', 'slug', 'earthworm', 'leech',
     ];
 
-    _validWords = _enteredWords.where((word) =>
-        commonAnimals.contains(word) ||
-        word.length >= 3 // Accept any word of 3+ letters as potentially valid
-    ).toList();
+    // Validate words based on category
+    if (_selectedCategory == 'Animals') {
+      // For animals, check against our comprehensive list
+      _validWords = _enteredWords.where((word) =>
+          commonAnimals.contains(word) ||
+          word.length >= 3 // Accept any word of 3+ letters as potentially valid
+      ).toList();
+    } else {
+      // For other categories (Foods, Countries, Professions, Words starting with F)
+      // Accept any word of 3+ characters
+      _validWords = _enteredWords.where((word) => word.length >= 3).toList();
+
+      // For "Words starting with F", filter to only words that start with F
+      if (_selectedCategory == 'Words starting with F') {
+        _validWords = _validWords.where((word) => word.toLowerCase().startsWith('f')).toList();
+      }
+    }
 
     setState(() {
       _score = _validWords.length;
@@ -462,11 +561,11 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Animal Fluency Test'),
+        title: Text('$_selectedCategory Fluency Test'),
         backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -484,6 +583,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CustomCard(
+          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -491,15 +591,15 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.pets, color: Colors.blue, size: 32),
+                    Icon(_getCategoryIcon(), color: Colors.blue, size: 32),
                     const SizedBox(width: 12),
                     Text(
-                      'Animal Fluency Test',
+                      '$_selectedCategory Fluency Test',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
                   'This test measures verbal fluency and executive function.',
                   style: Theme.of(context).textTheme.bodyLarge,
@@ -508,10 +608,11 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
             ),
           ),
         ),
-        
-        const SizedBox(height: 16),
-        
+
+        const SizedBox(height: 1),
+
         CustomCard(
+          margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -521,13 +622,12 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                   'Instructions',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 const Text('1. You will have 60 seconds'),
-                const Text('2. Name as many animals as you can'),
+                Text('2. ${_getCategoryInstructions()}'),
                 const Text('3. Speak naturally - the app listens continuously'),
-                const Text('4. Try to avoid repeating animals'),
-                const Text('5. Any animal counts (mammals, birds, fish, insects, etc.)'),
-                const SizedBox(height: 16),
+                Text('4. Try to avoid repeating ${_selectedCategory.toLowerCase()}'),
+                const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -535,14 +635,14 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.amber.withOpacity(0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.lightbulb, color: Colors.amber),
-                      SizedBox(width: 8),
+                      const Icon(Icons.lightbulb, color: Colors.amber),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Think of different categories: pets, farm animals, wild animals, birds, sea creatures, insects, etc.',
-                          style: TextStyle(fontStyle: FontStyle.italic),
+                          _getCategoryExamples(),
+                          style: const TextStyle(fontStyle: FontStyle.italic),
                         ),
                       ),
                     ],
@@ -552,9 +652,9 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
             ),
           ),
         ),
-        
-        const SizedBox(height: 24),
-        
+
+        const SizedBox(height: 16),
+
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -638,12 +738,15 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                               color: _speechListening ? Colors.green : Colors.grey,
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              _speechListening ? 'LISTENING CONTINUOUSLY' : 'Starting...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: _speechListening ? Colors.green : Colors.grey,
+                            Flexible(
+                              child: Text(
+                                _speechListening ? 'LISTENING CONTINUOUSLY' : 'Starting...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: _speechListening ? Colors.green : Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -651,7 +754,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                         const SizedBox(height: 12),
                         Text(
                           _speechListening
-                            ? 'Speak naturally - name animals as they come to mind'
+                            ? _getCategoryPrompt()
                             : 'Initializing speech recognition...',
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 14),
@@ -722,13 +825,13 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Animals Named (${_enteredWords.length})',
+                  '$_selectedCategory (${_enteredWords.length})',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
                 if (_enteredWords.isEmpty)
                   const Text(
-                    'No animals entered yet',
+                    'No words entered yet',
                     style: TextStyle(color: Colors.grey),
                   )
                 else
@@ -807,7 +910,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                         ),
                       ),
                       Text(
-                        'valid animals',
+                        'valid words',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 8),
@@ -836,7 +939,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Valid Animals (${_validWords.length})',
+                  'Valid Words (${_validWords.length})',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
@@ -911,8 +1014,9 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Reset and restart test
+                  // Reset and restart test with new random category
                   setState(() {
+                    _selectedCategory = _categories[DateTime.now().millisecondsSinceEpoch % _categories.length];
                     _testStarted = false;
                     _testCompleted = false;
                     _enteredWords.clear();
@@ -921,6 +1025,7 @@ class _FluencyTestScreenState extends ConsumerState<FluencyTestScreen> {
                     _remainingSeconds = 60;
                   });
                   _textController.clear();
+                  print('=== FLUENCY TEST: New random category selected: $_selectedCategory ===');
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try Again'),

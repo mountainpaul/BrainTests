@@ -38,7 +38,7 @@ class CambridgeTestGenerator {
     final numDigits = (durationSeconds / 0.6).round();
 
     // Target sequences: 3-5-7 and 2-4-6
-    // CANTAB typically has 8-16 targets per 7-minute test
+    // Typically has 8-16 targets per 7-minute test
     // We'll aim for ~12 targets (mix of both sequences)
     final targetCount = (durationSeconds / 35).round(); // ~12 for 420s
 
@@ -279,7 +279,7 @@ class CambridgeTestGenerator {
   }
 
   static PRMPattern _generateAbstractPattern(int seed) {
-    // Generate abstract CANTAB-style pattern using TRUE random (not seeded)
+    // Generate abstract pattern using TRUE random (not seeded)
     // This ensures patterns are different each time, preventing memorization
     // Total combinations: 12 patterns × 20 colors × 5 variations = 1,200 unique patterns
     return PRMPattern(

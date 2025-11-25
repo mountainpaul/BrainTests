@@ -8,7 +8,9 @@ import '../../core/services/notification_service.dart';
 import '../../core/services/pdf_service.dart';
 import '../providers/assessment_provider.dart';
 import '../providers/cambridge_assessment_provider.dart';
+import '../providers/cognitive_activity_provider.dart';
 import '../providers/cognitive_exercise_provider.dart';
+import '../providers/daily_goals_provider.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/custom_card.dart';
 
@@ -37,6 +39,7 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _buildSettingsSection(context, [
               _buildAccountTile(context, ref),
+              _buildImportFromCloudTile(context, ref),
             ]),
 
             const SizedBox(height: 24),
@@ -154,6 +157,100 @@ class SettingsScreen extends ConsumerWidget {
       ),
       error: (_, __) => const ListTile(title: Text('Error loading account status')),
     );
+  }
+
+  Widget _buildImportFromCloudTile(BuildContext context, WidgetRef ref) {
+    final userEmailAsync = ref.watch(currentUserEmailProvider);
+    final supabaseService = ref.read(supabaseServiceProvider);
+
+    return userEmailAsync.when(
+      data: (email) {
+        final isSignedIn = email != null;
+        if (!isSignedIn) {
+          return const SizedBox.shrink(); // Hide if not signed in
+        }
+        return ListTile(
+          leading: const Icon(Icons.cloud_download),
+          title: const Text('Import from Cloud'),
+          subtitle: const Text('Download your data from Supabase'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () => _showImportDialog(context, ref, supabaseService),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Future<void> _showImportDialog(BuildContext context, WidgetRef ref, dynamic supabaseService) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import from Cloud'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('This will download your data from Supabase and merge it with your local data.'),
+            SizedBox(height: 12),
+            Text(
+              'Existing local data with the same ID will be updated. New data will be added.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.cloud_download),
+            label: const Text('Import'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Importing data from cloud...')),
+      );
+
+      try {
+        await supabaseService.fetchRemoteData();
+
+        // Refresh all providers to show new data
+        ref.invalidate(assessmentsProvider);
+        ref.invalidate(recentAssessmentsProvider);
+        ref.invalidate(cambridgeAssessmentProvider);
+        ref.invalidate(cognitiveExercisesProvider);
+        ref.invalidate(completedExercisesProvider);
+        ref.invalidate(recentCognitiveActivityProvider);
+        ref.invalidate(weeklyMCITestCountProvider);
+        ref.invalidate(todayGoalProvider);
+        ref.invalidate(currentStreakProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Data imported successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import failed: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildSettingsTile(
@@ -395,7 +492,7 @@ class SettingsScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Debug Info'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -406,11 +503,46 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             const Text('Supabase Auth:', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(supabaseStatus),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            const Text('Recovery Tools:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.sync),
+              label: const Text('Force Sync Cambridge'),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Force syncing Cambridge assessments...')),
+                );
+                try {
+                  await supabaseService.forceSyncAllCambridgeAssessments();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Cambridge assessments synced successfully!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sync failed: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Close'),
           ),
         ],

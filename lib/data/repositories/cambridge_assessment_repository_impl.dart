@@ -52,6 +52,7 @@ class CambridgeAssessmentRepositoryImpl implements CambridgeAssessmentRepository
       case CambridgeTestType.mot:
       case CambridgeTestType.ied:
       case CambridgeTestType.sst:
+      case CambridgeTestType.avlt:
         return database.CambridgeTestType.pal; // Fallback
     }
   }

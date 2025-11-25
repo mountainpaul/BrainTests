@@ -524,12 +524,15 @@ class _LanguageSkillsTestScreenState extends ConsumerState<LanguageSkillsTestScr
                               color: _speechListening ? Colors.green : Colors.grey,
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              _speechListening ? 'LISTENING CONTINUOUSLY' : 'Starting...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: _speechListening ? Colors.green : Colors.grey,
+                            Flexible(
+                              child: Text(
+                                _speechListening ? 'LISTENING CONTINUOUSLY' : 'Starting...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: _speechListening ? Colors.green : Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

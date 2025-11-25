@@ -1,4 +1,5 @@
-import 'package:brain_tests/data/datasources/database.dart';
+import 'package:brain_tests/data/datasources/database.dart' as db;
+import 'package:brain_tests/domain/entities/cambridge_assessment.dart';
 import 'package:brain_tests/domain/models/block_3d_shape.dart';
 import 'package:brain_tests/presentation/screens/mental_rotation_test_screen.dart';
 import 'package:brain_tests/presentation/widgets/custom_card.dart';
@@ -24,6 +25,19 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
             _buildHeader(context),
             const SizedBox(height: 24),
             _buildPALTestSection(context),
+            const SizedBox(height: 16),
+            _buildTestCard(
+              context,
+              testType: CambridgeTestType.avlt,
+              title: 'AVLT - Audio Verbal Learning Test',
+              subtitle: 'Verbal episodic memory',
+              description: 'Listen to 5 words and recall them immediately (3 trials) and after a 5-minute delay. Tests verbal memory and learning.',
+              duration: '~10 min',
+              icon: Icons.hearing,
+              color: Colors.pink,
+              sensitivity: 'Verbal memory',
+              route: '/cambridge/avlt',
+            ),
             const SizedBox(height: 16),
             _buildTestCard(
               context,
@@ -319,7 +333,7 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
       icon: Icons.view_carousel,
       color: Colors.purple,
       sensitivity: 'Visual memory',
-      route: '/cambridge/cantab-pal', // Direct link to PAL test
+      route: '/cambridge/pal', // Direct link to PAL test
     );
   }
 

@@ -4,7 +4,7 @@ import 'dart:math' as dart_math;
 
 import 'package:brain_tests/domain/entities/cambridge_assessment.dart';
 import 'package:brain_tests/presentation/providers/cambridge_assessment_provider.dart';
-import 'package:brain_tests/presentation/screens/cambridge/cantab_pal_config.dart';
+import 'package:brain_tests/presentation/screens/cambridge/pal_config.dart';
 import 'package:brain_tests/presentation/screens/cambridge/pal_box_layout.dart';
 import 'package:brain_tests/presentation/widgets/custom_card.dart';
 import 'package:flutter/material.dart';
@@ -28,23 +28,23 @@ enum BoxDisplayMode {
   sequential,    // Show one box at a time during presentation/reopen
 }
 
-class CANTABPALTestScreen extends ConsumerStatefulWidget {
-  const CANTABPALTestScreen({super.key});
+class PALTestScreen extends ConsumerStatefulWidget {
+  const PALTestScreen({super.key});
 
   @override
-  ConsumerState<CANTABPALTestScreen> createState() => _CANTABPALTestScreenState();
+  ConsumerState<PALTestScreen> createState() => _PALTestScreenState();
 }
 
-class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
+class _PALTestScreenState extends ConsumerState<PALTestScreen> {
   // P2 Fix: Use centralized configuration (no instantiation needed - all static)
 
   // Test state
-  CANTABPALPhase _phase = CANTABPALPhase.introduction;
+  PALPhase _phase = PALPhase.introduction;
   int _currentStageIndex = 0; // 0-6 for the 7 stages
   int _currentAttemptInStage = 0; // Total attempts at current stage
   int _failedAttemptsInStage = 0; // Failed attempts at current stage (for termination)
 
-  // Pattern display - CANTAB uses abstract patterns from image files
+  // Pattern display - uses abstract patterns from image files
   // Using pre-designed abstract patterns from assets/patterns/
   final List<String> _patternImages = [
     'assets/patterns/abs1.png',
@@ -73,7 +73,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   int _currentPatternBeingRecalled = -1; // Which pattern index user is placing
   List<int> _patternRecallOrder = []; // Order in which to recall patterns
 
-  // Scoring - CANTAB standard metrics
+  // Scoring - standard metrics
   int _firstAttemptMemoryScore = 0; // Correct on first attempt
   int _totalErrorsAdjusted = 0; // Errors accounting for stage difficulty
   final List<int> _errorsPerStage = [0, 0, 0, 0, 0]; // 5 stages
@@ -94,14 +94,14 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     super.dispose();
   }
 
-  int get _currentPatternCount => CANTABPALConfig.getPatternCountForStage(_currentStageIndex);
+  int get _currentPatternCount => PALConfig.getPatternCountForStage(_currentStageIndex);
 
   void _startTest() {
     setState(() {
       _currentStageIndex = 0;
       _currentAttemptInStage = 0;
       _failedAttemptsInStage = 0;
-      _phase = CANTABPALPhase.presentation;
+      _phase = PALPhase.presentation;
     });
     _generateAttempt();
   }
@@ -124,7 +124,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     }
 
     // Create random order for opening boxes (ONLY boxes with patterns, not all boxes)
-    // This follows CANTAB protocol: only show boxes that contain patterns
+    // Only show boxes that contain patterns
     final boxOpenOrder = List<int>.from(selectedPositions)..shuffle();
 
     // Create random order for recalling patterns
@@ -134,7 +134,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _currentPatternMap = patternMap;
       _userAnswers.clear();
       _showingPatterns = true;
-      _phase = CANTABPALPhase.presentation;
+      _phase = PALPhase.presentation;
 
       // Initialize sequential presentation
       _boxOpenSequence = boxOpenOrder;
@@ -158,14 +158,14 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     if (_sequenceIndex >= _boxOpenSequence.length) {
       // P1 Fix: Safety check for empty pattern recall order
       if (_patternRecallOrder.isEmpty) {
-        debugPrint('CANTAB_PAL Error: Empty pattern recall order');
+        debugPrint('PAL Error: Empty pattern recall order');
         return;
       }
 
       // All boxes have been shown, transition to recall
       setState(() {
         _showingPatterns = false;
-        _phase = CANTABPALPhase.recall;
+        _phase = PALPhase.recall;
         _currentPatternBeingRecalled = _patternRecallOrder[0]; // Start with first pattern
       });
       return;
@@ -176,9 +176,9 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _currentBoxIndex = _boxOpenSequence[_sequenceIndex];
     });
 
-    // Show this box for configured duration (CANTAB standard: 3 seconds)
+    // Show this box for configured duration (3 seconds)
     _displayTimer?.cancel();
-    _displayTimer = Timer(CANTABPALConfig.boxDisplayDuration, () {
+    _displayTimer = Timer(PALConfig.boxDisplayDuration, () {
       if (_isDisposed || !mounted) return;
       _sequenceIndex++;
       _showNextBox(); // Move to next box
@@ -186,15 +186,15 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   void _handleBoxSelection(int boxPosition) {
-    if (_phase != CANTABPALPhase.recall) return;
+    if (_phase != PALPhase.recall) return;
     if (_currentPatternBeingRecalled < 0) return;
 
     // P1 Fix: Input validation for box position
     assert(boxPosition >= 0 && boxPosition < 10,
-           'CANTAB_PAL: Invalid box position: $boxPosition. Must be 0-9.');
+           'PAL: Invalid box position: $boxPosition. Must be 0-9.');
 
     if (boxPosition < 0 || boxPosition >= 10) {
-      debugPrint('CANTAB_PAL Error: Invalid box position: $boxPosition');
+      debugPrint('PAL Error: Invalid box position: $boxPosition');
       return;
     }
 
@@ -219,7 +219,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   void _checkAnswers() {
     // P0 Fix: Add null safety check
     if (_currentPatternMap == null) {
-      debugPrint('CANTAB_PAL Error: _currentPatternMap is null in _checkAnswers');
+      debugPrint('PAL Error: _currentPatternMap is null in _checkAnswers');
       return;
     }
 
@@ -248,7 +248,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _errorsPerStage[_currentStageIndex] = _currentStageErrors;
 
       // Advance to next stage
-      Timer(CANTABPALConfig.stageTransitionDelay, () {
+      Timer(PALConfig.stageTransitionDelay, () {
         if (!mounted) return;
         _advanceToNextStage();
       });
@@ -262,7 +262,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       _failedAttemptsInStage++;
 
       // Check if exceeded 3 failed attempts
-      if (_failedAttemptsInStage >= CANTABPALConfig.maxFailedAttempts) {
+      if (_failedAttemptsInStage >= PALConfig.maxFailedAttempts) {
         // Failed stage - test ends
         _stageResults.add(false);
         _errorsPerStage[_currentStageIndex] = _currentStageErrors;
@@ -270,7 +270,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
       } else {
         // Show patterns again in boxes (re-open) before retry
         _showFeedback(false, correctCount);
-        Timer(CANTABPALConfig.feedbackDuration, () {
+        Timer(PALConfig.feedbackDuration, () {
           if (!mounted) return;
           _reopenBoxesToShowPatterns();
         });
@@ -279,10 +279,10 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   void _reopenBoxesToShowPatterns() {
-    // CANTAB protocol: Boxes re-open sequentially (not all at once)
+    // Boxes re-open sequentially (not all at once)
     // to remind participant of pattern locations before retry
     setState(() {
-      _phase = CANTABPALPhase.presentation;
+      _phase = PALPhase.presentation;
       _showingPatterns = true;
       _boxDisplayMode = BoxDisplayMode.sequential;
       _sequenceIndex = 0;
@@ -295,7 +295,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   void _advanceToNextStage() {
-    if (_currentStageIndex >= CANTABPALConfig.totalStages - 1) {
+    if (_currentStageIndex >= PALConfig.totalStages - 1) {
       // Completed all stages!
       _completeTest();
       return;
@@ -320,7 +320,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: CANTABPALConfig.feedbackDuration,
+        duration: PALConfig.feedbackDuration,
         backgroundColor: success ? Colors.green : Colors.orange,
       ),
     );
@@ -329,20 +329,20 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   void _completeTest() {
     final duration = DateTime.now().difference(_testStartTime);
     final stagesCompleted = _stageResults.where((r) => r).length;
-    final accuracy = stagesCompleted / CANTABPALConfig.totalStages * 100;
+    final accuracy = stagesCompleted / PALConfig.totalStages * 100;
 
     // Save results BEFORE changing phase to avoid ref disposal issues
     _saveResults(duration, accuracy, stagesCompleted);
 
     setState(() {
-      _phase = CANTABPALPhase.results;
+      _phase = PALPhase.results;
     });
   }
 
   Future<void> _saveResults(Duration duration, double accuracy, int stagesCompleted) async {
     // Check if still mounted before accessing ref
     if (!mounted) {
-      debugPrint('CANTAB_PAL: Not mounted, skipping save');
+      debugPrint('PAL: Not mounted, skipping save');
       return;
     }
 
@@ -355,7 +355,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         'totalErrorsAdjusted': _totalErrorsAdjusted,
         'errorsPerStage': _errorsPerStage,
         'stageResults': _stageResults,
-        'testType': 'CANTAB-PAL',
+        'testType': 'PAL',
       };
 
       final result = CambridgeAssessmentResult(
@@ -369,12 +369,12 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         meanLatencyMs: 0.0,
         medianLatencyMs: 0.0,
         specificMetrics: detailedMetrics,
-        normScore: CANTABPALConfig.calculateNormScore(stagesCompleted, _firstAttemptMemoryScore),
-        interpretation: CANTABPALConfig.getInterpretation(stagesCompleted, _totalErrorsAdjusted),
+        normScore: PALConfig.calculateNormScore(stagesCompleted, _firstAttemptMemoryScore),
+        interpretation: PALConfig.getInterpretation(stagesCompleted, _totalErrorsAdjusted),
       );
 
       await notifier.addAssessment(result);
-      debugPrint('CANTAB_PAL: Results saved successfully');
+      debugPrint('PAL: Results saved successfully');
 
       // Show success message
       if (mounted && context.mounted) {
@@ -387,7 +387,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
         );
       }
     } catch (e, stackTrace) {
-      debugPrint('CANTAB_PAL Error: Failed to save results: $e');
+      debugPrint('PAL Error: Failed to save results: $e');
       debugPrint('Stack trace: $stackTrace');
 
       // Show user-friendly error message
@@ -404,7 +404,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   // P2 Fix: Removed _calculateNormScore and _getInterpretation methods
-  // These are now handled by CANTABPALConfig for better maintainability
+  // These are now handled by PALConfig for better maintainability
 
   @override
   Widget build(BuildContext context) {
@@ -419,13 +419,13 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
 
   Widget _buildPhaseContent() {
     switch (_phase) {
-      case CANTABPALPhase.introduction:
+      case PALPhase.introduction:
         return _buildIntroduction();
-      case CANTABPALPhase.presentation:
+      case PALPhase.presentation:
         return _buildPresentation();
-      case CANTABPALPhase.recall:
+      case PALPhase.recall:
         return _buildRecall();
-      case CANTABPALPhase.results:
+      case PALPhase.results:
         return _buildResults();
     }
   }
@@ -446,7 +446,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                         const Icon(Icons.psychology, size: 64, color: Colors.deepPurple),
                         const SizedBox(height: 16),
                         Text(
-                          'CANTAB PAL Test',
+                          'PAL Test',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -454,7 +454,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Cambridge Cognition validated protocol for visual episodic memory',
+                          'Paired Associates Learning - Visual episodic memory assessment',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -511,7 +511,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'You have up to ${CANTABPALConfig.maxFailedAttempts} attempts per stage. Test ends if a stage isn\'t completed.',
+                                'You have up to ${PALConfig.maxFailedAttempts} attempts per stage. Test ends if a stage isn\'t completed.',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
@@ -524,7 +524,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Duration: ~${CANTABPALConfig.estimatedDuration} depending on performance',
+                                'Duration: ~${PALConfig.estimatedDuration} depending on performance',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
@@ -547,7 +547,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                 padding: const EdgeInsets.all(16),
               ),
               child: const Text(
-                'Start CANTAB PAL Test',
+                'Start PAL Test',
                 style: TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
@@ -629,7 +629,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                 Row(
                   children: [
                     Text(
-                      'Attempt $_currentAttemptInStage of ${CANTABPALConfig.maxFailedAttempts}',
+                      'Attempt $_currentAttemptInStage of ${PALConfig.maxFailedAttempts}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const Spacer(),
@@ -685,7 +685,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Stage ${_currentStageIndex + 1} of ${CANTABPALConfig.totalStages}',
+                  'Stage ${_currentStageIndex + 1} of ${PALConfig.totalStages}',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -824,7 +824,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
   }
 
   Widget _buildBoxGrid({required bool showPatterns}) {
-    final layout = CANTABPALConfig.getLayoutForStage(_currentStageIndex);
+    final layout = PALConfig.getLayoutForStage(_currentStageIndex);
     final patternCount = _currentPatternCount;
     const boxSize = 80.0;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -890,7 +890,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _phase == CANTABPALPhase.recall ? () {
+        onTap: _phase == PALPhase.recall ? () {
           // User selects this box for the current pattern
           _handleBoxSelection(boxIndex);
         } : null,
@@ -902,8 +902,8 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _phase == CANTABPALPhase.recall ? Colors.blue[400]! : Colors.grey[400]!,
-              width: _phase == CANTABPALPhase.recall ? 2 : 1,
+              color: _phase == PALPhase.recall ? Colors.blue[400]! : Colors.grey[400]!,
+              width: _phase == PALPhase.recall ? 2 : 1,
             ),
             boxShadow: const [
               BoxShadow(
@@ -923,7 +923,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
 
   Widget _buildResults() {
     final stagesCompleted = _stageResults.where((r) => r).length;
-    final accuracy = (stagesCompleted / CANTABPALConfig.totalStages * 100);
+    final accuracy = (stagesCompleted / PALConfig.totalStages * 100);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -972,7 +972,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          CANTABPALConfig.getInterpretation(stagesCompleted, _totalErrorsAdjusted),
+                          PALConfig.getInterpretation(stagesCompleted, _totalErrorsAdjusted),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
@@ -988,7 +988,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                             const Icon(Icons.science, color: Colors.deepPurple, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              'CANTAB Standard Metrics',
+                              'Standard Metrics',
                               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -999,7 +999,7 @@ class _CANTABPALTestScreenState extends ConsumerState<CANTABPALTestScreen> {
                         ..._errorsPerStage.asMap().entries.map((entry) {
                           final stageIndex = entry.key;
                           final errors = entry.value;
-                          final patternCount = CANTABPALConfig.getPatternCountForStage(stageIndex);
+                          final patternCount = PALConfig.getPatternCountForStage(stageIndex);
                           final completed = stageIndex < _stageResults.length && _stageResults[stageIndex];
 
                           return Padding(
@@ -1300,7 +1300,7 @@ class ComplexPatternPainter extends CustomPainter {
       patternIndex != oldDelegate.patternIndex || colors != oldDelegate.colors;
 }
 
-enum CANTABPALPhase {
+enum PALPhase {
   introduction,
   presentation,
   recall,

@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/word_lists/word_list_manager.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/entities/assessment.dart';
 import '../providers/assessment_provider.dart';
@@ -28,38 +28,46 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
   bool _testCompleted = false;
   
   // Timing
-  int _remainingSeconds = 20; // Study phase: 20 seconds
+  int _remainingSeconds = 15; // Study phase: 15 seconds (sequential display)
   final int _delaySeconds = 300; // 5-minute delay
+
+  // Sequential word display state
+  int _currentWordIndex = 0; // Which word is being shown (0-4)
+  bool _showingWord = true; // True: showing word, False: showing blank
+  int _phaseSecondsRemaining = 2; // Seconds remaining in current phase (2 for word, 1 for blank)
   
   // Test data
   List<String> _testWords = [];
   List<String> _immediateRecall = [];
   List<String> _delayedRecall = [];
-  
+
   // Input controllers
   final List<TextEditingController> _immediateControllers = [];
   final List<TextEditingController> _delayedControllers = [];
-  
+
   // Scoring
   int _immediateScore = 0;
   int _delayedScore = 0;
-  
-  static const List<List<String>> wordLists = [
-    ['FACE', 'VELVET', 'CHURCH', 'DAISY', 'RED'],
-    ['VILLAGE', 'KITCHEN', 'BABY', 'TABLE', 'RIVER'],
-    ['CAPTAIN', 'HONEY', 'LION', 'PENCIL', 'CARPET'],
-    ['LETTER', 'QUEEN', 'CORNER', 'CABBAGE', 'TRAIN'],
-    ['MOUNTAIN', 'GLASSES', 'TOWEL', 'CLOUD', 'BOAT'],
-  ];
+
+  // Word list manager
+  final WordListManager _wordListManager = WordListManager();
 
   @override
   void initState() {
     super.initState();
-    _selectRandomWordList();
+    _loadWordList();
     for (int i = 0; i < 5; i++) {
       _immediateControllers.add(TextEditingController());
       _delayedControllers.add(TextEditingController());
     }
+  }
+
+  Future<void> _loadWordList() async {
+    await _wordListManager.initialize();
+    final wordList = await _wordListManager.getNextWordList();
+    setState(() {
+      _testWords = wordList;
+    });
   }
 
   @override
@@ -74,22 +82,40 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
     super.dispose();
   }
 
-  void _selectRandomWordList() {
-    final random = Random();
-    _testWords = wordLists[random.nextInt(wordLists.length)];
-  }
-
   void _startTest() {
     setState(() {
       _testStarted = true;
-      _remainingSeconds = 20;
+      _remainingSeconds = 15;
+      _currentWordIndex = 0;
+      _showingWord = true;
+      _phaseSecondsRemaining = 2; // Start with 2 seconds for first word
     });
-    
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _remainingSeconds--;
+        _phaseSecondsRemaining--;
       });
-      
+
+      // Check if current phase (word or blank) is complete
+      if (_phaseSecondsRemaining <= 0) {
+        if (_showingWord) {
+          // Just finished showing a word, now show blank (if not last word)
+          if (_currentWordIndex < 4) {
+            _showingWord = false;
+            _phaseSecondsRemaining = 1; // Blank for 1 second
+          } else {
+            // Last word just finished, complete study phase
+            _completeStudyPhase();
+          }
+        } else {
+          // Just finished showing blank, move to next word
+          _currentWordIndex++;
+          _showingWord = true;
+          _phaseSecondsRemaining = 2; // Show word for 2 seconds
+        }
+      }
+
       if (_remainingSeconds <= 0) {
         _completeStudyPhase();
       }
@@ -283,7 +309,7 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
-                _buildPhaseStep('1', 'Study Phase', '20 seconds to memorize 5 words'),
+                _buildPhaseStep('1', 'Study Phase', '15 seconds - words shown one at a time'),
                 _buildPhaseStep('2', 'Immediate Recall', 'Write down the 5 words immediately'),
                 _buildPhaseStep('3', 'Delay Period', '5-minute break (distraction-free)'),
                 _buildPhaseStep('4', 'Delayed Recall', 'Write down the 5 words again'),
@@ -415,40 +441,49 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
             ],
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         CustomCard(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
                 Text(
-                  'Memorize These 5 Words',
+                  'Word ${_currentWordIndex + 1} of 5',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 24),
-                for (int i = 0; i < _testWords.length; i++) ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                    ),
-                    child: Text(
-                      _testWords[i],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
+                // Show either the current word or blank screen
+                Container(
+                  width: double.infinity,
+                  height: 150,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _showingWord
+                        ? Colors.blue.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _showingWord
+                          ? Colors.blue.withOpacity(0.3)
+                          : Colors.grey.withOpacity(0.3),
                     ),
                   ),
-                ],
+                  child: Center(
+                    child: _showingWord && _currentWordIndex < _testWords.length
+                        ? Text(
+                            _testWords[_currentWordIndex],
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
+                          )
+                        : const SizedBox.shrink(), // Blank screen
+                  ),
+                ),
               ],
             ),
           ),
@@ -823,9 +858,12 @@ class _FiveWordRecallTestScreenState extends ConsumerState<FiveWordRecallTestScr
                     _delayedRecall.clear();
                     _immediateScore = 0;
                     _delayedScore = 0;
-                    _remainingSeconds = 20;
+                    _remainingSeconds = 15;
+                    _currentWordIndex = 0;
+                    _showingWord = true;
+                    _phaseSecondsRemaining = 2;
                   });
-                  _selectRandomWordList();
+                  _loadWordList();
                   for (final controller in _immediateControllers) {
                     controller.clear();
                   }

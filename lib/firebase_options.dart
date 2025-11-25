@@ -111,11 +111,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'your-android-api-key',
-    appId: '1:123456789:android:abcdef123456',
-    messagingSenderId: '123456789',
-    projectId: 'your-firebase-project-id',
-    storageBucket: 'your-firebase-project-id.appspot.com',
+    apiKey: 'AIzaSyD-DVlz09MLd4iND0i-Y1UQb08VYZr-nMw',
+    appId: '1:40070537616:android:88475f15a9940f2f111315',
+    messagingSenderId: '40070537616',
+    projectId: 'spanishtutorapp',
+    storageBucket: 'spanishtutorapp.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

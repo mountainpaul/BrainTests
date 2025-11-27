@@ -28,6 +28,7 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
   GoogleCloudSpeechService? _cloudSpeech;
   final WordListManager _wordListManager = WordListManager();
   StreamSubscription<SpeechRecognitionResult>? _cloudSpeechSubscription;
+  Timer? _delayTimer;
 
   // Test state
   TestPhase _currentPhase = TestPhase.instructions;
@@ -59,6 +60,7 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
     _ttsService.dispose();
     _cloudSpeechSubscription?.cancel();
     _cloudSpeech?.dispose();
+    _delayTimer?.cancel();
     super.dispose();
   }
 
@@ -335,11 +337,27 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
       _isProcessing = false;
     });
 
-    // Start 5-minute timer
-    Timer(const Duration(minutes: 5), () {
-      if (mounted && _currentPhase == TestPhase.delay) {
-        _nextPhase();
+    // Start 5-minute timer with periodic updates
+    _delayTimer?.cancel();
+    _delayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
       }
+
+      if (_currentPhase != TestPhase.delay) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        // Rebuild to update timer display
+        final elapsed = DateTime.now().difference(_delayStartTime!);
+        if (elapsed.inMinutes >= 5) {
+          timer.cancel();
+          _nextPhase();
+        }
+      });
     });
   }
 
@@ -353,6 +371,12 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
       _currentUserWords = [];
       _currentRecognizedText = '';
     });
+
+    // Speak the recall prompt
+    await _ttsService.speakWord('Please recall the 5 words you were given.');
+
+    // Small delay after speaking
+    await Future.delayed(const Duration(milliseconds: 500));
 
     // Start listening with Google Cloud Speech
     if (!mounted) return;
@@ -488,14 +512,14 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.teal.shade50,
+        color: Colors.teal, // Dark background
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
           Icon(
             _getPhaseIcon(),
-            color: Colors.teal,
+            color: Colors.white, // White icon
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -504,6 +528,7 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: Colors.white, // White text
               ),
             ),
           ),
@@ -581,7 +606,7 @@ class _AVLTTestScreenState extends State<AVLTTestScreen> {
           ),
           _buildInstructionStep(
             '4',
-            'After a 5-minute break, you\'ll be asked to recall the words one final time',
+            'After a 5-minute break, you\'ll be asked to recall the words one final time. A notification will prompt you.',
           ),
           const SizedBox(height: 24),
           Container(

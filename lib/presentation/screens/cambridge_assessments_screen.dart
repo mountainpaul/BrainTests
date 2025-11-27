@@ -31,7 +31,7 @@ class CambridgeAssessmentsScreen extends ConsumerWidget {
               testType: CambridgeTestType.avlt,
               title: 'AVLT - Audio Verbal Learning Test',
               subtitle: 'Verbal episodic memory',
-              description: 'Listen to 5 words and recall them immediately (3 trials) and after a 5-minute delay. Tests verbal memory and learning.',
+              description: 'Listen to 5 words and recall them immediately, then recall them again after a 5-minute delay. Tests verbal memory and learning.',
               duration: '~10 min',
               icon: Icons.hearing,
               color: Colors.pink,

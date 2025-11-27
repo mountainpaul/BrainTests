@@ -24,9 +24,16 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
 
   SWMTrial? _currentTrial;
   final List<int> _searchSequence = []; // Complete search history for metrics
-  final Set<int> _searchedBoxes = {}; // Track which boxes have been searched (no visual cue)
   final List<int> _collectedTokens = []; // Tokens collected (for UI display)
   final Set<int> _openedBoxes = {}; // Boxes currently being displayed
+  final Map<int, bool> _openBoxStatus = {}; // Status of open boxes (true=Star/Success, false=X/Error/Empty)
+
+  // New State for sequential logic
+  int _currentTokenIndex = 0; // Which token in the sequence we are looking for
+  final Set<int> _foundBoxes = {}; // Boxes that have already yielded a token (don't go back!)
+  final Set<int> _currentSearchVisited = {}; // Boxes visited in CURRENT search (don't revisit!)
+  int _stageBetweenErrors = 0; // Re-visiting box in same search
+  int _stageWithinErrors = 0;  // Re-visiting box that already had token
 
   final List<SWMResult> _results = [];
   Timer? _animationTimer;
@@ -56,9 +63,16 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
 
     setState(() {
       _searchSequence.clear();
-      _searchedBoxes.clear();
       _collectedTokens.clear();
       _openedBoxes.clear();
+      _openBoxStatus.clear();
+
+      // Reset sequential logic state
+      _currentTokenIndex = 0;
+      _foundBoxes.clear();
+      _currentSearchVisited.clear();
+      _stageBetweenErrors = 0;
+      _stageWithinErrors = 0;
     });
   }
 
@@ -66,19 +80,47 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
     if (_phase != SWMPhase.testing) return;
     if (_openedBoxes.contains(position)) return; // Currently being displayed
 
-    // Record the search
     _searchSequence.add(position);
-    _searchedBoxes.add(position);
 
-    // Check if this box contains a token
-    final hasToken = _currentTrial!.tokenPositions.contains(position);
+    bool isError = false;
+    bool isFound = false;
 
-    // Show the box contents temporarily
+    // Check for Within Error (Double Error) - Re-visiting a box that already had a token
+    if (_foundBoxes.contains(position)) {
+      _stageWithinErrors++;
+      isError = true;
+    }
+    // Check for Between Error - Re-visiting a box in the current search sequence
+    else if (_currentSearchVisited.contains(position)) {
+      _stageBetweenErrors++;
+      isError = true;
+    } else {
+      // Valid search move
+      _currentSearchVisited.add(position);
+    }
+
+    if (!isError) {
+      // Check if this box contains the CURRENT target token
+      // The token is ONLY in one specific box at a time, defined by the sequence
+      if (_currentTrial != null && position == _currentTrial!.tokenPositions[_currentTokenIndex]) {
+        isFound = true;
+      }
+    }
+
     setState(() {
       _openedBoxes.add(position);
+      _openBoxStatus[position] = isFound; // True = Star, False = X
 
-      if (hasToken) {
+      if (isFound) {
         _collectedTokens.add(position);
+        _foundBoxes.add(position);
+
+        // SUCCESS! Token found.
+        // Reset for next search:
+        // 1. Clear visited history for the *next* search (new search starts now)
+        // 2. Advance index to look for next token
+        _currentSearchVisited.clear();
+        _currentTokenIndex++;
       }
     });
 
@@ -87,6 +129,7 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
     _animationTimer = Timer(const Duration(milliseconds: 500), () {
       setState(() {
         _openedBoxes.remove(position);
+        _openBoxStatus.remove(position);
 
         // Check if all tokens found
         if (_collectedTokens.length == _currentTrial!.tokensToFind) {
@@ -98,13 +141,13 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
 
   void _completeStage() {
     // Calculate metrics for this stage
-    final betweenErrors = _calculateBetweenErrors();
+    // Use the tracked errors instead of recalculating
     final strategyScore = _calculateStrategyScore();
 
     _results.add(SWMResult(
       stage: _currentStage + 1,
       numBoxes: _stages[_currentStage],
-      betweenErrors: betweenErrors,
+      betweenErrors: _stageBetweenErrors, // Use tracked errors
       strategyScore: strategyScore,
       totalSearches: _searchSequence.length,
     ));
@@ -118,21 +161,6 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
     } else {
       _completeTest();
     }
-  }
-
-  int _calculateBetweenErrors() {
-    // Count revisits to boxes already searched
-    int errors = 0;
-    final searched = <int>{};
-
-    for (final pos in _searchSequence) {
-      if (searched.contains(pos)) {
-        errors++; // Revisited a box
-      }
-      searched.add(pos);
-    }
-
-    return errors;
   }
 
   double _calculateStrategyScore() {
@@ -292,12 +320,11 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     '• Search for tokens hidden in boxes\n'
-                    '• NOT every box contains a token\n'
-                    '• Find tokens by process of elimination\n'
-                    '• Tokens will fill the column on the right\n'
-                    '• Remember which boxes you have already searched\n'
-                    '• Use a systematic search strategy\n'
-                    '• Progress through stages with more boxes (3, 4, 6, 8)',
+                    '• Find tokens one by one to fill the column\n'
+                    '• CRITICAL: Once a token is found in a box, that box will NOT be used again in this trial\n'
+                    '• Do not search boxes that have already given you a token\n'
+                    '• Avoid searching the same empty box twice while looking for a token\n'
+                    '• Use a systematic search strategy to avoid errors',
                     style: TextStyle(fontSize: 16, height: 1.5),
                   ),
                 ],
@@ -393,51 +420,77 @@ class _SWMTestScreenState extends ConsumerState<SWMTestScreen> {
   }
 
   Widget _buildBoxGrid() {
-    final numBoxes = _currentTrial!.numBoxes;
+    // Fixed "random" positions (x, y relative 0.0-1.0)
+    // These ensure boxes don't overlap and look scattered like the original SWM test
+    final List<Offset> slotPositions = [
+      const Offset(0.15, 0.10), // Top Left
+      const Offset(0.75, 0.15), // Top Right
+      const Offset(0.45, 0.30), // Upper Middle
+      const Offset(0.10, 0.45), // Middle Left
+      const Offset(0.85, 0.50), // Middle Right
+      const Offset(0.30, 0.65), // Bottom Left
+      const Offset(0.60, 0.80), // Bottom Center
+      const Offset(0.80, 0.25), // High Right
+    ];
 
-    // Determine grid layout based on number of boxes
-    final boxSize = numBoxes <= 4 ? 120.0 : 100.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
 
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      alignment: WrapAlignment.center,
-      children: _currentTrial!.boxPositions.map((position) {
-        final isCurrentlyOpen = _openedBoxes.contains(position);
-        final hasToken = _currentTrial!.tokenPositions.contains(position);
-        final showToken = isCurrentlyOpen && hasToken;
-        final showEmpty = isCurrentlyOpen && !hasToken;
+        // Dynamic box size: make them large enough but ensure they don't overlap
+        // Use the smaller dimension to guide size
+        final minDim = width < height ? width : height;
+        final boxSize = minDim / 55; // Reduced to 1/10th of original size
 
-        // Visual states:
-        // 1. Yellow with star = currently showing token
-        // 2. Red with X = currently showing empty
-        // 3. Purple = closed (all boxes look the same when closed - user must remember!)
+        return Stack(
+          children: _currentTrial!.boxPositions.map((position) {
+            // Map position index (0-7) to a coordinate slot
+            final slotIndex = position % slotPositions.length;
+            final relPos = slotPositions[slotIndex];
 
-        return GestureDetector(
-          onTap: () => _handleBoxTap(position),
-          child: Container(
-            width: boxSize,
-            height: boxSize,
-            decoration: BoxDecoration(
-              color: isCurrentlyOpen
-                  ? (hasToken ? Colors.yellow[100] : Colors.red[50])
-                  : Colors.purple[100],
-              border: Border.all(
-                color: Colors.purple[700]!,
-                width: 3,
+            // Calculate absolute position
+            // Subtract boxSize to ensure it stays within bounds at 1.0
+            final left = relPos.dx * (width - boxSize);
+            final top = relPos.dy * (height - boxSize);
+
+            final isCurrentlyOpen = _openedBoxes.contains(position);
+
+            // Visual feedback logic
+            final bool showToken = isCurrentlyOpen && (_openBoxStatus[position] == true);
+            final bool showEmpty = isCurrentlyOpen && (_openBoxStatus[position] == false);
+
+            return Positioned(
+              left: left,
+              top: top,
+              child: GestureDetector(
+                onTap: () => _handleBoxTap(position),
+                child: Container(
+                  width: boxSize,
+                  height: boxSize,
+                  decoration: BoxDecoration(
+                    color: isCurrentlyOpen
+                        ? (showToken ? Colors.yellow[100] : Colors.red[50])
+                        : Colors.purple[100],
+                    border: Border.all(
+                      color: Colors.purple[700]!,
+                      width: 3,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: showToken
+                        ? Icon(Icons.star, size: boxSize * 0.5, color: Colors.yellow[700])
+                        : (showEmpty
+                            ? Icon(Icons.close, size: boxSize * 0.4, color: Colors.red[700])
+                            : null),
+                  ),
+                ),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: showToken
-                  ? Icon(Icons.star, size: 50, color: Colors.yellow[700])
-                  : (showEmpty
-                      ? Icon(Icons.close, size: 40, color: Colors.red[700])
-                      : null),
-            ),
-          ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
